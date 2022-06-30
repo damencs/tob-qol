@@ -1,8 +1,52 @@
+/*
+ * Copyright (c) 2022, Damen <gh: damencs>
+ * Copyright (c) 2022, WLoumakis <gh: WLoumakis> - Portions of "Loot Reminder" and "MES Options"
+ * Copyright (c) 2020, Broooklyn <gh: Broooklyn> - "ToB Light Up" Relevant Code
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
+
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ *    list of conditions and the following disclaimer.
+
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+ * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+ * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 package com.tobqol;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.inject.Binder;
+import com.google.inject.Provides;
+import com.tobqol.api.game.Instance;
+import com.tobqol.api.util.ConfigReflectUtil;
+import com.tobqol.config.SupplyChestPreference;
+import com.tobqol.rooms.RemovableOverlay;
+import com.tobqol.rooms.RoomHandler;
+import com.tobqol.rooms.bloat.BloatHandler;
+import com.tobqol.rooms.maiden.MaidenHandler;
+import com.tobqol.rooms.nylocas.NylocasHandler;
+import com.tobqol.rooms.sotetseg.SotetsegHandler;
+import com.tobqol.rooms.verzik.VerzikHandler;
+import com.tobqol.rooms.xarpus.XarpusHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
 import net.runelite.api.*;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
@@ -18,25 +62,6 @@ import net.runelite.client.events.ExternalPluginsChanged;
 import net.runelite.client.events.PluginChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
-
-import com.google.common.base.Strings;
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.inject.Binder;
-import com.google.inject.Provides;
-import com.tobqol.config.SupplyChestPreference;
-import com.tobqol.api.game.Instance;
-import com.tobqol.api.util.ConfigReflectUtil;
-import com.tobqol.rooms.RemovableOverlay;
-import com.tobqol.rooms.RoomHandler;
-import com.tobqol.rooms.bloat.BloatHandler;
-import com.tobqol.rooms.maiden.MaidenHandler;
-import com.tobqol.rooms.nylocas.NylocasHandler;
-import com.tobqol.rooms.sotetseg.SotetsegHandler;
-import com.tobqol.rooms.verzik.VerzikHandler;
-import com.tobqol.rooms.xarpus.XarpusHandler;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.Text;
@@ -45,7 +70,10 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
 @PluginDescriptor(
