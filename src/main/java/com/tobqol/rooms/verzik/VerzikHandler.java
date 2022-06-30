@@ -1,0 +1,255 @@
+package com.tobqol.rooms.verzik;
+
+import com.tobqol.api.game.Region;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+
+import net.runelite.api.GraphicsObject;
+import net.runelite.api.NPC;
+import net.runelite.api.Player;
+import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.events.*;
+import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
+
+import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
+import com.tobqol.rooms.RoomHandler;
+import com.tobqol.rooms.verzik.commons.Tornado;
+import com.tobqol.rooms.verzik.commons.VerzikMap;
+
+import org.apache.commons.lang3.tuple.MutablePair;
+import org.apache.commons.lang3.tuple.Pair;
+
+import javax.inject.Inject;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
+
+@Slf4j
+public class VerzikHandler extends RoomHandler
+{
+	@Inject
+	private VerzikOverlay overlay;
+
+	@Getter
+	private NPC verzikNpc = null;
+
+	@Getter
+	private final Map<NPC, Pair<Integer, Integer>> verzikReds = new HashMap<>();
+
+	@Getter
+	private final ArrayList<Tornado> tornadoes = new ArrayList<>();
+
+	@Getter
+	private final List<WorldPoint> yellows = new ArrayList<>();
+
+	private boolean allYellowsSpawned = false;
+
+	@Getter
+	private byte ticksLeft = -1;
+
+	@Inject
+	protected VerzikHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
+	{
+		super(plugin, config);
+		setRoomRegion(Region.VERZIK);
+	}
+
+	@Override
+	public void load()
+	{
+		overlayManager.add(overlay);
+	}
+
+	@Override
+	public void unload()
+	{
+		overlayManager.remove(overlay);
+		reset();
+	}
+
+	@Override
+	public boolean active()
+	{
+		return instance.getCurrentRegion().isVerzik();
+	}
+
+	@Override
+	public void reset()
+	{
+		verzikNpc = null;
+		verzikReds.clear();
+		tornadoes.clear();
+		ticksLeft = -1;
+		yellows.clear();
+	}
+
+	@Subscribe
+	private void onNpcSpawned(NpcSpawned e)
+	{
+		if (!active())
+		{
+			return;
+		}
+
+		NPC npc = e.getNpc();
+
+		if (npc == null)
+		{
+			return;
+		}
+
+		int id = npc.getId();
+		String name = npc.getName();
+
+		if (VerzikMap.matchesAnyMode(VerzikMap.RED_NYLO, npc.getId()))
+		{
+			verzikReds.putIfAbsent(npc, MutablePair.of(npc.getHealthRatio(), npc.getHealthScale()));
+		}
+
+		if (VerzikMap.matchesAnyMode(VerzikMap.TORNADO, id))
+		{
+			tornadoes.add(new Tornado(npc));
+		}
+
+		if (name == null)
+		{
+			return;
+		}
+
+		switch (name)
+		{
+			case VerzikMap.BOSS_NAME:
+				instance.lazySetMode(() -> VerzikMap.findMode(id));
+				reset();
+				verzikNpc = npc;
+				break;
+		}
+	}
+
+	@Subscribe
+	private void onNpcDespawned(NpcDespawned e)
+	{
+		if (!active())
+		{
+			return;
+		}
+
+		NPC npc = e.getNpc();
+		String name = npc.getName();
+
+		verzikReds.remove(npc);
+
+		if (tornadoes.contains(npc))
+		{
+			tornadoes.remove(npc);
+		}
+
+		if (npc == null || name == null)
+		{
+			return;
+		}
+
+		switch (name)
+		{
+			case VerzikMap.BOSS_NAME:
+				reset();
+				break;
+		}
+	}
+
+	@Subscribe
+	private void onGameTick(GameTick e)
+	{
+		if (!active() || verzikNpc == null)
+		{
+			return;
+		}
+
+		VerzikMap def = VerzikMap.queryTable(verzikNpc.getId());
+
+		if (def == null)
+		{
+			return;
+		}
+
+		switch (def)
+		{
+			case VERZIK_P3:
+				tornadoes.forEach(t -> t.shift());
+
+				if (!yellows.isEmpty() && !allYellowsSpawned)
+				{
+					ticksLeft = 14;
+
+					if (instance.isHardMode())
+					{
+						ticksLeft = 17;
+					}
+
+					allYellowsSpawned = true;
+				}
+
+				if (ticksLeft <= 0)
+				{
+					yellows.clear();
+					return;
+				}
+
+				ticksLeft--;
+				break;
+		}
+	}
+
+	@Subscribe
+	private void onGraphicsObjectCreated(GraphicsObjectCreated e)
+	{
+		if (!active() || allYellowsSpawned)
+		{
+			return;
+		}
+
+		GraphicsObject obj = e.getGraphicsObject();
+
+		if (obj.getId() == VerzikMap.YELLOW_POOL)
+		{
+			WorldPoint wp = WorldPoint.fromLocal(client, obj.getLocation());
+			yellows.add(wp);
+		}
+	}
+
+	@Subscribe
+	private void onGraphicChanged(GraphicChanged e)
+	{
+		if (!active() || yellows.isEmpty() || !(e.getActor() instanceof Player))
+		{
+			return;
+		}
+
+		Player player = (Player) e.getActor();
+
+		if (player.getGraphic() != VerzikMap.YELLOW_GRAPHIC)
+		{
+			return;
+		}
+
+		WorldPoint wp = WorldPoint.fromLocal(client, player.getLocalLocation());
+		Predicate<WorldPoint> filter = _wp -> _wp.equals(wp) || _wp.distanceTo2D(wp) <= 1;
+		yellows.removeIf(filter);
+	}
+
+	@Subscribe
+	public void onAreaSoundEffectPlayed(AreaSoundEffectPlayed event)
+	{
+		if (event.getSource() != null && event.getSource().getName() != null && verzikNpc != null && config.muteVerzikSounds())
+		{
+			if (event.getSoundId() == 3991 || event.getSoundId() == 3987)
+			{
+				event.consume();
+			}
+		}
+	}
+}
