@@ -172,7 +172,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Loot Reminder",
 			keyName = "lootReminder",
 			description = "<font color=#ff6961>- Indicates whether or not the chest has loot in it by highlighting the chest and putting a message on the entrance<br>" +
-							"<font color=#00aeef>~ Credit - gh: WLoumakis",
+							"<font color=#00aeef>~ Credit - gh: BickusDiggus",
 			position = 4,
 			section = GENERAL_SECTION
 	)
@@ -185,7 +185,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Loot Reminder Color",
 			keyName = "lootReminderColor",
 			description = "<font color=#ff6961>- Set a color for the Loot Reminder overlay<br>" +
-							"<font color=#00aeef>~ Credit - gh: WLoumakis",
+							"<font color=#00aeef>~ Credit - gh: BickusDiggus",
 			position = 5,
 			section = GENERAL_SECTION
 	)
@@ -464,7 +464,8 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "Xarpus Sheesh Screech",
 			keyName = "xarpusSoundClip",
-			description = "Replaces the Screech sound effect with a Sheesh sound clip",
+			description = "<font color=#ff6961>- Replaces the Screech sound effect with a Sheesh sound clip" +
+							"<font color=#d3d3d3>* Thank you Hoyaa for providing this for the project",
 			position = 4,
 			section = XARPUS_SECTION
 	)
@@ -477,7 +478,7 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "Sheesh Volume",
 			keyName = "xarpusSoundClipVolume",
-			description = "Sets the volume of the sound clip",
+			description = "<font color=#ff6961>- Sets the volume of the sound clip",
 			position = 5,
 			section = XARPUS_SECTION
 	)
@@ -557,7 +558,7 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "Mute Verzik Sounds",
 			keyName = "muteVerzikSounds",
-			description = "<font color=#ff6961>- Mute Verzik's sounds such as her walking",
+			description = "<font color=#ff6961>- Mute Verzik's sounds such as P2 area affect and her walking in P3",
 			position = 6,
 			section = VERZIK_SECTION
 	)
