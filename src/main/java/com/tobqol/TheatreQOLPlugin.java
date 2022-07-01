@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2022, Damen <gh: damencs>
- * Copyright (c) 2022, WLoumakis <gh: WLoumakis> - Portions of "Loot Reminder" and "MES Options"
+ * Copyright (c) 2022, WLoumakis <gh: WLoumakis> - Portions of "MES Options"
+ * Copyright (c) 2021, BickusDiggus <gh: BickusDiggus> - Portions of "Loot Reminder"
  * Copyright (c) 2020, Broooklyn <gh: Broooklyn> - "ToB Light Up" Relevant Code
  * All rights reserved.
  *
