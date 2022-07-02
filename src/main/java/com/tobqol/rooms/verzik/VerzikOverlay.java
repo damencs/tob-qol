@@ -88,7 +88,6 @@ public class VerzikOverlay extends RoomSceneOverlay<VerzikHandler>
 				break;
 			case VERZIK_P3:
 				displayTornadoes(graphics);
-				displayYellowPools(graphics);
 		}
 
 		return null;
@@ -145,33 +144,5 @@ public class VerzikOverlay extends RoomSceneOverlay<VerzikHandler>
 				}
 			}
 		}
-	}
-
-	private void displayYellowPools(Graphics2D graphics)
-	{
-		if (!config.shouldMarkVerzikYellows())
-		{
-			return;
-		}
-
-		room.getYellows().forEach(wp ->
-		{
-			LocalPoint lp = LocalPoint.fromWorld(client, wp);
-
-			if (lp == null)
-			{
-				return;
-			}
-
-			Polygon tile = Perspective.getCanvasTilePoly(client, lp);
-
-			if (tile != null)
-			{
-				graphics.setColor(config.verzikMarkedYellowsColor());
-				graphics.setStroke(new BasicStroke(2));
-				graphics.draw(tile);
-				graphics.fill(tile);
-			}
-		});
 	}
 }

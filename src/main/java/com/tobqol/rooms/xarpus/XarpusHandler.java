@@ -34,6 +34,7 @@ import com.tobqol.rooms.xarpus.commons.XarpusConstants;
 import com.tobqol.rooms.xarpus.commons.XarpusPhase;
 import com.tobqol.rooms.xarpus.commons.XarpusTable;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.NPC;
 import net.runelite.api.events.*;
 import net.runelite.client.eventbus.Subscribe;
@@ -44,6 +45,7 @@ import javax.inject.Inject;
 import javax.sound.sampled.*;
 import java.io.BufferedInputStream;
 
+@Slf4j
 public class XarpusHandler extends RoomHandler
 {
 	@Inject private XarpusSceneOverlay sceneOverlay;
@@ -72,7 +74,7 @@ public class XarpusHandler extends RoomHandler
 	{
 		try
 		{
-			AudioInputStream stream = AudioSystem.getAudioInputStream(new BufferedInputStream(TheatreQOLPlugin.class.getResourceAsStream("sheesh.wav")));
+			AudioInputStream stream = AudioSystem.getAudioInputStream(new BufferedInputStream(TheatreQOLPlugin.class.getResourceAsStream("sheesh-hoyaa.wav")));
 			AudioFormat format = stream.getFormat();
 			DataLine.Info info = new DataLine.Info(Clip.class, format);
 			soundClip = (Clip)AudioSystem.getLine(info);
@@ -136,6 +138,9 @@ public class XarpusHandler extends RoomHandler
 					{
 						control.setValue((float)(config.xarpusSoundClipVolume() / 2 - 45));
 					}
+
+					soundClip.setFramePosition(0);
+					soundClip.start();
 				}
 			}
 		}

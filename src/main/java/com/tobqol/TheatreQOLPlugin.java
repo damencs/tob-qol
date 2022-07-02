@@ -36,7 +36,6 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.tobqol.api.game.Instance;
-import com.tobqol.api.util.ConfigReflectUtil;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.rooms.RemovableOverlay;
 import com.tobqol.rooms.RoomHandler;
@@ -75,7 +74,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
 
 @PluginDescriptor(
 		name = "<html><font color=\"#ff6961\"><b>ToB QoL</b></font></html>",
@@ -93,13 +91,7 @@ public class TheatreQOLPlugin extends Plugin
 	private Client client;
 
 	@Inject
-	private ConfigManager configManager;
-
-	@Inject
 	private EventBus eventBus;
-
-	@Inject
-	private ScheduledExecutorService executor;
 
 	@Inject
 	private OverlayManager overlayManager;
@@ -260,15 +252,7 @@ public class TheatreQOLPlugin extends Plugin
 			return;
 		}
 
-		executor.execute(() ->
-		{
-			ConfigReflectUtil.load(config, configManager);
-
-			if (ConfigReflectUtil.updateAll(config, configManager))
-			{
-				eventBus.post(new ExternalPluginsChanged(Collections.emptyList()));
-			}
-		});
+		eventBus.post(new ExternalPluginsChanged(Collections.emptyList()));
 	}
 
 	public boolean addRemovableOverlay(String configKey, RemovableOverlay removableOverlay)
@@ -309,10 +293,7 @@ public class TheatreQOLPlugin extends Plugin
 			overlayManager.add(overlay);
 		});
 
-		if (ConfigReflectUtil.update(config, configManager, key))
-		{
-			eventBus.post(new ExternalPluginsChanged(Collections.emptyList()));
-		}
+		eventBus.post(new ExternalPluginsChanged(Collections.emptyList()));
 	}
 
 	@Subscribe

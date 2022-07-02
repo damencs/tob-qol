@@ -64,33 +64,6 @@ public class XarpusSceneOverlay extends RoomSceneOverlay<XarpusHandler>
 			drawInstanceTimer(graphics, room.getXarpusNpc(), null);
 		}
 
-		drawExhumedsOverlays(graphics, phase);
-
 		return null;
-	}
-
-	private void drawExhumedsOverlays(Graphics2D graphics, XarpusPhase phase)
-	{
-		RenderType markerType = config.xarpusExhumedMarkerType();
-
-		if (markerType.isOff() || !phase.isP1())
-		{
-			return;
-		}
-
-		Color color = config.getXarpusMarkedExhumedsColor();
-
-		room.getExhumedTracker().forEachExhumed((exhumed, ignore) ->
-		{
-			switch (markerType)
-			{
-				case TILE:
-					OverlayUtil.renderPolygon(graphics, exhumed.getCanvasTilePoly(), color);
-					break;
-				case HULL:
-					OverlayUtil.renderPolygon(graphics, exhumed.getConvexHull(), color);
-					break;
-			}
-		});
 	}
 }

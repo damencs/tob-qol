@@ -76,6 +76,9 @@ public class NylocasHandler extends RoomHandler
 	private TheatreInputListener theatreInputListener;
 
 	@Getter
+	private boolean displayRoleSelector;
+
+	@Getter
 	private NylocasRoleSelectionType currentRoleSelection;
 
 	@Getter
@@ -106,7 +109,8 @@ public class NylocasHandler extends RoomHandler
 	@Override
 	public void init()
 	{
-		currentRoleSelection = config.nyloRoleSelector();
+		displayRoleSelector = config.displayNyloRoleSelector();
+		currentRoleSelection = config.nyloRoleSelected();
 
 		InfoBoxComponent box = new InfoBoxComponent();
 		box.setImage(skillIconManager.getSkillImage(Skill.ATTACK));
@@ -124,14 +128,13 @@ public class NylocasHandler extends RoomHandler
 		nyloRangeOverlay.setSelected(currentRoleSelection.isRange());
 
 		nyloSelectionManager = new NyloSelectionManager(nyloMeleeOverlay, nyloMageOverlay, nyloRangeOverlay);
-		nyloSelectionManager.setHidden(currentRoleSelection.isOff());
-
+		nyloSelectionManager.setHidden(displayRoleSelector);
 	}
 
 	@Override
 	public void load()
 	{
-		currentRoleSelection = config.nyloRoleSelector();
+		currentRoleSelection = config.nyloRoleSelected();
 
 		overlayManager.add(sceneOverlay);
 		startupNyloOverlay();
@@ -215,14 +218,10 @@ public class NylocasHandler extends RoomHandler
 					}
 				});
 				break;
-			case "nyloRoleSelector":
+			case "displayNyloRoleSelector":
 			{
-				NylocasRoleSelectionType selection = convertFromString(e.getNewValue());
-
-				if (selection != null)
-				{
-					determineSelection(selection);
-				}
+				displayRoleSelector = Boolean.valueOf(e.getNewValue());
+				nyloSelectionManager.setHidden(displayRoleSelector);
 			}
 		}
 	}
@@ -303,8 +302,8 @@ public class NylocasHandler extends RoomHandler
 		}
 
 		NPC npc = e.getNpc();
-		isNpcFromName(npc, BOSS_NAME, n -> boss.changed());
-		isNpcFromName(npc, DEMI_BOSS_NAME, n -> demiBoss.changed());
+		isNpcFromName(npc, BOSS_NAME, n -> { if (n != null) boss.changed(); });
+		isNpcFromName(npc, DEMI_BOSS_NAME, n -> { if (n != null) demiBoss.changed(); });
 	}
 
 	@Subscribe
@@ -466,51 +465,22 @@ public class NylocasHandler extends RoomHandler
 	public void determineSelection(NylocasRoleSelectionType selection)
 	{
 		NylocasRoleSelectionType current = currentRoleSelection;
-		NylocasRoleSelectionType updated = current == selection ? NylocasRoleSelectionType.ON : selection;
+		NylocasRoleSelectionType updated = current == selection ? NylocasRoleSelectionType.NONE : selection;
 
-		if (active())
-		{
-			if (current == NylocasRoleSelectionType.OFF && updated != NylocasRoleSelectionType.OFF)
-			{
-				nyloSelectionManager.setHidden(false);
-			}
-			else if (updated == NylocasRoleSelectionType.OFF)
-			{
-				nyloSelectionManager.setHidden(true);
-			}
-		}
+//		if (updated != NylocasRoleSelectionType.NONE)
+//		{
+//			nyloSelectionManager.setHidden(false);
+//		}
+//		else if (updated == NylocasRoleSelectionType.NONE)
+//		{
+//			nyloSelectionManager.setHidden(true);
+//		}
+
 		config.setNyloRoleSelector(updated);
 		currentRoleSelection = updated;
 
 		nyloSelectionManager.getMage().setSelected(updated == NylocasRoleSelectionType.MAGE ? true : false);
 		nyloSelectionManager.getMelee().setSelected(updated == NylocasRoleSelectionType.MELEE ? true : false);
 		nyloSelectionManager.getRange().setSelected(updated == NylocasRoleSelectionType.RANGE ? true : false);
-	}
-
-	public NylocasRoleSelectionType convertFromString(String string)
-	{
-		if (string.equals(NylocasRoleSelectionType.OFF.toString()))
-		{
-			return NylocasRoleSelectionType.OFF;
-		}
-		else if (string.equals(NylocasRoleSelectionType.ON.toString()))
-		{
-			return NylocasRoleSelectionType.ON;
-		}
-		else if (string.equals(NylocasRoleSelectionType.MAGE.toString()))
-		{
-			return NylocasRoleSelectionType.MAGE;
-		}
-		else if (string.equals(NylocasRoleSelectionType.MELEE.toString()))
-		{
-			return NylocasRoleSelectionType.MELEE;
-		}
-		else if (string.equals(NylocasRoleSelectionType.RANGE.toString()))
-		{
-			return NylocasRoleSelectionType.RANGE;
-		}
-
-		log.debug("Could not determine what selection was intended. {}", string);
-		return null;
 	}
 }

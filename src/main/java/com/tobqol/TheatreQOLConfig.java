@@ -28,9 +28,7 @@
  */
 package com.tobqol;
 
-import com.tobqol.api.annotations.ConfigDependency;
 import com.tobqol.config.HPDisplayTypes;
-import com.tobqol.config.RenderType;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.rooms.nylocas.config.NylocasRoleSelectionType;
 import com.tobqol.rooms.sotetseg.config.SotetsegInstanceTimerTypes;
@@ -190,7 +188,6 @@ public interface TheatreQOLConfig extends Config
 			section = GENERAL_SECTION
 	)
 	@Alpha
-	@ConfigDependency(keyName = "lootReminder", hideOnValues = "false")
 	default Color lootReminderColor()
 	{
 		return new Color(196, 89, 89, 200);
@@ -302,7 +299,6 @@ public interface TheatreQOLConfig extends Config
 			position = 4,
 			section = NYLO_SECTION
 	)
-	@ConfigDependency(keyName = "nyloWavesRecolorMenu", hideOnValues = "false")
 	default boolean nyloWavesRecolorBigsMenuDarker()
 	{
 		return false;
@@ -315,18 +311,29 @@ public interface TheatreQOLConfig extends Config
 			position = 5,
 			section = NYLO_SECTION
 	)
-	default NylocasRoleSelectionType nyloRoleSelector()
+	default boolean displayNyloRoleSelector()
 	{
-		return NylocasRoleSelectionType.OFF;
+		return false;
 	}
 
 	@ConfigItem(
-			keyName = "nyloRoleSelector",
 			name = "",
+			keyName = "nyloRoleSelector",
 			description = "",
 			hidden = true
 	)
 	void setNyloRoleSelector(NylocasRoleSelectionType type);
+
+	@ConfigItem(
+			name = "",
+			keyName = "nyloRoleSelected",
+			description = "",
+			hidden = true
+	)
+	default NylocasRoleSelectionType nyloRoleSelected()
+	{
+		return NylocasRoleSelectionType.NONE;
+	}
 
 	@ConfigItem(
 			name = "Bigs SW Tile",
@@ -386,11 +393,10 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "<html><font color=#ff6961>Zuk Ball for Death Ball",
 			keyName = "infernoThemeZukBall",
-			description = "<font color=#ff6961>- Use the Zuk ball to replace Sotetseg's death ball",
+			description = "<font color=#ff6961><em>- Use the Zuk ball to replace Sotetseg's death ball when the Inferno theme is selected",
 			position = 3,
 			section = SOTETSEG_SECTION
 	)
-	@ConfigDependency(keyName = "getSotetsegProjectileTheme", hideOnValues = "DEFAULT")
 	default boolean infernoThemeZukBall()
 	{
 		return true;
@@ -424,36 +430,10 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
-			name = "Mark Exhumeds",
-			keyName = "xarpusExhumedMarkerType",
-			description = "<font color=#ff6961>- Display an overlay on each Exhumed that is spawned",
-			position = 2,
-			section = XARPUS_SECTION
-	)
-	default RenderType xarpusExhumedMarkerType()
-	{
-		return RenderType.OFF;
-	}
-
-	@ConfigItem(
-			name = "Marked Exhumeds Color",
-			keyName = "xarpusMarkedExhumedsColor",
-			description = "<font color=#ff6961>- Set a color for the Exhumeds overlay",
-			position = 3,
-			section = XARPUS_SECTION
-	)
-	@Alpha
-	@ConfigDependency(keyName = "xarpusExhumedMarkerType", hideOnValues = "OFF")
-	default Color getXarpusMarkedExhumedsColor()
-	{
-		return new Color(0, 255, 0, 130);
-	}
-
-	@ConfigItem(
 			name = "Mute Xarpus HM Entry",
 			keyName = "muteXarpusHMEntry",
 			description = "<font color=#ff6961>- Mutes the Xarpus hardmode entrance noise when poison splats are thrown",
-			position = 4,
+			position = 2,
 			section = XARPUS_SECTION
 	)
 	default boolean muteXarpusHMEntry()
@@ -466,7 +446,7 @@ public interface TheatreQOLConfig extends Config
 			keyName = "xarpusSoundClip",
 			description = "<font color=#ff6961>- Replaces the Screech sound effect with a Sheesh sound clip" +
 							"<font color=#d3d3d3>* Thank you Hoyaa for providing this for the project",
-			position = 4,
+			position = 3,
 			section = XARPUS_SECTION
 	)
 	default boolean xarpusSoundClip()
@@ -479,13 +459,12 @@ public interface TheatreQOLConfig extends Config
 			name = "Sheesh Volume",
 			keyName = "xarpusSoundClipVolume",
 			description = "<font color=#ff6961>- Sets the volume of the sound clip",
-			position = 5,
+			position = 4,
 			section = XARPUS_SECTION
 	)
-	@ConfigDependency(keyName = "xarpusSoundClipVolume", hideOnValues = "false")
 	default int xarpusSoundClipVolume()
 	{
-		return 50;
+		return 65;
 	}
 
 	/**
@@ -504,36 +483,10 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
-			name = "Mark Yellows",
-			keyName = "verzikYellows",
-			description = "<font color=#ff6961>- Display a tile overlay on each yellow pool",
-			position = 2,
-			section = VERZIK_SECTION
-	)
-	default boolean shouldMarkVerzikYellows()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			name = "Marked Yellows Color",
-			keyName = "verzikMarkedYellowsColor",
-			description = "<font color=#ff6961>- Set the color of the marked yellows overlay",
-			position = 3,
-			section = VERZIK_SECTION
-	)
-	@Alpha
-	@ConfigDependency(keyName = "verzikYellows", hideOnValues = "false")
-	default Color verzikMarkedYellowsColor()
-	{
-		return new Color(255, 246, 137, 130);
-	}
-
-	@ConfigItem(
 			name = "Mark Tornadoes",
 			keyName = "verzikTornadoes",
 			description = "<font color=#ff6961>- Highlight Verzik tornadoes",
-			position = 4,
+			position = 2,
 			section = VERZIK_SECTION
 	)
 	default boolean shouldMarkVerzikTornadoes()
@@ -545,11 +498,10 @@ public interface TheatreQOLConfig extends Config
 			name = "Marked Tornado Color",
 			keyName = "verzikMarkedTornadoColor",
 			description = "<font color=#ff6961>- Set the color of the marked tornadoes overlay",
-			position = 5,
+			position = 3,
 			section = VERZIK_SECTION
 	)
 	@Alpha
-	@ConfigDependency(keyName = "verzikTornadoes", hideOnValues = "false")
 	default Color verzikMarkedTornadoColor()
 	{
 		return new Color(215, 122, 97);
@@ -559,7 +511,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Mute Verzik Sounds",
 			keyName = "muteVerzikSounds",
 			description = "<font color=#ff6961>- Mute Verzik's sounds such as P2 area affect and her walking in P3",
-			position = 6,
+			position = 4,
 			section = VERZIK_SECTION
 	)
 	default boolean muteVerzikSounds()

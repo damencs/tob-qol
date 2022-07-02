@@ -34,23 +34,12 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public enum NylocasRoleSelectionType
 {
-	OFF("OFF"),
-	ON("ON"),
+	NONE("NONE"),
 	MAGE("MAGE"),
 	MELEE("MELEE"),
 	RANGE("RANGE");
 
 	private final String option;
-
-	public final boolean isOff()
-	{
-		return this == OFF;
-	}
-
-	public final boolean isOn()
-	{
-		return this == ON;
-	}
 
 	public final boolean isMage()
 	{
@@ -74,7 +63,7 @@ public enum NylocasRoleSelectionType
 
 	public final boolean isAnyOrOn()
 	{
-		return (this == ON || this == MAGE || this == MELEE || this == RANGE);
+		return (this == NONE || this == MAGE || this == MELEE || this == RANGE);
 	}
 
 	@Override
