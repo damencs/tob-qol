@@ -42,7 +42,7 @@ import java.awt.*;
 public interface TheatreQOLConfig extends Config
 {
 	String GROUP_NAME = "tobqol";
-	String PLUGIN_VERSION = "1.0.0";
+	String PLUGIN_VERSION = "1.0.1";
 	String GITHUB_LINK = "damencs/tob-qol/issues";
 
 	@ConfigItem(
