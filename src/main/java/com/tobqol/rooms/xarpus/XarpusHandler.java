@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2022, Damen <gh: damencs>
+ * Copyright (c) 2022, Boris - Portions of Area Sound Effects Played
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -234,11 +235,11 @@ public class XarpusHandler extends RoomHandler
 	{
 		if(xarpusNpc != null && active())
 		{
-			if (event.getSoundId() == 4005 && (xarpusNpc.getId() >= 10770 && xarpusNpc.getId() <= 10773) && config.xarpusSoundClip())
+			if (event.getSoundId() == 4005 && instance.isHardMode() && config.muteXarpusHMEntry())
 			{
 				event.consume();
 			}
-			else if (event.getSoundId() == 4007 && config.muteXarpusHMEntry())
+			else if (event.getSoundId() == 4007 && config.xarpusSoundClip())
 			{
 				event.consume();
 			}

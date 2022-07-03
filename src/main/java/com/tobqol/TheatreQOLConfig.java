@@ -1,6 +1,7 @@
 /*
  * Copyright (c) 2022, Damen <gh: damencs>
  * Copyright (c) 2022, WLoumakis <gh: WLoumakis> - Portions of "MES Options"
+ * Copyright (c) 2022, Boris - Portions of "Xarpus Sheesh and HM Entry"
  * Copyright (c) 2021, BickusDiggus <gh: BickusDiggus> - Portions of "Loot Reminder"
  * Copyright (c) 2020, Broooklyn <gh: Broooklyn> - "ToB Light Up" Relevant Code
  * All rights reserved.
@@ -157,7 +158,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Light Up Ver Sinhaza",
 			keyName = "lightUp",
 			description = "<font color=#ff6961>- Removes the darkness lighting within Ver Sinhaza (ToB Bank Area)<br>" +
-							"<font color=#00aeef>~Credit - gh: Broooklyn",
+							"<font color=#00aeef>~ Credit - gh: Broooklyn",
 			position = 3,
 			section = GENERAL_SECTION
 	)
@@ -444,8 +445,9 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "Xarpus Sheesh Screech",
 			keyName = "xarpusSoundClip",
-			description = "<font color=#ff6961>- Replaces the Screech sound effect with a Sheesh sound clip" +
-							"<font color=#d3d3d3>* Thank you Hoyaa for providing this for the project",
+			description = "<font color=#ff6961>- Replaces the Screech sound effect with a Sheesh sound clip<br>" +
+							"<font color=#00aeef>~ Credit - Boris<br>" +
+							"<font color=#d3d3d3>* Thank you Hoyaa for providing this sound clip for the project",
 			position = 3,
 			section = XARPUS_SECTION
 	)
