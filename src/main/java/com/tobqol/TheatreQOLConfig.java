@@ -42,7 +42,7 @@ import java.awt.*;
 public interface TheatreQOLConfig extends Config
 {
 	String GROUP_NAME = "tobqol";
-	String PLUGIN_VERSION = "1.0.1";
+	String PLUGIN_VERSION = "1.0.2";
 	String GITHUB_LINK = "damencs/tob-qol/issues";
 
 	@ConfigItem(
@@ -381,8 +381,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Projectile Theme",
 			keyName = "getSotetsegProjectileTheme",
 			description = "<font color=#ff6961>- Modifies the Projectile to appear in a specific theme to assist with colorblind users<br>" +
-					"<font color=#d3d3d3>* Inferno: Utilizes the blob mage and range projectiles<br>" +
-					"* Gauntlet: Utilizes the Hunllef mage and range projectiles",
+					"<font color=#d3d3d3>* Inferno: Utilizes the blob mage and range projectiles",
 			position = 2,
 			section = SOTETSEG_SECTION
 	)
@@ -394,7 +393,7 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "<html><font color=#ff6961>Zuk Ball for Death Ball",
 			keyName = "infernoThemeZukBall",
-			description = "<font color=#ff6961><em>- Use the Zuk ball to replace Sotetseg's death ball when the Inferno theme is selected",
+			description = "<font color=#ff6961>- Use the Zuk ball to replace Sotetseg's death ball when the Inferno theme is selected",
 			position = 3,
 			section = SOTETSEG_SECTION
 	)

@@ -76,12 +76,10 @@ import java.util.Objects;
 import java.util.Set;
 
 @PluginDescriptor(
-		name = "<html><font color=\"#ff6961\"><b>ToB QoL</b></font></html>",
-		description = "Theatre of Blood Quality of Life Enhancement Features to be used throughout a raid.<br>" +
-				"Created By: <em>Damen</em><br>" +
-				"Prior Plugin References: <em>#</em>",
+		name = "ToB QoL",
+		description = "Theatre of Blood Quality of Life Enhancement Features to be used throughout a raid",
 		tags = { "tob", "tobqol", "of", "blood", "maiden", "bloat", "nylo", "nylocas", "sotetseg", "xarpus", "verzik", "combat", "bosses", "pvm", "pve", "damen" },
-		enabledByDefault = false,
+		enabledByDefault = true,
 		loadInSafeMode = false
 )
 @Slf4j
