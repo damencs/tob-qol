@@ -25,6 +25,7 @@
  */
 package com.tobqol.rooms.nylocas.commons;
 
+import com.tobqol.TheatreQOLConfig;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +45,8 @@ public class NyloSelectionManager extends Overlay
     @Getter
     private final NyloSelectionBox range;
 
+    private final TheatreQOLConfig config;
+
     @Getter
     @Setter
     private boolean isHidden = true;
@@ -57,8 +60,9 @@ public class NyloSelectionManager extends Overlay
     @Getter
     private Rectangle mageBounds = new Rectangle();
 
-    public NyloSelectionManager(NyloSelectionBox melee, NyloSelectionBox mage, NyloSelectionBox range)
+    public NyloSelectionManager(TheatreQOLConfig config, NyloSelectionBox melee, NyloSelectionBox mage, NyloSelectionBox range)
     {
+        this.config = config;
         this.mage = mage;
         this.melee = melee;
         this.range = range;
@@ -67,7 +71,7 @@ public class NyloSelectionManager extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
-        if (isHidden)
+        if (isHidden || !config.displayNyloRoleSelector())
         {
             return null;
         }

@@ -127,7 +127,7 @@ public class NylocasHandler extends RoomHandler
 		NyloSelectionBox nyloRangeOverlay = new NyloSelectionBox(box);
 		nyloRangeOverlay.setSelected(currentRoleSelection.isRange());
 
-		nyloSelectionManager = new NyloSelectionManager(nyloMeleeOverlay, nyloMageOverlay, nyloRangeOverlay);
+		nyloSelectionManager = new NyloSelectionManager(config, nyloMeleeOverlay, nyloMageOverlay, nyloRangeOverlay);
 		nyloSelectionManager.setHidden(displayRoleSelector);
 	}
 
