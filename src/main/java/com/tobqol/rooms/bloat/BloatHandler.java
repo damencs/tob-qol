@@ -35,8 +35,6 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
-import net.runelite.api.coords.WorldArea;
-import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.events.NpcSpawned;
@@ -45,8 +43,6 @@ import net.runelite.client.events.ConfigChanged;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
-import java.util.Collection;
-import java.util.List;
 
 @Slf4j
 public class BloatHandler extends RoomHandler
@@ -95,9 +91,6 @@ public class BloatHandler extends RoomHandler
 
 		switch (e.getKey())
 		{
-			case "nullTankTiles":
-				when(config.shouldNullTopTankTiles(), this::nullTopTankTiles, sceneManager::refreshScene);
-				break;
 			case "hideCeilingChains":
 				when(config.shouldNullCeilingChains(), this::nullCeilingChains, sceneManager::refreshScene);
 				break;
@@ -112,7 +105,6 @@ public class BloatHandler extends RoomHandler
 			return;
 		}
 
-		when(config.shouldNullTopTankTiles(), this::nullTopTankTiles, null);
 		when(config.shouldNullCeilingChains(), this::nullCeilingChains, null);
 	}
 
@@ -140,18 +132,6 @@ public class BloatHandler extends RoomHandler
 		}
 
 		isNpcFromName(e.getNpc(), BloatConstants.BOSS_NAME, $ -> reset());
-	}
-
-	private void nullTopTankTiles()
-	{
-		List<WorldPoint> wpl = new WorldArea(3293, 4445, 6, 6, 1).toWorldPointList();
-		wpl.forEach(wp ->
-		{
-			Collection<WorldPoint> tiles = WorldPoint.toLocalInstance(client, wp);
-			tiles.forEach(sceneManager::removeThisTile);
-		});
-
-		sceneManager.removeTheseGameObjects(1, BloatTable.TOP_OF_TANK);
 	}
 
 	private void nullCeilingChains()

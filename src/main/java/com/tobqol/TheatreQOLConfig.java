@@ -42,89 +42,67 @@ import java.awt.*;
 public interface TheatreQOLConfig extends Config
 {
 	String GROUP_NAME = "tobqol";
-	String PLUGIN_VERSION = "1.0.2";
+	String PLUGIN_VERSION = "1.0.3";
 	String GITHUB_LINK = "damencs/tob-qol/issues";
-
-	@ConfigItem(
-			name = "<html><b><font color=#ff6961>Version: <font color=#00aeef>" + PLUGIN_VERSION + "-PH</b><br><br></html>",
-			keyName = "version",
-			description = "",
-			position = 0
-	)
-	void version();
 
 	/**
 	 * Sections
 	 */
 	@ConfigSection(
-			name = "<html><font color=#ff6961>General",
-			description = "<font color=#d3d3d3>Configuration settings for things that are not room-specific",
+			name = "General",
+			description = "Configuration settings for things that are not room-specific",
 			position = 1,
 			closedByDefault = true
 	)
 	String GENERAL_SECTION = "generalSection";
 
 	@ConfigSection(
-			name = "<html><font color=#FF6961>The Maiden of Sugadinti",
-			description = "<font color=#D3D3D3>Configuration settings for The Maiden of Sugadinti</html>",
+			name = "The Maiden of Sugadinti",
+			description = "Configuration settings for The Maiden of Sugadinti",
 			position = 2,
 			closedByDefault = true
 	)
 	String MAIDEN_SECTION = "maidenSection";
 
 	@ConfigSection(
-			name = "<html><font color=#ff6961>Pestilent Bloat",
-			description = "<font color=#d3d3d3>Configuration settings for Pestilent Bloat",
+			name = "Pestilent Bloat",
+			description = "Configuration settings for Pestilent Bloat",
 			position = 3,
 			closedByDefault = true
 	)
 	String BLOAT_SECTION = "bloatSection";
 
 	@ConfigSection(
-			name = "<html><font color=#ff6961>Nylocas",
-			description = "<font color=#d3d3d3>Configuration settings for Nylocas",
+			name = "Nylocas",
+			description = "Configuration settings for Nylocas",
 			position = 4,
 			closedByDefault = true
 	)
 	String NYLO_SECTION = "nyloSection";
 
 	@ConfigSection(
-			name = "<html><font color=#ff6961>Sotetseg",
-			description = "<font color=#d3d3d3>Configuration settings for Sotetseg",
+			name = "Sotetseg",
+			description = "Configuration settings for Sotetseg",
 			position = 5,
 			closedByDefault = true
 	)
 	String SOTETSEG_SECTION = "sotetsegSection";
 
 	@ConfigSection(
-			name = "<html><font color=#ff6961>Xarpus",
-			description = "<font color=#d3d3d3>Configuration settings for Xarpus",
+			name = "Xarpus",
+			description = "Configuration settings for Xarpus",
 			position = 6,
 			closedByDefault = true
 	)
 	String XARPUS_SECTION = "xarpusSection";
 
 	@ConfigSection(
-			name = "<html><font color=#ff6961>Verzik Vitur",
-			description = "<font color=#d3d3d3>Configuration settings for Verzik Vitur",
+			name = "Verzik Vitur",
+			description = "Configuration settings for Verzik Vitur",
 			position = 7,
 			closedByDefault = true
 	)
 	String VERZIK_SECTION = "verzikSection";
-
-	/**
-	 * Maintainer Section
-	 */
-	@ConfigItem(
-			name =  "<html><br><b>Maintained By:</b><br>" +
-					"<font color=#d3d3d3>Damen (Damen#9999)<br>" +
-					"<font color=#ff6961>gh: " + GITHUB_LINK +
-					"</html>",
-			keyName = "createdBy",
-			description = "",
-			position = 99
-	)
-	void createdBy();
 
 	/**
 	 * General Section
@@ -225,24 +203,11 @@ public interface TheatreQOLConfig extends Config
 	 * Bloat Configs
 	 */
 	@ConfigItem(
-			name = "Null Bloat Tank Tiles",
-			keyName = "nullTankTiles",
-			description = "<font color=#ff6961>- Nulls the top of the Bloat tank tiles which causes potential character misplacement if shown<br>" +
-							"<font color=#d3d3d3>* Disabling this feature whilst in Bloat will cause a stutter to refresh the scene",
-			position = 1,
-			section = BLOAT_SECTION
-	)
-	default boolean shouldNullTopTankTiles()
-	{
-		return false;
-	}
-
-	@ConfigItem(
 			name = "Hide Ceiling Chains",
 			keyName = "hideCeilingChains",
 			description = "<font color=#ff6961>- Hides the chains hanging from the ceiling in the Bloat room<br>" +
 							"<font color=#d3d3d3>* Disabling this feature whilst in Bloat will cause a stutter to refresh the scene",
-			position = 2,
+			position = 1,
 			section = BLOAT_SECTION
 	)
 	default boolean shouldNullCeilingChains()
@@ -391,7 +356,7 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
-			name = "<html><font color=#ff6961>Zuk Ball for Death Ball",
+			name = "Zuk Ball for Death Ball",
 			keyName = "infernoThemeZukBall",
 			description = "<font color=#ff6961>- Use the Zuk ball to replace Sotetseg's death ball when the Inferno theme is selected",
 			position = 3,
