@@ -35,8 +35,8 @@ import com.tobqol.rooms.nylocas.commons.NyloBoss;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionBox;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionManager;
 import com.tobqol.rooms.nylocas.commons.NylocasMap;
-import com.tobqol.rooms.nylocas.config.NylocasRoleSelectionType;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.events.*;
@@ -79,7 +79,19 @@ public class NylocasHandler extends RoomHandler
 	private boolean displayRoleSelector;
 
 	@Getter
-	private NylocasRoleSelectionType currentRoleSelection;
+	@Setter
+	private boolean displayRoleMage;
+
+	@Getter
+	@Setter
+	private boolean displayRoleMelee;
+
+	@Getter
+	@Setter
+	private boolean displayRoleRange;
+
+	@Getter
+	private boolean displayInstanceTimer;
 
 	@Getter
 	private NyloBoss boss = null;
@@ -110,35 +122,34 @@ public class NylocasHandler extends RoomHandler
 	public void init()
 	{
 		displayRoleSelector = config.displayNyloRoleSelector();
-		currentRoleSelection = config.nyloRoleSelected();
+		displayRoleMage = config.nyloRoleSelectedMage();
+		displayRoleMelee = config.nyloRoleSelectedMelee();
+		displayRoleRange = config.nyloRoleSelectedRange();
 
 		InfoBoxComponent box = new InfoBoxComponent();
 		box.setImage(skillIconManager.getSkillImage(Skill.ATTACK));
 		NyloSelectionBox nyloMeleeOverlay = new NyloSelectionBox(box);
-		nyloMeleeOverlay.setSelected(currentRoleSelection.isMelee());
+		nyloMeleeOverlay.setSelected(displayRoleMelee);
 
 		box = new InfoBoxComponent();
 		box.setImage(skillIconManager.getSkillImage(Skill.MAGIC));
 		NyloSelectionBox nyloMageOverlay = new NyloSelectionBox(box);
-		nyloMageOverlay.setSelected(currentRoleSelection.isMage());
+		nyloMageOverlay.setSelected(displayRoleMage);
 
 		box = new InfoBoxComponent();
 		box.setImage(skillIconManager.getSkillImage(Skill.RANGED));
 		NyloSelectionBox nyloRangeOverlay = new NyloSelectionBox(box);
-		nyloRangeOverlay.setSelected(currentRoleSelection.isRange());
+		nyloRangeOverlay.setSelected(displayRoleRange);
 
 		nyloSelectionManager = new NyloSelectionManager(config, nyloMeleeOverlay, nyloMageOverlay, nyloRangeOverlay);
-		nyloSelectionManager.setHidden(displayRoleSelector);
+		nyloSelectionManager.setHidden(!displayRoleSelector);
 	}
 
 	@Override
 	public void load()
 	{
-		currentRoleSelection = config.nyloRoleSelected();
-
 		overlayManager.add(sceneOverlay);
 		startupNyloOverlay();
-
 	}
 
 	@Override
@@ -163,6 +174,7 @@ public class NylocasHandler extends RoomHandler
 		wavesMap.clear();
 		bigsMap.clear();
 		splitsMap.clear();
+		displayInstanceTimer = false;
 	}
 
 	@Override
@@ -202,14 +214,16 @@ public class NylocasHandler extends RoomHandler
 
 		switch (e.getKey())
 		{
-			case "nyloHidePillars":
+			case "nyloHideObjects":
 				clientThread.invokeLater(() ->
 				{
 					if (inRegion(client, Region.NYLOCAS) && client.getGameState() == GameState.LOGGED_IN)
 					{
-						if (config.nyloHidePillars())
+						sceneManager.refreshScene();
+
+						if (config.nyloHideObjects().isAnyOrAll())
 						{
-							sceneManager.removeTheseGameObjects(client.getPlane(), ImmutableList.of(NylocasMap.PILLAR_GO_ID));
+							hideRoomObjects(config.nyloHideObjects().toString());
 						}
 						else
 						{
@@ -221,7 +235,13 @@ public class NylocasHandler extends RoomHandler
 			case "displayNyloRoleSelector":
 			{
 				displayRoleSelector = Boolean.valueOf(e.getNewValue());
-				nyloSelectionManager.setHidden(displayRoleSelector);
+				nyloSelectionManager.setHidden(!displayRoleSelector);
+				break;
+			}
+			case "nyloInstanceTimer":
+			{
+				displayInstanceTimer = Boolean.valueOf(e.getNewValue());
+				break;
 			}
 		}
 	}
@@ -231,15 +251,10 @@ public class NylocasHandler extends RoomHandler
 	{
 		if (e.getGameState() == GameState.LOGGED_IN && active())
 		{
-			if (config.nyloHidePillars())
-			{
-				sceneManager.removeTheseGameObjects(client.getPlane(), ImmutableList.of(NylocasMap.PILLAR_GO_ID));
-			}
+			hideRoomObjects(config.nyloHideObjects().toString());
 
-			if (currentRoleSelection.isAnyOrOn())
-			{
-				nyloSelectionManager.setHidden(false);
-			}
+			nyloSelectionManager.setHidden(!displayRoleSelector);
+			displayInstanceTimer = config.nyloInstanceTimer();
 		}
 	}
 
@@ -291,6 +306,11 @@ public class NylocasHandler extends RoomHandler
 				bigsMap.put(npc, 1);
 			}
 		}
+
+		if (displayInstanceTimer)
+		{
+			displayInstanceTimer = false;
+		}
 	}
 
 	@Subscribe
@@ -340,7 +360,7 @@ public class NylocasHandler extends RoomHandler
 			return;
 		}
 
-		if (e.getOption().equals("Attack"))
+		if (e.getOption().equals("Attack") || e.getType() == MenuAction.WIDGET_TARGET_ON_NPC.getId())
 		{
 			NPC npc = client.getCachedNPCs()[e.getIdentifier()];
 
@@ -462,25 +482,47 @@ public class NylocasHandler extends RoomHandler
 		}
 	}
 
-	public void determineSelection(NylocasRoleSelectionType selection)
+	@Subscribe
+	private void onGraphicsObjectCreated(GraphicsObjectCreated e)
 	{
-		NylocasRoleSelectionType current = currentRoleSelection;
-		NylocasRoleSelectionType updated = current == selection ? NylocasRoleSelectionType.NONE : selection;
+		if (!active() || !config.nyloLowDetail())
+		{
+			return;
+		}
 
-//		if (updated != NylocasRoleSelectionType.NONE)
-//		{
-//			nyloSelectionManager.setHidden(false);
-//		}
-//		else if (updated == NylocasRoleSelectionType.NONE)
-//		{
-//			nyloSelectionManager.setHidden(true);
-//		}
+		GraphicsObject graphic = e.getGraphicsObject();
+		int id = e.getGraphicsObject().getId();
 
-		config.setNyloRoleSelector(updated);
-		currentRoleSelection = updated;
+		if ((id >= UNK_DESPAWN_GRAPHIC_1 && id <= MAGIC_SMALL_DESPAWN_GRAPHIC) || (id >= UNK_DESPAWN_GRAPHIC_2 && id <= UNK_DESPAWN_GRAPHIC_5))
+		{
+			graphic.setFinished(true);
+		}
+	}
 
-		nyloSelectionManager.getMage().setSelected(updated == NylocasRoleSelectionType.MAGE ? true : false);
-		nyloSelectionManager.getMelee().setSelected(updated == NylocasRoleSelectionType.MELEE ? true : false);
-		nyloSelectionManager.getRange().setSelected(updated == NylocasRoleSelectionType.RANGE ? true : false);
+	private void hideRoomObjects(String option)
+	{
+		switch (option)
+		{
+			case "Pillars":
+				sceneManager.removeTheseGameObjects(client.getPlane(), ImmutableList.of(PILLAR_GO_ID));
+				break;
+			case "Spectator Webs":
+				sceneManager.removeTheseGameObjects(client.getPlane(), ImmutableList.of(SPECTATOR_WEB_1, SPECTATOR_WEB_2, SPECTATOR_WEB_3));
+				break;
+			case "Walls":
+				sceneManager.removeTheseGameObjects(client.getPlane(), ImmutableList.of(WALL_1, WALL_2));
+				break;
+			case "Pillars and Webs":
+				sceneManager.removeTheseGameObjects(client.getPlane(), ImmutableList.of(PILLAR_GO_ID, SPECTATOR_WEB_1, SPECTATOR_WEB_2, SPECTATOR_WEB_3));
+				break;
+			case "All":
+				sceneManager.removeTheseGameObjects(client.getPlane(), ImmutableList.of(PILLAR_GO_ID, SPECTATOR_WEB_1, SPECTATOR_WEB_2, SPECTATOR_WEB_3, WALL_1, WALL_2));
+				break;
+		}
+	}
+
+	public boolean isAnyRole()
+	{
+		return displayRoleMage || displayRoleMelee || displayRoleRange;
 	}
 }

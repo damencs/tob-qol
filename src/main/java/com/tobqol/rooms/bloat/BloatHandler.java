@@ -121,6 +121,8 @@ public class BloatHandler extends RoomHandler
 			instance.lazySetMode(() -> BloatTable.findMode(n.getId()));
 			bloatNpc = n;
 		});
+
+		when(config.shouldNullCeilingChains(), this::nullCeilingChains, null);
 	}
 
 	@Subscribe

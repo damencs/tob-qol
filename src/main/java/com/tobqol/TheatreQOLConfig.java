@@ -31,7 +31,9 @@ package com.tobqol;
 
 import com.tobqol.config.HPDisplayTypes;
 import com.tobqol.config.SupplyChestPreference;
-import com.tobqol.rooms.nylocas.config.NylocasRoleSelectionType;
+import com.tobqol.config.font.FontStyles;
+import com.tobqol.config.font.FontTypes;
+import com.tobqol.rooms.nylocas.config.NylocasObjects;
 import com.tobqol.rooms.sotetseg.config.SotetsegInstanceTimerTypes;
 import com.tobqol.rooms.sotetseg.config.SotetsegProjectileTheme;
 import net.runelite.client.config.*;
@@ -42,7 +44,7 @@ import java.awt.*;
 public interface TheatreQOLConfig extends Config
 {
 	String GROUP_NAME = "tobqol";
-	String PLUGIN_VERSION = "1.0.3";
+	String PLUGIN_VERSION = "1.0.4";
 	String GITHUB_LINK = "damencs/tob-qol/issues";
 
 	/**
@@ -103,6 +105,14 @@ public interface TheatreQOLConfig extends Config
 			closedByDefault = true
 	)
 	String VERZIK_SECTION = "verzikSection";
+
+	@ConfigSection(
+			name = "Font Settings",
+			description = "Configuration settings for the plugin's text overlays",
+			position = 8,
+			closedByDefault = true
+	)
+	String FONT_SECTION = "fontSection";
 
 	/**
 	 * General Section
@@ -231,16 +241,16 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
-			name = "Hide Pillars",
-			keyName = "nyloHidePillars",
-			description = "- Hides the Nylocas Pillars in the Nylocas Room<br>" +
+			name = "Hide Objects",
+			keyName = "nyloHideObjects",
+			description = "- Hide the Nylocas Pillars, Spectator Webs, and/or Walls if desired (none provide clickboxes when present)<br>" +
 							"* Disabling this feature whilst in the Nylocas room will cause a stutter to refresh the scene",
 			position = 2,
 			section = NYLO_SECTION
 	)
-	default boolean nyloHidePillars()
+	default NylocasObjects nyloHideObjects()
 	{
-		return false;
+		return NylocasObjects.OFF;
 	}
 
 	@ConfigItem(
@@ -272,7 +282,7 @@ public interface TheatreQOLConfig extends Config
 
 	@ConfigItem(
 			name = "Role Selector",
-			keyName = "nyloRoleSelector",
+			keyName = "displayNyloRoleSelector",
 			description = "- Shows the Nylocas Room Role Selection Overlay that you can use to highlight the tiles of your role's nylos",
 			position = 5,
 			section = NYLO_SECTION
@@ -284,22 +294,60 @@ public interface TheatreQOLConfig extends Config
 
 	@ConfigItem(
 			name = "",
-			keyName = "nyloRoleSelector",
+			keyName = "nyloRoleSelectedMage",
 			description = "",
 			hidden = true
 	)
-	void setNyloRoleSelector(NylocasRoleSelectionType type);
+	default boolean nyloRoleSelectedMage()
+	{
+		return false;
+	}
 
 	@ConfigItem(
 			name = "",
-			keyName = "nyloRoleSelected",
+			keyName = "nyloRoleSelectedMage",
 			description = "",
 			hidden = true
 	)
-	default NylocasRoleSelectionType nyloRoleSelected()
+	void nyloSetRoleSelectedMage(boolean enabled);
+
+	@ConfigItem(
+			name = "",
+			keyName = "nyloRoleSelectedMelee",
+			description = "",
+			hidden = true
+	)
+	default boolean nyloRoleSelectedMelee()
 	{
-		return NylocasRoleSelectionType.NONE;
+		return false;
 	}
+
+	@ConfigItem(
+			name = "",
+			keyName = "nyloRoleSelectedMelee",
+			description = "",
+			hidden = true
+	)
+	void nyloSetRoleSelectedMelee(boolean enabled);
+
+	@ConfigItem(
+			name = "",
+			keyName = "nyloRoleSelectedRange",
+			description = "",
+			hidden = true
+	)
+	default boolean nyloRoleSelectedRange()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			name = "",
+			keyName = "nyloRoleSelectedRange",
+			description = "",
+			hidden = true
+	)
+	void nyloSetRoleSelectedRange(boolean enabled);
 
 	@ConfigItem(
 			name = "Bigs SW Tile",
@@ -321,6 +369,19 @@ public interface TheatreQOLConfig extends Config
 			section = NYLO_SECTION
 	)
 	default boolean nyloInstanceTimer()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			name = "Low Detail",
+			keyName = "nyloLowDetail",
+			description = "- Removes the Graphics Objects that spawn when a Nylo dies<br>" +
+						"* Entity hider removes them from being displayed, but still allows them to spawn and linger",
+			position = 8,
+			section = NYLO_SECTION
+	)
+	default boolean nyloLowDetail()
 	{
 		return false;
 	}
@@ -483,5 +544,59 @@ public interface TheatreQOLConfig extends Config
 	default boolean muteVerzikSounds()
 	{
 		return false;
+	}
+
+	/**
+	 * Font Configs
+	 */
+	@ConfigItem(
+			name = "Font Type",
+			keyName = "fontType",
+			description = "Dynamically change the font for all ToB QoL Overlays",
+			position = 1,
+			section = FONT_SECTION
+	)
+	default FontTypes fontType() { return FontTypes.REGULAR; }
+
+	@ConfigItem(
+			name = "Font Style",
+			keyName = "fontStyle",
+			description = "Dynamically change the font style for all ToB QoL Overlays<br>" +
+						"* This will not alter the base RS font styles",
+			position = 2,
+			section = FONT_SECTION
+	)
+	default FontStyles fontStyle()
+	{
+		return FontStyles.PLAIN;
+	}
+
+	@Range(min = 12, max = 20)
+	@ConfigItem(
+			name = "Font Size",
+			keyName = "fontSize",
+			description = "Dynamically change the font size for all ToB QoL Overlays<br>" +
+					"* This will not alter the base RS font styles",
+			position = 3,
+			section = FONT_SECTION
+	)
+	default int fontSize()
+	{
+		return 16;
+	}
+
+	@Range(min = 12, max = 24)
+	@ConfigItem(
+			name = "Instance Timer Size",
+			keyName = "instanceTimerSize",
+			description = "Dynamically change the font size for all the Instance Timers<br>" +
+					"* This inherits the font type and style selected above<br>" +
+					"* This will not alter the base RS font styles",
+			position = 3,
+			section = FONT_SECTION
+	)
+	default int instanceTimerSize()
+	{
+		return 16;
 	}
 }

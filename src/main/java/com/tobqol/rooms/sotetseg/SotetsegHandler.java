@@ -40,12 +40,10 @@ import net.runelite.api.NPC;
 import net.runelite.api.Projectile;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
-import net.runelite.api.widgets.Widget;
 import net.runelite.client.eventbus.Subscribe;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
-import java.util.Optional;
 
 import static com.tobqol.rooms.sotetseg.commons.util.SotetsegConstants.*;
 import static com.tobqol.rooms.sotetseg.commons.util.SotetsegTable.SOTETSEG_CLICKABLE;
@@ -144,31 +142,6 @@ public class SotetsegHandler extends RoomHandler
 		isNpcFromName(e.getNpc(), BOSS_NAME, n -> reset());
 	}
 
-	@Subscribe(priority = -7)
-	private void onScriptPostFired(ScriptPostFired e)
-	{
-		if (!config.hideSotetsegWhiteScreen() || !client.isInInstancedRegion() || !instance.getCurrentRegion().isSotetseg())
-		{
-			return;
-		}
-
-		if (e.getScriptId() == 2312 && instance.getTotalAlive() > 0 && instance.getRoomStatus() > 0)
-		{
-			Optional.ofNullable(client.getWidget(28 << 16 | 1)).ifPresent(parent ->
-			{
-				try
-				{
-					Widget child = parent.getDynamicChildren()[1];
-					child.setOpacity(0xFF);
-				}
-				catch (Exception ex)
-				{
-					log.debug("Something went wrong whilst trying to hide Sotetseg's 'White Screen' - Error: {}", ex.getMessage());
-				}
-			});
-		}
-	}
-
 	@Subscribe
 	private void onGroundObjectSpawned(GroundObjectSpawned e)
 	{
@@ -224,7 +197,7 @@ public class SotetsegHandler extends RoomHandler
 	@Subscribe
 	public void onProjectileMoved(ProjectileMoved projectileMoved)
 	{
-		if (!active())
+		if (!getRoomRegion().isSotetseg())
 		{
 			return;
 		}

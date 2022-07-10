@@ -26,10 +26,10 @@
 package com.tobqol.rooms.nylocas;
 
 import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.rooms.RoomSceneOverlay;
 import com.tobqol.rooms.nylocas.commons.NylocasMap;
-import com.tobqol.rooms.nylocas.config.NylocasRoleSelectionType;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
@@ -50,10 +50,11 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 			Client client,
 			Instance instance,
 			NylocasHandler room,
+			TheatreQOLPlugin plugin,
 			TheatreQOLConfig config
 	)
 	{
-		super(client, instance, room, config);
+		super(client, instance, room, plugin, config);
 	}
 
 	@Override
@@ -64,13 +65,16 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 			return null;
 		}
 
-		if (config.nyloInstanceTimer())
-		{
-			drawInstanceTimer(graphics, null, null);
-		}
+		graphics.setFont(plugin.getPluginFont());
 
 		drawPillarsHP(graphics);
 		renderRoleOverlays(graphics);
+
+		if (room.isDisplayInstanceTimer())
+		{
+			graphics.setFont(plugin.getInstanceTimerFont());
+			drawInstanceTimer(graphics, null, null);
+		}
 
 		return null;
 	}
@@ -101,10 +105,9 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 	private void renderRoleOverlays(Graphics2D graphics)
 	{
 		// Determine config options rather than consistently drawing data on each render as it can be used multiple times within method
-		NylocasRoleSelectionType role = room.getCurrentRoleSelection();
 		boolean displaySWTile = config.nyloWavesBigsSWTile();
 
-		if (role.isAnyRole() && !room.getWavesMap().isEmpty())
+		if (room.isAnyRole() && !room.getWavesMap().isEmpty())
 		{
 			room.getWavesMap().forEach((npc, ticks) ->
 			{
@@ -113,15 +116,15 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 					Color color = null;
 
 					// Determine whether or not the role even matches prior to matching nylocas name
-					if (role.isMage() && npc.getName().equals("Nylocas Hagios"))
+					if (room.isDisplayRoleMage() && npc.getName().equals("Nylocas Hagios"))
 					{
 						color = NylocasMap.MAGIC_COLOR;
 					}
-					else if (role.isMelee() && npc.getName().equals("Nylocas Ischyros"))
+					else if (room.isDisplayRoleMelee() && npc.getName().equals("Nylocas Ischyros"))
 					{
 						color = NylocasMap.MELEE_COLOR;
 					}
-					else if (role.isRange() && npc.getName().equals("Nylocas Toxobolos"))
+					else if (room.isDisplayRoleRange() && npc.getName().equals("Nylocas Toxobolos"))
 					{
 						color = NylocasMap.RANGE_COLOR;
 					}

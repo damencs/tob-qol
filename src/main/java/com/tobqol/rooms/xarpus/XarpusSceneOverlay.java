@@ -26,12 +26,11 @@
 package com.tobqol.rooms.xarpus;
 
 import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
-import com.tobqol.config.RenderType;
 import com.tobqol.rooms.RoomSceneOverlay;
 import com.tobqol.rooms.xarpus.commons.XarpusPhase;
 import net.runelite.api.Client;
-import net.runelite.client.ui.overlay.OverlayUtil;
 
 import javax.inject.Inject;
 import java.awt.*;
@@ -43,10 +42,11 @@ public class XarpusSceneOverlay extends RoomSceneOverlay<XarpusHandler>
 			Client client,
 			Instance instance,
 			XarpusHandler room,
+			TheatreQOLPlugin plugin,
 			TheatreQOLConfig config
 	)
 	{
-		super(client, instance, room, config);
+		super(client, instance, room, plugin, config);
 	}
 
 	@Override
@@ -56,6 +56,8 @@ public class XarpusSceneOverlay extends RoomSceneOverlay<XarpusHandler>
 		{
 			return null;
 		}
+
+		graphics.setFont(plugin.getInstanceTimerFont());
 
 		XarpusPhase phase = room.getPhase();
 

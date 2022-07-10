@@ -26,15 +26,14 @@
 package com.tobqol.rooms.verzik;
 
 import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.rooms.RoomSceneOverlay;
 import com.tobqol.rooms.verzik.commons.VerzikMap;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
-import net.runelite.api.Perspective;
 import net.runelite.api.Point;
-import net.runelite.api.coords.LocalPoint;
 import net.runelite.client.ui.overlay.OverlayUtil;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -53,10 +52,11 @@ public class VerzikOverlay extends RoomSceneOverlay<VerzikHandler>
 			Client client,
 			Instance instance,
 			VerzikHandler room,
+			TheatreQOLPlugin plugin,
 			TheatreQOLConfig config
 	)
 	{
-		super(client, instance, room, config);
+		super(client, instance, room, plugin, config);
 	}
 
 	@Override
@@ -80,6 +80,8 @@ public class VerzikOverlay extends RoomSceneOverlay<VerzikHandler>
 		{
 			return null;
 		}
+
+		graphics.setFont(plugin.getPluginFont());
 
 		switch (def)
 		{

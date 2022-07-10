@@ -36,6 +36,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.tobqol.api.game.Instance;
+import com.tobqol.api.game.Region;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.rooms.RemovableOverlay;
 import com.tobqol.rooms.RoomHandler;
@@ -62,6 +63,7 @@ import net.runelite.client.events.ExternalPluginsChanged;
 import net.runelite.client.events.PluginChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
+import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayManager;
 import net.runelite.client.util.Text;
@@ -70,6 +72,7 @@ import javax.annotation.CheckForNull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -77,7 +80,7 @@ import java.util.Set;
 
 @PluginDescriptor(
 		name = "ToB QoL",
-		description = "Theatre of Blood Quality of Life Enhancement Features to be used throughout a raid",
+		description = "Theatre of Blood Quality of Life Enhancement Features to be used throughout a raid (v1.0.4)",
 		tags = { "tob", "tobqol", "of", "blood", "maiden", "bloat", "nylo", "nylocas", "sotetseg", "xarpus", "verzik", "combat", "bosses", "pvm", "pve", "damen" },
 		enabledByDefault = true,
 		loadInSafeMode = false
@@ -169,6 +172,12 @@ public class TheatreQOLPlugin extends Plugin
 			"Manta ray"
 	);
 
+	@Getter
+	public Font pluginFont;
+
+	@Getter
+	public Font instanceTimerFont;
+
 	@Override
 	public void configure(Binder binder)
 	{
@@ -178,6 +187,8 @@ public class TheatreQOLPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		buildFont(false);
+
 		overlayManager.add(overlay);
 		eventManager.startUp();
 
@@ -239,6 +250,7 @@ public class TheatreQOLPlugin extends Plugin
 			entrance = null;
 			lootChest = null;
 			chestHasLoot = false;
+			client.clearHintArrow();
 		}
 	}
 
@@ -292,16 +304,45 @@ public class TheatreQOLPlugin extends Plugin
 		});
 
 		eventBus.post(new ExternalPluginsChanged(Collections.emptyList()));
+
+
+		switch (e.getKey())
+		{
+			case "lightUp":
+			{
+				hideDarkness(Boolean.valueOf(e.getNewValue()));
+			}
+
+			case "lootReminder":
+			{
+				if (client.hasHintArrow() && Boolean.valueOf(e.getNewValue()) == false)
+				{
+					client.clearHintArrow();
+				}
+			}
+
+			case "fontType":
+			case "fontSize":
+			case "fontStyle":
+			{
+				buildFont(false);
+			}
+
+			case "instanceTimerSize":
+			{
+				buildFont(true);
+			}
+		}
 	}
 
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
-		if (isInVerSinhaza() && config.lightUp() && !darknessHidden)
+		if (((isInVerSinhaza() && config.lightUp()) || (isInSotetseg() && config.hideSotetsegWhiteScreen())) && !darknessHidden)
 		{
 			hideDarkness(true);
 		}
-		else if ((!isInVerSinhaza() && darknessHidden) || (!config.lightUp() && darknessHidden))
+		else if ((!isInVerSinhaza() && !isInSotetseg()) && darknessHidden)
 		{
 			hideDarkness(false);
 		}
@@ -312,7 +353,10 @@ public class TheatreQOLPlugin extends Plugin
 			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == TOB_CHEST_UNLOOTED && !chestHasLoot)
 			{
 				chestHasLoot = true;
-				client.setHintArrow(lootChest.getWorldLocation());
+				if (config.lootReminder())
+				{
+					client.setHintArrow(lootChest.getWorldLocation());
+				}
 			}
 
 			// Clear the arrow if the loot is taken
@@ -402,7 +446,7 @@ public class TheatreQOLPlugin extends Plugin
 
 	protected void hideDarkness(boolean hide)
 	{
-		Widget darkness = client.getWidget(28, 1);
+		Widget darkness = client.getWidget(28 << 16 | 1);
 		if (darkness != null)
 		{
 			darknessHidden = hide;
@@ -413,6 +457,13 @@ public class TheatreQOLPlugin extends Plugin
 	public boolean isInVerSinhaza()
 	{
 		return VER_SINHAZA_REGIONS.contains(client.getLocalPlayer().getWorldLocation().getRegionID());
+	}
+
+	public boolean isInSotetseg()
+	{
+		LocalPoint local = LocalPoint.fromWorld(client, client.getLocalPlayer().getWorldLocation());
+		int region = WorldPoint.fromLocalInstance(client, local).getRegionID();
+		return region == Region.SOTETSEG.regionId() || region == Region.SOTETSEG_MAZE.regionId();
 	}
 
 	private boolean isInLootRoom()
@@ -485,6 +536,39 @@ public class TheatreQOLPlugin extends Plugin
 		{
 			String option = Text.removeTags(menuEntry.getOption());
 			optionIndexes.put(option, idx++);
+		}
+	}
+
+	private Font buildFont(boolean timer)
+	{
+		if (timer)
+		{
+			return instanceTimerFont = new Font(pluginFont.getName(), pluginFont.getStyle(), config.instanceTimerSize());
+		}
+		else
+		{
+			String font = null;
+			int style = config.fontStyle().getValue();
+
+			switch (config.fontType().getName())
+			{
+				case "RS Regular":
+					font = FontManager.getRunescapeFont().getName();
+					style = FontManager.getRunescapeFont().getStyle();
+					break;
+
+				case "RS Bold":
+					font = FontManager.getRunescapeBoldFont().getName();
+					style = FontManager.getRunescapeBoldFont().getStyle();
+					break;
+
+				case "RS Small":
+					font = FontManager.getRunescapeSmallFont().getName();
+					style = FontManager.getRunescapeSmallFont().getStyle();
+					break;
+			}
+
+			return pluginFont = new Font(font == null ? config.fontStyle().getStyle() : font, style, font == null ? config.fontSize() : 16);
 		}
 	}
 }

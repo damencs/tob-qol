@@ -116,19 +116,30 @@ public enum NylocasMap
 
 	public static final int PILLAR_GO_ID = 32862;
 	public static final int PILLAR_COLLAPSED_GO_ID = 32864;
+	public static final int SPECTATOR_WEB_1 = 32939;
+	public static final int SPECTATOR_WEB_2 = 32865;
+	public static final int SPECTATOR_WEB_3 = 32937;
+	public static final int WALL_1 = 32876;
+	public static final int WALL_2 = 32899;
 
 	public static final int IMMUNE_GRAPHIC = 1558; // Spawns on the SW tile of the nylo
 	public static final int MELEE_SMALL_DESPAWN_GRAPHIC = 1562;
 	public static final int RANGE_SMALL_DESPAWN_GRAPHIC = 1563;
 	public static final int MAGIC_SMALL_DESPAWN_GRAPHIC = 1564;
+	public static final int UNK_DESPAWN_GRAPHIC_1 = 1561;
+	public static final int UNK_DESPAWN_GRAPHIC_2 = 1891;
+	public static final int UNK_DESPAWN_GRAPHIC_3 = 1892;
+	public static final int UNK_DESPAWN_GRAPHIC_4 = 1893;
+	public static final int UNK_DESPAWN_GRAPHIC_5 = 1894;
+
 
 	private static final ImmutableMultimap<NylocasMap, Integer> ENUM_MULTIMAP;
 	private static final Table<Instance.Mode, Integer, NylocasMap> LOOKUP_TABLE;
 	private static final ImmutableMultimap<NylocasType, Integer> TYPE_IDS;
 
-	public static final Color MAGIC_COLOR = new Color(130, 230, 255);
+	public static final Color MAGIC_COLOR = Color.CYAN;
 	public static final Color MELEE_COLOR = new Color(255, 188, 188);
-	public static final Color RANGE_COLOR = new Color(188, 255, 201);
+	public static final Color RANGE_COLOR = Color.GREEN;
 
 	static
 	{

@@ -27,48 +27,58 @@ package com.tobqol.rooms.nylocas.config;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
 @Getter
-@Slf4j
-public enum NylocasRoleSelectionType
+public enum NylocasObjects
 {
-	NONE("NONE"),
-	MAGE("MAGE"),
-	MELEE("MELEE"),
-	RANGE("RANGE");
+    OFF("Off"),
+    PILLARS("Pillars"),
+    SPECTATOR_WEBS("Spectator Webs"),
+    WALLS("Walls"),
+    PILLARS_AND_WEBS("Pillars and Webs"),
+    ALL("All");
 
-	private final String option;
+    private final String option;
 
-	public final boolean isMage()
-	{
-		return this == MAGE;
-	}
+    public final boolean isOff()
+    {
+        return this == OFF;
+    }
 
-	public final boolean isMelee()
-	{
-		return this == MELEE;
-	}
+    public final boolean isPillars()
+    {
+        return this == PILLARS;
+    }
 
-	public final boolean isRange()
-	{
-		return this == RANGE;
-	}
+    public final boolean isSpectatorWebs()
+    {
+        return this == SPECTATOR_WEBS;
+    }
 
-	public final boolean isAnyRole()
-	{
-		return (this == MAGE || this == MELEE || this == RANGE);
-	}
+    public final boolean isWalls()
+    {
+        return this == WALLS;
+    }
 
-	public final boolean isAnyOrOn()
-	{
-		return (this == NONE || this == MAGE || this == MELEE || this == RANGE);
-	}
+    public final boolean isPillarsAndWebs()
+    {
+        return this == PILLARS_AND_WEBS;
+    }
 
-	@Override
-	public String toString()
-	{
-		return option;
-	}
+    public final boolean isAll()
+    {
+        return this == ALL;
+    }
+
+    public final boolean isAnyOrAll()
+    {
+        return this == PILLARS || this == SPECTATOR_WEBS || this == WALLS || this == PILLARS_AND_WEBS || this == ALL;
+    }
+
+    @Override
+    public String toString()
+    {
+        return option;
+    }
 }

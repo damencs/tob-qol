@@ -25,8 +25,8 @@
  */
 package com.tobqol.api.util;
 
+import com.tobqol.TheatreQOLConfig;
 import com.tobqol.rooms.nylocas.NylocasHandler;
-import com.tobqol.rooms.nylocas.config.NylocasRoleSelectionType;
 import net.runelite.client.input.MouseAdapter;
 
 import javax.inject.Inject;
@@ -34,6 +34,9 @@ import java.awt.event.MouseEvent;
 
 public class TheatreInputListener extends MouseAdapter
 {
+    @Inject
+    private TheatreQOLConfig config;
+
     @Inject
     private NylocasHandler nylocas;
 
@@ -81,17 +84,28 @@ public class TheatreInputListener extends MouseAdapter
 
         if (event.getButton() == MouseEvent.BUTTON1 && nylocas.getNyloSelectionManager().getBounds().contains(event.getPoint()))
         {
+            boolean updated;
+
             if (nylocas.getNyloSelectionManager().getMeleeBounds().contains(event.getPoint()))
             {
-                nylocas.determineSelection(NylocasRoleSelectionType.MELEE);
+                updated = !config.nyloRoleSelectedMelee();
+                config.nyloSetRoleSelectedMelee(updated);
+                nylocas.getNyloSelectionManager().getMelee().setSelected(updated);
+                nylocas.setDisplayRoleMelee(updated);
             }
             else if (nylocas.getNyloSelectionManager().getRangeBounds().contains(event.getPoint()))
             {
-                nylocas.determineSelection(NylocasRoleSelectionType.RANGE);
+                updated = !config.nyloRoleSelectedRange();
+                config.nyloSetRoleSelectedRange(updated);
+                nylocas.getNyloSelectionManager().getRange().setSelected(updated);
+                nylocas.setDisplayRoleRange(updated);
             }
             else if (nylocas.getNyloSelectionManager().getMageBounds().contains(event.getPoint()))
             {
-                nylocas.determineSelection(NylocasRoleSelectionType.MAGE);
+                updated = !config.nyloRoleSelectedMage();
+                config.nyloSetRoleSelectedMage(updated);
+                nylocas.getNyloSelectionManager().getMage().setSelected(updated);
+                nylocas.setDisplayRoleMage(updated);
             }
 
             event.consume();

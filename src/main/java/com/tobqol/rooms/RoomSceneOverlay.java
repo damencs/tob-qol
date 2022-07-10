@@ -27,8 +27,10 @@ package com.tobqol.rooms;
 
 import com.google.common.collect.Multimap;
 import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.api.util.TriConsumer;
+import com.tobqol.rooms.sotetseg.commons.util.SotetsegTable;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Point;
 import net.runelite.api.*;
@@ -39,12 +41,16 @@ import javax.inject.Inject;
 import java.awt.*;
 import java.util.function.BiConsumer;
 
+import static com.tobqol.rooms.sotetseg.commons.util.SotetsegTable.SOTETSEG_CLICKABLE;
+import static com.tobqol.rooms.sotetseg.commons.util.SotetsegTable.SOTETSEG_NOT_CLICKABLE;
+
 @Slf4j
 public abstract class RoomSceneOverlay<R extends RoomHandler> extends Overlay
 {
 	protected final Client client;
 	protected final Instance instance;
 	protected final R room;
+	protected final TheatreQOLPlugin plugin;
 	protected final TheatreQOLConfig config;
 
 	@Inject
@@ -52,12 +58,14 @@ public abstract class RoomSceneOverlay<R extends RoomHandler> extends Overlay
 			Client client,
 			Instance instance,
 			R room,
+			TheatreQOLPlugin plugin,
 			TheatreQOLConfig config
 	)
 	{
 		this.client = client;
 		this.instance = instance;
 		this.room = room;
+		this.plugin = plugin;
 		this.config = config;
 
 		setPriority(OverlayPriority.HIGH);
@@ -82,7 +90,16 @@ public abstract class RoomSceneOverlay<R extends RoomHandler> extends Overlay
 		}
 
 		String text = Integer.toString(tickCycle);
-		Color color = tickCycle > 0 ? Color.RED.brighter() : Color.GREEN.brighter();
+
+		Color color;
+		if (npc != null && (SotetsegTable.anyMatch(SOTETSEG_CLICKABLE, npc.getId()) || SotetsegTable.anyMatch(SOTETSEG_NOT_CLICKABLE, npc.getId())))
+		{
+			color = tickCycle == 3 ? Color.GREEN.brighter() : Color.RED.brighter();
+		}
+		else
+		{
+			color = tickCycle > 0 ? Color.RED.brighter() : Color.GREEN.brighter();
+		}
 
 		Point textLocation = player.getCanvasTextLocation(graphics, text, player.getLogicalHeight() + 60);
 		OverlayUtil.renderTextLocation(graphics, textLocation, text, color);

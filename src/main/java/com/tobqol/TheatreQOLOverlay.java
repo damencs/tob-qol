@@ -57,6 +57,8 @@ public class TheatreQOLOverlay extends Overlay
     @Override
     public Dimension render(Graphics2D graphics)
     {
+        graphics.setFont(plugin.getPluginFont());
+
         if (config.lootReminder() && plugin.isInVerSinhaza() && plugin.getLootChest() != null && plugin.isChestHasLoot())
         {
             Shape poly = plugin.getLootChest().getConvexHull();

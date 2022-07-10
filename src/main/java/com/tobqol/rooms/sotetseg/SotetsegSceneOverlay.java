@@ -26,6 +26,7 @@
 package com.tobqol.rooms.sotetseg;
 
 import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.rooms.RoomSceneOverlay;
 import com.tobqol.rooms.sotetseg.config.SotetsegInstanceTimerTypes;
@@ -39,22 +40,24 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 	@Inject
 	protected SotetsegSceneOverlay(
 			Client client,
-			TheatreQOLConfig config,
 			Instance instance,
-			SotetsegHandler room
+			SotetsegHandler room,
+			TheatreQOLPlugin plugin,
+			TheatreQOLConfig config
 	)
 	{
-		super(client, instance, room, config);
+		super(client, instance, room, plugin, config);
 	}
 
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-		if (!room.active())
+		if (!room.active() || room.isClickable())
 		{
 			return null;
 		}
 
+		graphics.setFont(plugin.getInstanceTimerFont());
 		drawSoteInstanceTimers(graphics);
 
 		return null;
@@ -62,26 +65,23 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 
 	private void drawSoteInstanceTimers(Graphics2D graphics)
 	{
-		if (!room.isClickable())
-		{
-			SotetsegInstanceTimerTypes type = config.getSotetsegInstanceTimerType();
+		SotetsegInstanceTimerTypes type = config.getSotetsegInstanceTimerType();
 
-			switch (instance.getRoomStatus())
-			{
-				case 0:
-					if (type.showOnlyForEntrance() || type.showForAll())
-					{
-						drawInstanceTimer(graphics, room.getSotetsegNpc(), room.getPortal());
-					}
-					break;
-				case 1:
-				case 2:
-					if (type.showOnlyForMaze() || type.showForAll())
-					{
-						drawInstanceTimer(graphics, room.getSotetsegNpc(), room.getPortal());
-					}
-					break;
-			}
+		switch (instance.getRoomStatus())
+		{
+			case 0:
+				if (type.showOnlyForEntrance() || type.showForAll())
+				{
+					drawInstanceTimer(graphics, room.getSotetsegNpc(), room.getPortal());
+				}
+				break;
+			case 1:
+			case 2:
+				if (type.showOnlyForMaze() || type.showForAll())
+				{
+					drawInstanceTimer(graphics, room.getSotetsegNpc(), room.getPortal());
+				}
+				break;
 		}
 	}
 }

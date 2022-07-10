@@ -28,6 +28,7 @@ package com.tobqol.rooms.maiden;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Health;
 import com.tobqol.api.game.Instance;
 import com.tobqol.config.HPDisplayTypes;
@@ -55,10 +56,11 @@ public class MaidenSceneOverlay extends RoomSceneOverlay<MaidenHandler>
 			Client client,
 			Instance instance,
 			MaidenHandler room,
+			TheatreQOLPlugin plugin,
 			TheatreQOLConfig config
 	)
 	{
-		super(client, instance, room, config);
+		super(client, instance, room, plugin, config);
 	}
 
 	@Override
@@ -68,6 +70,8 @@ public class MaidenSceneOverlay extends RoomSceneOverlay<MaidenHandler>
 		{
 			return null;
 		}
+
+		graphics.setFont(plugin.getPluginFont());
 
 		drawCrabOverlays(graphics);
 
