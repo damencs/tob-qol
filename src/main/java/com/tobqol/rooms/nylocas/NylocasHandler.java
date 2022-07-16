@@ -166,6 +166,7 @@ public class NylocasHandler extends RoomHandler
 		boss = null;
 		demiBoss = null;
 		softReset();
+		displayInstanceTimer = config.nyloInstanceTimer();
 	}
 
 	private void softReset()
@@ -174,7 +175,6 @@ public class NylocasHandler extends RoomHandler
 		wavesMap.clear();
 		bigsMap.clear();
 		splitsMap.clear();
-		displayInstanceTimer = false;
 	}
 
 	@Override
@@ -305,11 +305,11 @@ public class NylocasHandler extends RoomHandler
 			{
 				bigsMap.put(npc, 1);
 			}
-		}
 
-		if (displayInstanceTimer)
-		{
-			displayInstanceTimer = false;
+			if (displayInstanceTimer)
+			{
+				displayInstanceTimer = false;
+			}
 		}
 	}
 
@@ -322,8 +322,12 @@ public class NylocasHandler extends RoomHandler
 		}
 
 		NPC npc = e.getNpc();
-		isNpcFromName(npc, BOSS_NAME, n -> { if (n != null) boss.changed(); });
-		isNpcFromName(npc, DEMI_BOSS_NAME, n -> { if (n != null) demiBoss.changed(); });
+
+		if (npc != null)
+		{
+			isNpcFromName(npc, BOSS_NAME, n -> boss.changed());
+			isNpcFromName(npc, DEMI_BOSS_NAME, n -> demiBoss.changed());
+		}
 	}
 
 	@Subscribe

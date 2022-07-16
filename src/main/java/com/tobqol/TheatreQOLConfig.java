@@ -599,4 +599,17 @@ public interface TheatreQOLConfig extends Config
 	{
 		return 16;
 	}
+
+	@Range(min = -12, max = 12)
+	@ConfigItem(
+			name = "Instance Timer Offset",
+			keyName = "instanceTimerOffset",
+			description = "Dynamically change the vertical offset for all the Instance Timers displayed over a character",
+			position = 4,
+			section = FONT_SECTION
+	)
+	default int instanceTimerOffset()
+	{
+		return 0;
+	}
 }

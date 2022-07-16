@@ -101,19 +101,29 @@ public abstract class RoomSceneOverlay<R extends RoomHandler> extends Overlay
 			color = tickCycle > 0 ? Color.RED.brighter() : Color.GREEN.brighter();
 		}
 
-		Point textLocation = player.getCanvasTextLocation(graphics, text, player.getLogicalHeight() + 60);
-		OverlayUtil.renderTextLocation(graphics, textLocation, text, color);
+		Point textLocation = player.getCanvasTextLocation(graphics, text, player.getLogicalHeight() + 60 + (config.instanceTimerOffset() * 10));
+
+		if (textLocation != null)
+		{
+			OverlayUtil.renderTextLocation(graphics, textLocation, text, color);
+		}
 
 		if (tileObject != null)
 		{
 			Point tileObjectLocation = tileObject.getCanvasTextLocation(graphics, text, 50);
-			OverlayUtil.renderTextLocation(graphics, tileObjectLocation, text, color);
+			if (tileObjectLocation != null)
+			{
+				OverlayUtil.renderTextLocation(graphics, tileObjectLocation, text, color);
+			}
 		}
 
 		if (npc != null)
 		{
 			Point npcLocation = npc.getCanvasTextLocation(graphics, text, 50);
-			OverlayUtil.renderTextLocation(graphics, npcLocation, text, color);
+			if (npcLocation != null)
+			{
+				OverlayUtil.renderTextLocation(graphics, npcLocation, text, color);
+			}
 		}
 	}
 
