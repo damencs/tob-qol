@@ -26,10 +26,12 @@
 package com.tobqol;
 
 import com.google.common.base.Strings;
+import com.tobqol.api.game.RaidConstants;
 import com.tobqol.api.game.Region;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
+import net.runelite.api.Varbits;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.VarbitChanged;
@@ -116,8 +118,15 @@ final class EventManager
 	@Subscribe(priority = 7)
 	private void onVarbitChanged(VarbitChanged e)
 	{
-		instance.setVarbit6440(client.getVarbitValue(6440));
-		instance.setVarbit6447(client.getVarbitValue(6447));
+		if (client.getLocalPlayer() == null)
+		{
+			return;
+		}
+
+		instance.setPartyStatus(client.getVarbitValue(Varbits.THEATRE_OF_BLOOD));
+		instance.setRoomStatus(client.getVarbitValue(RaidConstants.THEATRE_OF_BLOOD_ROOM_STATUS));
+		instance.setBossHealth(client.getVarbitValue(RaidConstants.THEATRE_OF_BLOOD_BOSS_HP));
+		instance.setPreciseTimers(client.getVarbitValue(RaidConstants.PRECISE_TIMER) == 1);
 	}
 
 	@Subscribe(priority = 7)
@@ -137,7 +146,7 @@ final class EventManager
 				continue;
 			}
 
-			switch (client.getVarbitValue(6442 + (varcStrId % 5)))
+			switch (client.getVarbitValue(Varbits.THEATRE_OF_BLOOD_ORB1 + (varcStrId % 5)))
 			{
 				case 0: break;
 				case 1:

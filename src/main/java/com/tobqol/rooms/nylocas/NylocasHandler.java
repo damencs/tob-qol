@@ -34,7 +34,8 @@ import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.nylocas.commons.NyloBoss;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionBox;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionManager;
-import com.tobqol.rooms.nylocas.commons.NylocasMap;
+import com.tobqol.rooms.nylocas.commons.NylocasConstants;
+import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,7 @@ import java.util.Map;
 
 import static com.tobqol.api.game.Region.NYLOCAS;
 import static com.tobqol.api.game.Region.inRegion;
-import static com.tobqol.rooms.nylocas.commons.NylocasMap.*;
+import static com.tobqol.rooms.nylocas.commons.NylocasConstants.*;
 
 @Slf4j
 public class NylocasHandler extends RoomHandler
@@ -92,6 +93,8 @@ public class NylocasHandler extends RoomHandler
 
 	@Getter
 	private boolean displayInstanceTimer;
+
+	private RoomInfoBox nylocasInfoBox;
 
 	@Getter
 	private NyloBoss boss = null;
@@ -269,22 +272,22 @@ public class NylocasHandler extends RoomHandler
 		NPC npc = e.getNpc();
 		int id = npc.getId();
 
-		if (isNpcFromName(npc, BOSS_NAME) && NylocasMap.matchesAnyMode(NylocasMap.BOSS_MELEE, id))
+		if (isNpcFromName(npc, BOSS_NAME) && NylocasConstants.matchesAnyMode(NylocasConstants.BOSS_MELEE, id))
 		{
-			instance.lazySetMode(() -> NylocasMap.findMode(id));
+			instance.lazySetMode(() -> NylocasConstants.findMode(id));
 			boss = NyloBoss.spawned(npc, instance.mode());
 			softReset();
 			return;
 		}
 
-		if (isNpcFromName(npc, DEMI_BOSS_NAME) && NylocasMap.matchesAnyMode(NylocasMap.DEMI_BOSS_MELEE, id))
+		if (isNpcFromName(npc, DEMI_BOSS_NAME) && NylocasConstants.matchesAnyMode(NylocasConstants.DEMI_BOSS_MELEE, id))
 		{
-			instance.lazySetMode(() -> NylocasMap.findMode(id));
+			instance.lazySetMode(() -> NylocasConstants.findMode(id));
 			demiBoss = NyloBoss.spawned(npc, instance.mode());
 			return;
 		}
 
-		if (NylocasMap.matchesAnyMode(NylocasMap.PILLAR, id))
+		if (NylocasConstants.matchesAnyMode(NylocasConstants.PILLAR, id))
 		{
 			if (pillars.size() > 3)
 			{
@@ -297,7 +300,7 @@ public class NylocasHandler extends RoomHandler
 
 		if (isNpcFromName(npc, MELEE_NAME) || isNpcFromName(npc, RANGE_NAME) || isNpcFromName(npc, MAGIC_NAME))
 		{
-			instance.lazySetMode(() -> NylocasMap.findMode(id));
+			instance.lazySetMode(() -> NylocasConstants.findMode(id));
 			wavesMap.put(npc, 52);
 
 			NPCComposition comp = npc.getTransformedComposition();
@@ -341,13 +344,13 @@ public class NylocasHandler extends RoomHandler
 		NPC npc = e.getNpc();
 		int id = npc.getId();
 
-		if (isNpcFromName(npc, BOSS_NAME) && !NylocasMap.matchesAnyMode(NylocasMap.BOSS_DROPPING_MELEE, id))
+		if (isNpcFromName(npc, BOSS_NAME) && !NylocasConstants.matchesAnyMode(NylocasConstants.BOSS_DROPPING_MELEE, id))
 		{
 			reset();
 			return;
 		}
 
-		if (isNpcFromName(npc, DEMI_BOSS_NAME) && !NylocasMap.matchesAnyMode(NylocasMap.DEMI_BOSS_DROPPING_MELEE, id))
+		if (isNpcFromName(npc, DEMI_BOSS_NAME) && !NylocasConstants.matchesAnyMode(NylocasConstants.DEMI_BOSS_DROPPING_MELEE, id))
 		{
 			demiBoss = null;
 			return;
@@ -382,15 +385,15 @@ public class NylocasHandler extends RoomHandler
 			target = Text.removeTags(target);
 			Color color = null;
 
-			if (target.startsWith(MELEE_NAME) || id == NylocasMap.DEMI_BOSS_MELEE.hm())
+			if (target.startsWith(MELEE_NAME) || id == NylocasConstants.DEMI_BOSS_MELEE.hm())
 			{
 				color = darker ? MELEE_COLOR.darker() : MELEE_COLOR;
 			}
-			else if (target.startsWith(RANGE_NAME) || id == NylocasMap.DEMI_BOSS_RANGE.hm())
+			else if (target.startsWith(RANGE_NAME) || id == NylocasConstants.DEMI_BOSS_RANGE.hm())
 			{
 				color = darker ? RANGE_COLOR.darker() : RANGE_COLOR;
 			}
-			else if (target.startsWith(MAGIC_NAME) || id == NylocasMap.DEMI_BOSS_MAGIC.hm())
+			else if (target.startsWith(MAGIC_NAME) || id == NylocasConstants.DEMI_BOSS_MAGIC.hm())
 			{
 				color = darker ? MAGIC_COLOR.darker() : MAGIC_COLOR;
 			}
@@ -468,7 +471,7 @@ public class NylocasHandler extends RoomHandler
 
 		NPC npc = (NPC) e.getActor();
 
-		if (NylocasMap.isBigNylo(npc.getId()))
+		if (NylocasConstants.isBigNylo(npc.getId()))
 		{
 			switch (npc.getAnimation())
 			{

@@ -30,8 +30,9 @@ import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.sotetseg.commons.MutableMaze;
-import com.tobqol.rooms.sotetseg.commons.util.SotetsegTable;
+import com.tobqol.rooms.sotetseg.commons.SotetsegTable;
 import com.tobqol.rooms.sotetseg.config.SotetsegProjectileTheme;
+import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.GameObject;
@@ -41,12 +42,13 @@ import net.runelite.api.Projectile;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
 
-import static com.tobqol.rooms.sotetseg.commons.util.SotetsegConstants.*;
-import static com.tobqol.rooms.sotetseg.commons.util.SotetsegTable.SOTETSEG_CLICKABLE;
+import static com.tobqol.rooms.sotetseg.commons.SotetsegConstants.*;
+import static com.tobqol.rooms.sotetseg.commons.SotetsegTable.SOTETSEG_CLICKABLE;
 
 @Slf4j
 public class SotetsegHandler extends RoomHandler
@@ -56,6 +58,8 @@ public class SotetsegHandler extends RoomHandler
 	@Getter
 	@CheckForNull
 	private NPC sotetsegNpc = null;
+
+	private RoomInfoBox sotetsegInfoBox;
 
 	@Getter
 	private boolean clickable = false;
@@ -197,7 +201,7 @@ public class SotetsegHandler extends RoomHandler
 	@Subscribe
 	public void onProjectileMoved(ProjectileMoved projectileMoved)
 	{
-		if (!getRoomRegion().isSotetseg())
+		if (!instance.getCurrentRegion().isSotetseg())
 		{
 			return;
 		}

@@ -31,6 +31,7 @@ import com.tobqol.api.game.Region;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.verzik.commons.Tornado;
 import com.tobqol.rooms.verzik.commons.VerzikMap;
+import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.GraphicsObject;
@@ -57,6 +58,8 @@ public class VerzikHandler extends RoomHandler
 
 	@Getter
 	private NPC verzikNpc = null;
+
+	private RoomInfoBox verzikInfoBox;
 
 	@Getter
 	private final Map<NPC, Pair<Integer, Integer>> verzikReds = new HashMap<>();

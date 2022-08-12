@@ -81,7 +81,10 @@ public interface Instance
 
 	Region getCurrentRegion();
 	int getRaidStatus();
+	boolean isInRaid();
 	int getRoomStatus();
+
+	int getPartyStatus();
 
 	int getPartySize();
 	int getDeathSize();
@@ -89,4 +92,6 @@ public interface Instance
 
 	int getTickCycle();
 	void resetTickCycle();
+
+	int getBossHealth();
 }

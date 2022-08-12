@@ -23,14 +23,21 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.rooms.maiden.commons.util;
+package com.tobqol.rooms.maiden.commons;
 
 import net.runelite.api.NullObjectID;
+
+import java.util.regex.Pattern;
 
 public interface MaidenConstants
 {
 	String BOSS_NAME = "The Maiden of Sugadinti";
 	String BOSS_NAME_SIMPLE = "Maiden";
+
+	int BOSS_IMAGE = 25748;
+
+	Pattern MAIDEN_WAVE = Pattern.compile("Wave 'The Maiden of Sugadinti' \\(.*\\) complete!");
+
 	String RED_CRAB_NAME = "Nylocas Matomenos";
 	String BLOOD_SPAWN_NAME = "Blood spawn";
 

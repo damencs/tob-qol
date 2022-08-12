@@ -27,6 +27,8 @@ package com.tobqol;
 
 import com.tobqol.api.game.Instance;
 import com.tobqol.api.game.Region;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.Player;
@@ -46,8 +48,16 @@ final class InstanceService implements Instance
 	private final Client client;
 	private final TheatreQOLPlugin plugin;
 
-	private int varbit6440 = 0; // Never resets, should always match the varbit value
-	private int varbit6447 = 0; // Never resets, should always match the varbit value
+	// Party Status (0=None, 1=In Party, 2=Inside/Spectator, 3=Dead Spectating)
+	private int partyStatus = 0;
+	private int roomStatus = 0;
+
+	@Getter
+	@Setter
+	private int bossHealth = -1;
+
+	@Setter
+	private boolean preciseTimers = false;
 
 	private Mode mode = null;
 	private Region region = Region.UNKNOWN;
@@ -57,6 +67,9 @@ final class InstanceService implements Instance
 
 	private boolean regionUpdated = false;
 	private int tickCycle = -1;
+
+	@Setter
+	private int previousRegion;
 
 	@Inject
 	InstanceService(Client client, TheatreQOLPlugin plugin)
@@ -73,11 +86,12 @@ final class InstanceService implements Instance
 		tickCycle = -1;
 		deadRaiders.clear();
 		raiders.clear();
+		bossHealth = -1;
 	}
 
 	void tick()
 	{
-		if (regionUpdated && varbit6447 == 0)
+		if (regionUpdated && roomStatus == 0)
 		{
 			if (region.isLobby() || region.isLootRoom() || region.isUnknown())
 			{
@@ -108,22 +122,22 @@ final class InstanceService implements Instance
 
 	boolean outside()
 	{
-		return varbit6440 <= 1;
+		return partyStatus <= 1;
 	}
 
 	boolean limbo()
 	{
-		return outside() || varbit6447 == 0;
+		return outside() || roomStatus == 0;
 	}
 
-	void setVarbit6440(int value)
+	void setPartyStatus(int value)
 	{
-		if (varbit6440 == value)
+		if (partyStatus == value)
 		{
 			return;
 		}
 
-		varbit6440 = value;
+		partyStatus = value;
 
 		if (outside())
 		{
@@ -132,14 +146,14 @@ final class InstanceService implements Instance
 		}
 	}
 
-	void setVarbit6447(int value)
+	void setRoomStatus(int value)
 	{
-		if (varbit6447 == value)
+		if (roomStatus == value)
 		{
 			return;
 		}
 
-		varbit6447 = value;
+		roomStatus = value;
 
 		if (value == 0)
 		{
@@ -202,6 +216,11 @@ final class InstanceService implements Instance
 		return true;
 	}
 
+	public boolean isInRaid()
+	{
+		return partyStatus == 2 || partyStatus == 3;
+	}
+
 	@Nullable
 	@Override
 	public Mode mode()
@@ -236,13 +255,19 @@ final class InstanceService implements Instance
 	@Override
 	public int getRaidStatus()
 	{
-		return varbit6440;
+		return partyStatus;
 	}
 
 	@Override
 	public int getRoomStatus()
 	{
-		return varbit6447;
+		return roomStatus;
+	}
+
+	@Override
+	public int getPartyStatus()
+	{
+		return partyStatus;
 	}
 
 	@Override

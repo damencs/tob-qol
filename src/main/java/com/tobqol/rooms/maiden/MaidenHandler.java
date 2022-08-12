@@ -27,18 +27,23 @@ package com.tobqol.rooms.maiden;
 
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
+import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.maiden.commons.MaidenHealth;
+import com.tobqol.rooms.maiden.commons.MaidenPhase;
 import com.tobqol.rooms.maiden.commons.MaidenRedCrab;
-import com.tobqol.rooms.maiden.commons.util.MaidenPhase;
-import com.tobqol.rooms.maiden.commons.util.MaidenTable;
+import com.tobqol.rooms.maiden.commons.MaidenTable;
+import com.tobqol.tracking.RoomDataItem;
+import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Hitsplat;
 import net.runelite.api.NPC;
 import net.runelite.api.events.*;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
@@ -46,12 +51,14 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-import static com.tobqol.api.game.Region.MAIDEN;
-import static com.tobqol.rooms.maiden.commons.util.MaidenConstants.BOSS_NAME;
-import static com.tobqol.rooms.maiden.commons.util.MaidenConstants.RED_CRAB_NAME;
+import static com.tobqol.api.game.Region.*;
+import static com.tobqol.rooms.maiden.commons.MaidenConstants.*;
+import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
+import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 import static lombok.AccessLevel.NONE;
 
 @Getter
+@Slf4j
 public class MaidenHandler extends RoomHandler
 {
 	@Inject
@@ -59,6 +66,8 @@ public class MaidenHandler extends RoomHandler
 
 	@CheckForNull
 	private NPC maidenNpc = null;
+
+	private RoomInfoBox maidenInfoBox;
 
 	@CheckForNull
 	private MaidenHealth health = null;
@@ -75,6 +84,8 @@ public class MaidenHandler extends RoomHandler
 	@Getter(NONE) // Omit Lombok's Getter
 	private byte totalLeaks = 0;
 
+	private boolean considerCrabs = true;
+
 	@Inject
 	protected MaidenHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
 	{
@@ -86,12 +97,14 @@ public class MaidenHandler extends RoomHandler
 	public void load()
 	{
 		overlayManager.add(sceneOverlay);
+		overlayManager.add(getTimeOverlay());
 	}
 
 	@Override
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
+		overlayManager.remove(getTimeOverlay());
 		reset();
 	}
 
@@ -105,12 +118,18 @@ public class MaidenHandler extends RoomHandler
 		crabsMap.clear();
 		crabs_buffer.clear();
 		totalLeaks = 0;
+		considerCrabs = true;
+
+		if (instance.getRaidStatus() <= 1)
+		{
+			infoBoxManager.removeInfoBox(maidenInfoBox);
+		}
 	}
 
 	@Override
 	public boolean active()
 	{
-		return instance.getCurrentRegion().isMaiden() && maidenNpc != null && !maidenNpc.isDead();
+		return inRegion(client, MAIDEN) && maidenNpc != null && !maidenNpc.isDead();
 	}
 
 	@Subscribe
@@ -121,12 +140,27 @@ public class MaidenHandler extends RoomHandler
 		if (active())
 		{
 			isNpcFromName(npc, MaidenTable.BLOOD_SPAWN_NAME, (n -> bloodSpawns.add(npc)));
-			isNpcFromName(npc, MaidenTable.RED_CRAB_NAME, n -> crabsMap.put(n.getIndex(), new MaidenRedCrab(client, instance, n, phase)));
+			isNpcFromName(npc, MaidenTable.RED_CRAB_NAME, n ->
+			{
+				crabsMap.put(n.getIndex(), new MaidenRedCrab(client, instance, n, phase));
+
+				if (!getData().isEmpty())
+				{
+					updateInfo();
+					considerCrabs = false;
+				}
+			});
 			return;
 		}
 
 		isNpcFromName(npc, BOSS_NAME, n ->
 		{
+			if (!Find("Starting Tick").isPresent())
+			{
+				getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				setShouldTrack(true);
+			}
+
 			instance.lazySetMode(() -> MaidenTable.findMode(n.getId()));
 			maidenNpc = n;
 			phase = MaidenPhase.compose(n);
@@ -174,9 +208,32 @@ public class MaidenHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
+		if ((!instance.isInRaid() || instance.getCurrentRegion() == BLOAT) && !getData().isEmpty())
+		{
+			getData().clear();
+		}
+
+		if (instance.isInRaid() && instance.getRoomStatus() == 1 && instance.getCurrentRegion().isMaiden() && !Find("Starting Tick").isPresent())
+		{
+			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+			setShouldTrack(true);
+		}
+
+		if (isShouldTrack() && !getData().isEmpty())
+		{
+			updateTotalTime();
+		}
+
 		if (!active())
 		{
 			return;
+		}
+
+		updateInfo();
+
+		if (considerCrabs)
+		{
+			considerCrabs = true;
 		}
 
 		if (!crabs_buffer.isEmpty())
@@ -266,5 +323,99 @@ public class MaidenHandler extends RoomHandler
 
 			crab.health().removeHealth(amount);
 		});
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (instance.getCurrentRegion() != MAIDEN && event.getType() != ChatMessageType.GAMEMESSAGE)
+		{
+			return;
+		}
+
+		String stripped = Text.removeTags(event.getMessage());
+
+		if (MAIDEN_WAVE.matcher(stripped).find())
+		{
+			setShouldTrack(false);
+			Find("Total Time").get().setValue(getTime());
+
+			if (config.displayRoomTimes().isInfobox())
+			{
+				buildInfobox();
+			}
+
+			if (config.displayRoomTimes().isChat())
+			{
+				sendChatTimes();
+			}
+		}
+	}
+
+	private void updateInfo()
+	{
+		if (!getData().isEmpty())
+		{
+			int bossHP = instance.getBossHealth();
+
+			if (active() && bossHP > 0)
+			{
+				if (bossHP <= 700 && !Find("70s").isPresent())
+				{
+					getData().add(new RoomDataItem("70s", getTime(), 1, false));
+				}
+				else if (bossHP <= 500 && !Find("50s").isPresent())
+				{
+					getData().add(new RoomDataItem("50s", getTime(), 2, false, "70s"));
+				}
+				else if (bossHP <= 300 && !Find("30s").isPresent())
+				{
+					getData().add(new RoomDataItem("30s", getTime(), 3, false, "50s"));
+				}
+			}
+		}
+	}
+
+	private void buildInfobox()
+	{
+		if (!getData().isEmpty())
+		{
+			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+
+			String tooltip = "70% - " + formatTime(FindValue("70s"), detailed) + "</br>" +
+					"50% - " + formatTime(FindValue("50s"), detailed) + formatTime(FindValue("50s"), FindValue("70s"), detailed) + "</br>" +
+					"30% - " + formatTime(FindValue("30s"), detailed) + formatTime(FindValue("30s"), FindValue("50s"), detailed) + "</br>" +
+					"Complete - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("30s"), detailed);
+
+			maidenInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Maiden", formatTime(FindValue("Total Time"), detailed), tooltip);
+			infoBoxManager.addInfoBox(maidenInfoBox);
+		}
+	}
+
+	private void sendChatTimes()
+	{
+		if (!getData().isEmpty())
+		{
+			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+
+			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+					.append(Color.RED, "70%")
+					.append(ChatColorType.NORMAL)
+					.append(" - " + formatTime(FindValue("70s"), detailed) + " - ")
+					.append(Color.RED, "50%")
+					.append(ChatColorType.NORMAL)
+					.append(" - " + formatTime(FindValue("50s"), detailed) + formatTime(FindValue("50s"), FindValue("70s"), detailed) + " - ")
+					.append(Color.RED, "30%")
+					.append(ChatColorType.NORMAL)
+					.append(" - " + formatTime(FindValue("30s"), detailed) + formatTime(FindValue("30s"), FindValue("50s"), detailed)));
+
+			if (config.roomTimeValidation())
+			{
+				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+						.append(Color.RED, "Maiden - Room Complete")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(FindValue("Total Time"), detailed)));
+			}
+		}
 	}
 }

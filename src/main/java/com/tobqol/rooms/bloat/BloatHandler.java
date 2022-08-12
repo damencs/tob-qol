@@ -28,28 +28,45 @@ package com.tobqol.rooms.bloat;
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
+import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.bloat.commons.BloatConstants;
 import com.tobqol.rooms.bloat.commons.BloatTable;
+import com.tobqol.tracking.RoomDataItem;
+import com.tobqol.tracking.RoomInfoBox;
+import com.tobqol.tracking.RoomInfoUtil;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.NpcDespawned;
-import net.runelite.api.events.NpcSpawned;
+import net.runelite.api.events.*;
+import net.runelite.client.chat.ChatColorType;
+import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
+import java.awt.*;
 
+import static com.tobqol.api.game.Region.BLOAT;
+import static com.tobqol.api.game.Region.inRegion;
+import static com.tobqol.rooms.bloat.commons.BloatConstants.*;
+import static com.tobqol.tracking.RoomInfoUtil.formatTime;
+
+@Getter
 @Slf4j
 public class BloatHandler extends RoomHandler
 {
 	@Getter
 	@CheckForNull
 	private NPC bloatNpc = null;
+
+	private RoomInfoBox bloatInfoBox;
+
+	private int downs = 0;
 
 	@Inject
 	protected BloatHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -61,11 +78,13 @@ public class BloatHandler extends RoomHandler
 	@Override
 	public void load()
 	{
+		overlayManager.add(getTimeOverlay());
 	}
 
 	@Override
 	public void unload()
 	{
+		overlayManager.remove(getTimeOverlay());
 		reset();
 	}
 
@@ -73,12 +92,18 @@ public class BloatHandler extends RoomHandler
 	public void reset()
 	{
 		bloatNpc = null;
+		downs = 0;
+
+		if (instance.getRaidStatus() <= 1)
+		{
+			infoBoxManager.removeInfoBox(bloatInfoBox);
+		}
 	}
 
 	@Override
 	public boolean active()
 	{
-		return instance.getCurrentRegion().isBloat() && bloatNpc != null && !bloatNpc.isDead();
+		return inRegion(client, BLOAT);
 	}
 
 	@Subscribe
@@ -111,7 +136,7 @@ public class BloatHandler extends RoomHandler
 	@Subscribe
 	private void onNpcSpawned(NpcSpawned e)
 	{
-		if (active())
+		if (!active() || bloatNpc != null)
 		{
 			return;
 		}
@@ -136,8 +161,140 @@ public class BloatHandler extends RoomHandler
 		isNpcFromName(e.getNpc(), BloatConstants.BOSS_NAME, $ -> reset());
 	}
 
+	@Subscribe
+	private void onGameTick(GameTick event)
+	{
+		if ((!instance.isInRaid() || instance.getCurrentRegion().isNylocas()) && !getData().isEmpty())
+		{
+			getData().clear();
+		}
+
+		if (instance.isInRaid() && instance.getRoomStatus() == 1 && instance.getCurrentRegion().isBloat() && !Find("Starting Tick").isPresent())
+		{
+			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+			setShouldTrack(true);
+		}
+
+		if (!getData().isEmpty() && isShouldTrack())
+		{
+			updateTotalTime();
+		}
+	}
+
+	@Subscribe
+	private void onAnimationChanged(AnimationChanged e)
+	{
+		if (!active() || !(e.getActor() instanceof NPC))
+		{
+			return;
+		}
+
+		NPC npc = (NPC) e.getActor();
+
+		if (npc == bloatNpc && npc.getAnimation() == DOWN_ANIM)
+		{
+			downs++;
+			getData().add(new RoomDataItem("Down " + downs, getTime(), downs, false));
+		}
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (!active() || event.getType() != ChatMessageType.GAMEMESSAGE || !Find("Starting Tick").isPresent())
+		{
+			return;
+		}
+
+		String stripped = Text.removeTags(event.getMessage());
+
+		if (BLOAT_WAVE.matcher(stripped).find())
+		{
+			setShouldTrack(false);
+			Find("Total Time").get().setValue(getTime());
+
+			if (config.displayRoomTimes().isInfobox())
+			{
+				buildInfobox();
+			}
+
+			if (config.displayRoomTimes().isChat())
+			{
+				sendChatTimes();
+			}
+		}
+	}
+
 	private void nullCeilingChains()
 	{
 		sceneManager.removeTheseGameObjects(1, BloatTable.CEILING_CHAINS);
+	}
+
+	private void buildInfobox()
+	{
+		if (FindValue("Starting Tick") > 0)
+		{
+			boolean precise = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+			String roomTime = formatTime(FindValue("Total Time"));
+			StringBuilder tooltip = new StringBuilder();
+
+			if (downs > 0)
+			{
+				getData().forEach(d ->
+				{
+					if (d.getName().contains("Down"))
+					{
+						tooltip.append(d.getName() + " - " + formatTime(FindValue("Down " + d.getSort()), precise) +
+								(d.getSort() > 1 ? formatTime(FindValue("Down " + d.getSort()), FindValue("Down " + (d.getSort() - 1)), precise) : "") + "</br>");
+					}
+				});
+
+				tooltip.append("Complete - " + roomTime);
+			}
+			else
+			{
+				tooltip.append("No downs");
+			}
+
+			bloatInfoBox = RoomInfoUtil.createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Bloat", roomTime, tooltip.toString());
+			plugin.infoBoxManager.addInfoBox(bloatInfoBox);
+		}
+	}
+
+	private void sendChatTimes()
+	{
+		if (Find("Starting Tick").isPresent())
+		{
+			boolean precise = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+
+			if (downs > 0)
+			{
+				ChatMessageBuilder chatMessageBuilder = new ChatMessageBuilder();
+
+				int downsRemaining = downs - 1;
+
+				for (RoomDataItem d : getData())
+				{
+					if (d.getName().contains("Down"))
+					{
+						chatMessageBuilder.append(Color.RED, d.getName())
+								.append(ChatColorType.NORMAL)
+								.append(" - " + formatTime(d.getValue(), precise) + (downsRemaining > 0 ? " - " : ""));
+
+						downsRemaining--;
+					}
+				}
+
+				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, chatMessageBuilder);
+			}
+
+			if (config.roomTimeValidation())
+			{
+				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+						.append(Color.RED, "Bloat - Room Complete")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(FindValue("Total Time"), precise)));
+			}
+		}
 	}
 }

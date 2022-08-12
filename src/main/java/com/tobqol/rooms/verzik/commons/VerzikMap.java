@@ -62,6 +62,8 @@ public enum VerzikMap
 
 	public static final String BOSS_NAME = "Verzik Vitur";
 
+	int BOSS_IMAGE = 22473;
+
 	// TODO -> Find Story Mode/Regular Pillar NPC IDs
 	public static final int PILLAR_NPC_ID = NpcID.SUPPORTING_PILLAR;
 	public static final int COLLAPSING_PILLAR_NPC_ID = NpcID.COLLAPSING_PILLAR;

@@ -30,7 +30,12 @@ import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.api.game.Region;
 import com.tobqol.api.game.SceneManager;
+import com.tobqol.config.times.TimeDisplayDetail;
+import com.tobqol.tracking.RoomDataItem;
+import com.tobqol.tracking.RoomTimeOverlay;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.MessageNode;
@@ -39,20 +44,27 @@ import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.components.LineComponent;
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 import static lombok.AccessLevel.PROTECTED;
 
 @Singleton
+@Slf4j
 public abstract class RoomHandler
 {
 	public static final Predicate<Integer> VALUE_IS_ZERO = v -> v <= 0;
@@ -81,14 +93,33 @@ public abstract class RoomHandler
 	@Inject
 	protected ChatMessageManager chatMessageManager;
 
+	@Inject
+	protected ItemManager itemManager;
+
+	@Inject
+	protected InfoBoxManager infoBoxManager;
+
 	@Getter(PROTECTED)
 	private Region roomRegion = Region.UNKNOWN;
+
+	@Getter
+	@Setter
+	private RoomTimeOverlay timeOverlay;
+
+	@Getter
+	private ArrayList<RoomDataItem> data = new ArrayList<>();
+
+	@Getter
+	@Setter
+	private boolean shouldTrack = false;
 
 	@Inject
 	protected RoomHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
 	{
 		this.plugin = plugin;
 		this.config = config;
+
+		timeOverlay = new RoomTimeOverlay(this, config);
 	}
 
 	public void init()
@@ -210,5 +241,73 @@ public abstract class RoomHandler
 		}
 
 		chatMessageManager.queue(QueuedMessage.builder().type(type).runeLiteFormattedMessage(message).build());
+	}
+
+	protected final void enqueueChatMessage(ChatMessageType type, ChatMessageBuilder builder)
+	{
+		if (type == null || builder == null)
+		{
+			return;
+		}
+
+		String message = builder.build();
+
+		if (isNullOrEmpty(message))
+		{
+			return;
+		}
+
+		chatMessageManager.queue(QueuedMessage.builder().type(type).runeLiteFormattedMessage(message).build());
+	}
+
+	public final void preRenderRoomTimes(RoomTimeOverlay overlay)
+	{
+		boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+		boolean splitDifferences = config.displayTimeSplitDifferences();
+
+		timeOverlay.getPanelComponent().getChildren().clear();
+
+		Collections.sort(data);
+
+		data.forEach((item) ->
+		{
+			if (item.isHidden() || (!detailed && item.getName() != "Total Time"))
+			{
+				return;
+			}
+
+			boolean hasComparable = !item.getCompareName().equals("");
+
+			LineComponent lineComponent = LineComponent.builder().left(item.getName()).right(formatTime(item.getValue(), detailed) +
+					(splitDifferences && hasComparable ? formatTime(item.getValue(), FindValue(item.getCompareName()), detailed) : "")).build();
+			timeOverlay.getPanelComponent().getChildren().add(lineComponent);
+		});
+	}
+
+	public Optional<RoomDataItem> Find(String name)
+	{
+		return data.stream().filter(f -> f.getName().equals(name)).findFirst();
+	}
+
+	public int FindValue(String name)
+	{
+		return data.stream().filter(f -> f.getName().equals(name)).findFirst().get().getValue();
+	}
+
+	protected int getTime()
+	{
+		return client.getTickCount() - FindValue("Starting Tick");
+	}
+
+	protected void updateTotalTime()
+	{
+		if (!Find("Total Time").isPresent())
+		{
+			getData().add(new RoomDataItem("Total Time", getTime(), 99, false));
+		}
+		else
+		{
+			Find("Total Time").get().setValue(getTime());
+		}
 	}
 }

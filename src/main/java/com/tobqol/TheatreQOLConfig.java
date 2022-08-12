@@ -33,6 +33,8 @@ import com.tobqol.config.HPDisplayTypes;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.config.font.FontStyles;
 import com.tobqol.config.font.FontTypes;
+import com.tobqol.config.times.TimeDisplayDetail;
+import com.tobqol.config.times.TimeDisplayType;
 import com.tobqol.rooms.nylocas.config.NylocasObjects;
 import com.tobqol.rooms.sotetseg.config.SotetsegInstanceTimerTypes;
 import com.tobqol.rooms.sotetseg.config.SotetsegProjectileTheme;
@@ -44,8 +46,6 @@ import java.awt.*;
 public interface TheatreQOLConfig extends Config
 {
 	String GROUP_NAME = "tobqol";
-	String PLUGIN_VERSION = "1.0.4";
-	String GITHUB_LINK = "damencs/tob-qol/issues";
 
 	/**
 	 * Sections
@@ -113,6 +113,14 @@ public interface TheatreQOLConfig extends Config
 			closedByDefault = true
 	)
 	String FONT_SECTION = "fontSection";
+
+	@ConfigSection(
+			name = "Time Tracking Settings",
+			description = "Configuration settings for the plugin's time tracking features",
+			position = 9,
+			closedByDefault = true
+	)
+	String TIME_SECTION = "timeSection";
 
 	/**
 	 * General Section
@@ -611,5 +619,59 @@ public interface TheatreQOLConfig extends Config
 	default int instanceTimerOffset()
 	{
 		return 0;
+	}
+
+	/**
+	 * Time Tracking Configs
+	 */
+	@ConfigItem(
+			name = "Display Room Times",
+			keyName = "displayRoomTimes",
+			description = "- Display live time for each room's boss<br>" +
+						"* Please note that this will not show splits on rooms that reveal mechanics until the room has ended (Bloat downs)",
+			position = 1,
+			section = TIME_SECTION
+	)
+	default TimeDisplayType displayRoomTimes()
+	{
+		return TimeDisplayType.OFF;
+	}
+
+	@ConfigItem(
+			name = "Display Room Detail",
+			keyName = "displayRoomTimesDetail",
+			description = "- Simple: This will display the times and basic splits, useful for casual raiders<br>" +
+						"- Detailed: This will display the times and all splits at a more precise time measure, useful for speed runners",
+			position = 2,
+			section = TIME_SECTION
+	)
+	default TimeDisplayDetail displayRoomTimesDetail()
+	{
+		return TimeDisplayDetail.SIMPLE;
+	}
+
+	@ConfigItem(
+			name = "Display Split Differences",
+			keyName = "displayTimeSplitDifferences",
+			description = "- Displays the difference in time between each split<br>" +
+						  "- Example: [50s - 1:02.4 (0:24.6)]",
+			position = 4,
+			section = TIME_SECTION
+	)
+	default boolean displayTimeSplitDifferences()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			name = "Validate Room Completion",
+			keyName = "roomTimeValidation",
+			description = "- Displays the room completion time that the plugin tracks independently to validate plugin timing",
+			position = 4,
+			section = TIME_SECTION
+	)
+	default boolean roomTimeValidation()
+	{
+		return false;
 	}
 }

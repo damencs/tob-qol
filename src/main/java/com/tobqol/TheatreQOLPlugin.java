@@ -30,12 +30,12 @@ package com.tobqol;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
 import com.tobqol.api.game.Instance;
+import com.tobqol.api.game.RaidConstants;
 import com.tobqol.api.game.Region;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.rooms.RemovableOverlay;
@@ -66,6 +66,7 @@ import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
@@ -76,11 +77,10 @@ import java.awt.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 @PluginDescriptor(
 		name = "ToB QoL",
-		description = "Theatre of Blood Quality of Life Enhancement Features to be used throughout a raid (v1.0.4)",
+		description = "Theatre of Blood Quality of Life Enhancement Features to be used throughout a raid",
 		tags = { "tob", "tobqol", "of", "blood", "maiden", "bloat", "nylo", "nylocas", "sotetseg", "xarpus", "verzik", "combat", "bosses", "pvm", "pve", "damen" },
 		enabledByDefault = true,
 		loadInSafeMode = false
@@ -98,7 +98,7 @@ public class TheatreQOLPlugin extends Plugin
 	private OverlayManager overlayManager;
 
 	@Inject
-	private com.tobqol.EventManager eventManager;
+	private EventManager eventManager;
 
 	@Inject
 	private Provider<MaidenHandler> maiden;
@@ -124,6 +124,9 @@ public class TheatreQOLPlugin extends Plugin
 	@Inject
 	private TheatreQOLConfig config;
 
+	@Inject
+	public InfoBoxManager infoBoxManager;
+
 	@Provides
 	TheatreQOLConfig provideConfig(ConfigManager configManager)
 	{
@@ -139,10 +142,6 @@ public class TheatreQOLPlugin extends Plugin
 			.build();
 
 	private boolean darknessHidden;
-	private static final Set<Integer> VER_SINHAZA_REGIONS = ImmutableSet.of(
-			14386,
-			14642
-	);
 
 	@Getter
 	private GameObject entrance;
@@ -153,30 +152,16 @@ public class TheatreQOLPlugin extends Plugin
 	@Getter
 	boolean chestHasLoot = false;
 
-	private static final int TOB_CHEST_UNLOOTED = 41435;
-	private static final int TOB_CHEST_LOOTED = 41436;
-	private static final int TOB_BANK_CHEST = 41437;
-
-	private static final int TOB_ENTRANCE = 32653;
-
 	private final ArrayListMultimap<String, Integer> optionIndexes = ArrayListMultimap.create();
-
-	private static final Set<String> TOB_CHEST_TARGETS = ImmutableSet.of(
-			"Stamina potion(4)",
-			"Prayer potion(4)",
-			"Saradomin brew(4)",
-			"Super restore(4)",
-			"Mushroom potato",
-			"Shark",
-			"Sea turtle",
-			"Manta ray"
-	);
 
 	@Getter
 	public Font pluginFont;
 
 	@Getter
 	public Font instanceTimerFont;
+
+	@Getter
+	public int previousRegion;
 
 	@Override
 	public void configure(Binder binder)
@@ -239,6 +224,7 @@ public class TheatreQOLPlugin extends Plugin
 			{
 				room.reset();
 				log.debug("Resetting {}", room.getClass().getSimpleName());
+				log.info("Resetting {}", room.getClass().getSimpleName());
 			}
 		}
 
@@ -305,7 +291,6 @@ public class TheatreQOLPlugin extends Plugin
 
 		eventBus.post(new ExternalPluginsChanged(Collections.emptyList()));
 
-
 		switch (e.getKey())
 		{
 			case "lightUp":
@@ -332,6 +317,8 @@ public class TheatreQOLPlugin extends Plugin
 			{
 				buildFont(true);
 			}
+
+			// TODO: BUILD OUT INFOBOX HANDLING TO REMOVE IT BECAUSE WE NEED TO HIDE OR SHOW WHEN CHANGED
 		}
 	}
 
@@ -350,7 +337,7 @@ public class TheatreQOLPlugin extends Plugin
 		if (isInVerSinhaza())
 		{
 			// Determine if chest has loot and draw an arrow overhead
-			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == TOB_CHEST_UNLOOTED && !chestHasLoot)
+			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == RaidConstants.TOB_CHEST_UNLOOTED && !chestHasLoot)
 			{
 				chestHasLoot = true;
 				if (config.lootReminder())
@@ -360,7 +347,7 @@ public class TheatreQOLPlugin extends Plugin
 			}
 
 			// Clear the arrow if the loot is taken
-			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == TOB_CHEST_LOOTED && chestHasLoot)
+			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == RaidConstants.TOB_CHEST_LOOTED && chestHasLoot)
 			{
 				chestHasLoot = false;
 				client.clearHintArrow();
@@ -428,10 +415,10 @@ public class TheatreQOLPlugin extends Plugin
 	{
 		switch (event.getGameObject().getId())
 		{
-			case TOB_BANK_CHEST:
+			case RaidConstants.TOB_BANK_CHEST:
 				lootChest = event.getGameObject();
 				break;
-			case TOB_ENTRANCE:
+			case RaidConstants.TOB_ENTRANCE:
 				entrance = event.getGameObject();
 				break;
 		}
@@ -456,7 +443,7 @@ public class TheatreQOLPlugin extends Plugin
 
 	public boolean isInVerSinhaza()
 	{
-		return VER_SINHAZA_REGIONS.contains(client.getLocalPlayer().getWorldLocation().getRegionID());
+		return RaidConstants.VER_SINHAZA_REGIONS.contains(client.getLocalPlayer().getWorldLocation().getRegionID());
 	}
 
 	public boolean isInSotetseg()
@@ -480,7 +467,7 @@ public class TheatreQOLPlugin extends Plugin
 		// Swap the "Value" option with "Buy-1" for the given target if it's not off
 		if (option.equals("Value") && !config.supplyChestMES().toString().equals("Value"))
 		{
-			if (TOB_CHEST_TARGETS.contains(target))
+			if (RaidConstants.TOB_CHEST_TARGETS.contains(target))
 			{
 				swap(option, target, index);
 			}

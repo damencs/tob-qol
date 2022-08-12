@@ -27,9 +27,15 @@ package com.tobqol.rooms.xarpus.commons;
 
 import net.runelite.api.ObjectID;
 
+import java.util.regex.Pattern;
+
 public interface XarpusConstants
 {
 	String BOSS_NAME = "Xarpus";
+
+	int BOSS_IMAGE = 25752;
+
+	Pattern XARPUS_WAVE = Pattern.compile("Wave 'Xarpus' \\(.*\\) complete!");
 
 	int EXHUMED_GROUND_OBJ = ObjectID.EXHUMED;
 }
