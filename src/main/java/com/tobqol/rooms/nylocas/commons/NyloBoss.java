@@ -42,16 +42,16 @@ public class NyloBoss
 	private final NPC npc;
 	private final Instance.Mode mode;
 
-	private NylocasMap definition;
+	private NylocasConstants definition;
 
 	public static NyloBoss spawned(NPC npc, Instance.Mode mode)
 	{
-		return new NyloBoss(npc, mode, NylocasMap.queryTable(mode, npc.getId()));
+		return new NyloBoss(npc, mode, NylocasConstants.queryTable(mode, npc.getId()));
 	}
 
 	public void changed()
 	{
-		this.definition = NylocasMap.queryTable(mode, npc.getId());
+		this.definition = NylocasConstants.queryTable(mode, npc.getId());
 	}
 
 	public boolean dead()
@@ -59,7 +59,7 @@ public class NyloBoss
 		return this.npc.getHealthRatio() == 0;
 	}
 
-	public Optional<NylocasMap> definition()
+	public Optional<NylocasConstants> definition()
 	{
 		return this.definition == null ? Optional.empty() : Optional.of(this.definition);
 	}

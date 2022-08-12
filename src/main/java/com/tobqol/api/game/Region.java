@@ -27,9 +27,9 @@ package com.tobqol.api.game;
 
 import com.google.common.collect.ImmutableMap;
 import com.tobqol.rooms.bloat.commons.BloatTable;
-import com.tobqol.rooms.maiden.commons.util.MaidenTable;
-import com.tobqol.rooms.nylocas.commons.NylocasMap;
-import com.tobqol.rooms.sotetseg.commons.util.SotetsegTable;
+import com.tobqol.rooms.maiden.commons.MaidenTable;
+import com.tobqol.rooms.nylocas.commons.NylocasConstants;
+import com.tobqol.rooms.sotetseg.commons.SotetsegTable;
 import com.tobqol.rooms.verzik.commons.VerzikMap;
 import com.tobqol.rooms.xarpus.commons.XarpusTable;
 import lombok.Getter;
@@ -52,7 +52,7 @@ public enum Region
 	LOBBY("Lobby", 12869, 0, 400, 552),
 	MAIDEN(MaidenTable.BOSS_NAME_SIMPLE, 12613, 0, 392, 552, new WorldArea(3175, 4421, 4, 1, 0)),
 	BLOAT(BloatTable.BOSS_NAME_SIMPLE, 13125, 0, 408, 552, new WorldArea(3268, 4446, 1, 4, 0)),
-	NYLOCAS(NylocasMap.BOSS_NAME, 13122, 0, 408, 528, new WorldArea(3304, 4274, 1, 4, 0)),
+	NYLOCAS(NylocasConstants.BOSS_NAME, 13122, 0, 408, 528, new WorldArea(3304, 4274, 1, 4, 0)),
 	SOTETSEG(SotetsegTable.BOSS_NAME, 13123, 0, 408, 536, new WorldArea(3278, 4292, 4, 1, 0)),
 	SOTETSEG_MAZE(SotetsegTable.BOSS_NAME, 13379, 3, 416, 536),
 	XARPUS(XarpusTable.BOSS_NAME, 12612, 1, 392, 544, new WorldArea(3169, 4400, 3, 1, 1)),

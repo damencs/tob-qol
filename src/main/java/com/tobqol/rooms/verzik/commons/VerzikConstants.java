@@ -35,11 +35,14 @@ import net.runelite.api.NullNpcID;
 
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class VerzikConstants
 {
 	public static final String VERZIK_NAME = "Verzik Vitur";
+
+	Pattern COMPLETION = Pattern.compile("Theatre of Blood total completion time:");
 
 	// NPC IDs
 	public static final int SM_VERZIK_P1_INACTIVE_NPC = NpcID.VERZIK_VITUR_10830; // Not Attackable
