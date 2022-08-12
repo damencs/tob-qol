@@ -34,6 +34,7 @@ import com.tobqol.rooms.xarpus.commons.ExhumedTracker;
 import com.tobqol.rooms.xarpus.commons.XarpusConstants;
 import com.tobqol.rooms.xarpus.commons.XarpusPhase;
 import com.tobqol.rooms.xarpus.commons.XarpusTable;
+import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.NPC;
@@ -49,11 +50,14 @@ import java.io.BufferedInputStream;
 @Slf4j
 public class XarpusHandler extends RoomHandler
 {
-	@Inject private XarpusSceneOverlay sceneOverlay;
+	@Inject
+	private XarpusSceneOverlay sceneOverlay;
 
 	@Getter
 	@CheckForNull
 	private NPC xarpusNpc = null;
+
+	private RoomInfoBox xarpuInfoBox;
 
 	@Getter
 	private XarpusPhase phase = XarpusPhase.UNKNOWN;
@@ -129,7 +133,7 @@ public class XarpusHandler extends RoomHandler
 	{
 		if (event.getGroup().equals("tobqol"))
 		{
-			if (event.getKey().equals("xarpusSoundClipVolume"))
+			if (event.getKey().equals("xarpusSoundClipVolume") && config.xarpusSoundClip())
 			{
 				if (soundClip != null)
 				{

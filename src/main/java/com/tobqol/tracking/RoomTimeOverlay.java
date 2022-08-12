@@ -4,6 +4,7 @@ import com.tobqol.TheatreQOLConfig;
 import com.tobqol.rooms.RoomHandler;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.PanelComponent;
@@ -11,6 +12,7 @@ import net.runelite.client.ui.overlay.components.PanelComponent;
 import javax.inject.Inject;
 import java.awt.*;
 
+@Slf4j
 public class RoomTimeOverlay extends Overlay
 {
     @Getter
@@ -31,6 +33,7 @@ public class RoomTimeOverlay extends Overlay
         setPosition(OverlayPosition.TOP_LEFT);
     }
 
+    int ticks = 0;
     @Override
     public Dimension render(Graphics2D graphics)
     {
@@ -39,6 +42,15 @@ public class RoomTimeOverlay extends Overlay
             return null;
         }
 
+        if (ticks < 100)
+        {
+            ticks++;
+        }
+        else
+        {
+            log.info("room data size: {} - room data: {}", room.getData().size(), room.getData().toString());
+            ticks = 0;
+        }
 
         room.preRenderRoomTimes(this);
         return panelComponent.render(graphics);
