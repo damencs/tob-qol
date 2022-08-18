@@ -37,6 +37,11 @@ public final class RoomInfoUtil
         }
         else
         {
+            if (hundredths.equals("6") || hundredths.equals("8"))
+            {
+                millis += 1000;
+            }
+
             return String.format("%d:%02d",
                     TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
                     TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1));

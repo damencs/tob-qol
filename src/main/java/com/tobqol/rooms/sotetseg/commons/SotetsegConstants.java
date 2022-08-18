@@ -37,6 +37,8 @@ public interface SotetsegConstants
 
 	Pattern SOTETSEG_WAVE = Pattern.compile("Wave 'Sotetseg' \\(.*\\) complete!");
 
+	int MAZE_TELE_ANIM = 1816;
+
 	int SOTETSEG_MELEE_ANIM = 8138;
 	int SOTETSEG_MAGIC_ANIM = 8139;
 

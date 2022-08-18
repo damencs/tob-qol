@@ -133,7 +133,11 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 					{
 						final LocalPoint localPoint = npc.getLocalLocation();
 						Polygon polygon = npc.getCanvasTilePoly();
-						OverlayUtil.renderPolygon(graphics, polygon, color);
+
+						if (polygon != null)
+						{
+							OverlayUtil.renderPolygon(graphics, polygon, color);
+						}
 
 						if (room.getBigsMap().containsKey(npc) && displaySWTile)
 						{

@@ -36,10 +36,8 @@ import com.tobqol.tracking.RoomTimeOverlay;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.MessageNode;
-import net.runelite.api.NPC;
+import net.runelite.api.*;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.ChatMessageManager;
@@ -60,6 +58,7 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.tobqol.api.game.Region.inRegion;
 import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 import static lombok.AccessLevel.PROTECTED;
 
@@ -291,6 +290,11 @@ public abstract class RoomHandler
 
 	public int FindValue(String name)
 	{
+		if (!Find(name).isPresent())
+		{
+			return 0;
+		}
+
 		return data.stream().filter(f -> f.getName().equals(name)).findFirst().get().getValue();
 	}
 
@@ -309,5 +313,39 @@ public abstract class RoomHandler
 		{
 			Find("Total Time").get().setValue(getTime());
 		}
+	}
+
+	public static boolean crossedLine(Region region, Point start, Point end, boolean vertical, Client client)
+	{
+		if (inRegion(client, region))
+		{
+			for (Player p : client.getPlayers())
+			{
+				WorldPoint wp = p.getWorldLocation();
+
+				if (vertical)
+				{
+					for (int i = start.getY(); i < end.getY() + 1; i++)
+					{
+						if (wp.getRegionY() == i && wp.getRegionX() == start.getX())
+						{
+							return true;
+						}
+					}
+				}
+				else
+				{
+					for (int i = start.getX(); i < end.getX() + 1; i++)
+					{
+						if (wp.getRegionX() == i && wp.getRegionY() == start.getY())
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 }

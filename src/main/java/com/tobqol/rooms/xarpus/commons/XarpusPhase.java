@@ -65,9 +65,9 @@ public enum XarpusPhase
 				continue;
 			}
 
-			builder.put(table.getSmCell().getColumnKey(), phase);
-			builder.put(table.getRgCell().getColumnKey(), phase);
-			builder.put(table.getHmCell().getColumnKey(), phase);
+			builder.put(table.sm(), phase);
+			builder.put(table.rg(), phase);
+			builder.put(table.hm(), phase);
 		}
 
 		LOOKUP_MAP = builder.build();

@@ -48,7 +48,6 @@ public class RoomTimeOverlay extends Overlay
         }
         else
         {
-            log.info("room data size: {} - room data: {}", room.getData().size(), room.getData().toString());
             ticks = 0;
         }
 

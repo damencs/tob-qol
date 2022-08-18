@@ -32,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullNpcID;
+import net.runelite.api.Point;
 
 import javax.annotation.Nullable;
 import java.awt.*;
@@ -106,10 +107,10 @@ public enum NylocasConstants
 
 	private final int sm, rg, hm, aggro_sm, aggro_rg, aggro_hm;
 
-	int BOSS_IMAGE = 25750;
-	int NYLOCAS_WAVES_TOTAL = 31;
+	public static int BOSS_IMAGE = 25750;
+	public static int NYLOCAS_WAVES_TOTAL = 31;
 
-	Pattern NYLOCAS_WAVE = Pattern.compile("Wave 'The Nylocas' \\(.*\\) complete!");
+	public static Pattern NYLOCAS_WAVE = Pattern.compile("Wave 'The Nylocas' \\(.*\\) complete!");
 
 	public static final String BOSS_NAME = "Nylocas Vasilias";
 	public static final String DEMI_BOSS_NAME = "Nylocas Prinkipas";
@@ -147,7 +148,7 @@ public enum NylocasConstants
 	public static final Color MELEE_COLOR = new Color(255, 188, 188);
 	public static final Color RANGE_COLOR = Color.GREEN;
 
-	private static final Set<Point> NYLOCAS_VALID_SPAWNS = ImmutableSet.of(
+	public static final Set<Point> NYLOCAS_VALID_SPAWNS = ImmutableSet.of(
 			new Point(17, 24), new Point(17, 25), new Point(18, 24), new Point(18, 25),
 			new Point(31, 9), new Point(31, 10), new Point(32, 9), new Point(32, 10),
 			new Point(46, 24), new Point(46, 25), new Point(47, 24), new Point(47, 25)

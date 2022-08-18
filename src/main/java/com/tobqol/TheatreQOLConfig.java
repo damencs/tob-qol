@@ -448,6 +448,18 @@ public interface TheatreQOLConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+			name = "Hide Underworld Rocks",
+			keyName = "sotetsegHideUnderworldRocks",
+			description = "- Hides the rocks surrounding the Sotetseg maze",
+			position = 5,
+			section = SOTETSEG_SECTION
+	)
+	default boolean sotetsegHideUnderworldRocks()
+	{
+		return false;
+	}
+
 	/**
 	 * Xarpus Configs
 	 */

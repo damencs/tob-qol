@@ -35,6 +35,7 @@ import net.runelite.api.NullNpcID;
 
 import javax.annotation.Nullable;
 import java.awt.*;
+import java.util.regex.Pattern;
 
 @RequiredArgsConstructor
 @Getter
@@ -62,7 +63,9 @@ public enum VerzikMap
 
 	public static final String BOSS_NAME = "Verzik Vitur";
 
-	int BOSS_IMAGE = 22473;
+	public static final Pattern VERZIK_WAVE = Pattern.compile("Wave 'The Final Challenge' \\(.*\\) complete!");
+
+	public static final int BOSS_IMAGE = 22473;
 
 	// TODO -> Find Story Mode/Regular Pillar NPC IDs
 	public static final int PILLAR_NPC_ID = NpcID.SUPPORTING_PILLAR;

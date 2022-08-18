@@ -30,17 +30,22 @@ import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
 import com.tobqol.api.util.TheatreInputListener;
+import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.nylocas.commons.NyloBoss;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionBox;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionManager;
 import com.tobqol.rooms.nylocas.commons.NylocasConstants;
+import com.tobqol.tracking.RoomDataItem;
 import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.Point;
 import net.runelite.api.*;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
+import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.SkillIconManager;
@@ -54,9 +59,10 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tobqol.api.game.Region.NYLOCAS;
-import static com.tobqol.api.game.Region.inRegion;
+import static com.tobqol.api.game.Region.*;
 import static com.tobqol.rooms.nylocas.commons.NylocasConstants.*;
+import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
+import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 
 @Slf4j
 public class NylocasHandler extends RoomHandler
@@ -96,11 +102,15 @@ public class NylocasHandler extends RoomHandler
 
 	private RoomInfoBox nylocasInfoBox;
 
+	private int wave = 0;
+	private boolean waveSpawned = false;
+
 	@Getter
 	private NyloBoss boss = null;
 
 	@Getter
 	private NyloBoss demiBoss = null;
+	private int demiCount = 0;
 
 	@Getter
 	private final Map<NPC, Integer> pillars = new HashMap<>();
@@ -152,6 +162,7 @@ public class NylocasHandler extends RoomHandler
 	public void load()
 	{
 		overlayManager.add(sceneOverlay);
+		overlayManager.add(getTimeOverlay());
 		startupNyloOverlay();
 	}
 
@@ -159,6 +170,7 @@ public class NylocasHandler extends RoomHandler
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
+		overlayManager.remove(getTimeOverlay());
 		shutdownNyloOverlay();
 		reset();
 	}
@@ -170,6 +182,14 @@ public class NylocasHandler extends RoomHandler
 		demiBoss = null;
 		softReset();
 		displayInstanceTimer = config.nyloInstanceTimer();
+
+		if (instance.getRaidStatus() <= 1)
+		{
+			wave = 0;
+			waveSpawned = false;
+			demiCount = 0;
+			infoBoxManager.removeInfoBox(nylocasInfoBox);
+		}
 	}
 
 	private void softReset()
@@ -272,6 +292,12 @@ public class NylocasHandler extends RoomHandler
 		NPC npc = e.getNpc();
 		int id = npc.getId();
 
+		if (NylocasConstants.matchesAnyMode(BOSS_DROPPING_MELEE, id))
+		{
+			getData().add(new RoomDataItem("Boss", getTime(), 6, false));
+			return;
+		}
+
 		if (isNpcFromName(npc, BOSS_NAME) && NylocasConstants.matchesAnyMode(NylocasConstants.BOSS_MELEE, id))
 		{
 			instance.lazySetMode(() -> NylocasConstants.findMode(id));
@@ -284,6 +310,9 @@ public class NylocasHandler extends RoomHandler
 		{
 			instance.lazySetMode(() -> NylocasConstants.findMode(id));
 			demiBoss = NyloBoss.spawned(npc, instance.mode());
+
+			demiCount++;
+			getData().add(new RoomDataItem("Demi " + demiCount, getTime(), demiCount, false));
 			return;
 		}
 
@@ -295,6 +324,12 @@ public class NylocasHandler extends RoomHandler
 			}
 
 			pillars.putIfAbsent(npc, 100);
+
+			if (!Find("Starting Tick").isPresent())
+			{
+				getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				setShouldTrack(true);
+			}
 			return;
 		}
 
@@ -312,6 +347,24 @@ public class NylocasHandler extends RoomHandler
 			if (displayInstanceTimer)
 			{
 				displayInstanceTimer = false;
+			}
+
+			// TODO -> Eventually convert this to track split data for nylocas spawns for post-room splits
+			if (!waveSpawned)
+			{
+				WorldPoint worldPoint = WorldPoint.fromLocalInstance(client, npc.getLocalLocation());
+				Point spawnPoint = new Point(worldPoint.getRegionX(), worldPoint.getRegionY());
+
+				if (NYLOCAS_VALID_SPAWNS.contains(spawnPoint))
+				{
+					wave++;
+					waveSpawned = true;
+
+					if (wave == NYLOCAS_WAVES_TOTAL)
+					{
+						getData().add(new RoomDataItem("Waves", getTime(), 4, false));
+					}
+				}
 			}
 		}
 	}
@@ -357,6 +410,12 @@ public class NylocasHandler extends RoomHandler
 		}
 
 		pillars.remove(npc);
+		wavesMap.remove(npc);
+
+		if (wavesMap.isEmpty() && wave == NYLOCAS_WAVES_TOTAL && !Find("Cleanup").isPresent())
+		{
+			getData().add(new RoomDataItem("Cleanup", getTime(), 5, false));
+		}
 	}
 
 	@Subscribe
@@ -411,6 +470,22 @@ public class NylocasHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
+		if ((!instance.isInRaid() || instance.getCurrentRegion() == SOTETSEG) && !getData().isEmpty())
+		{
+			getData().clear();
+		}
+
+		if (instance.isInRaid() && instance.getRoomStatus() == 1 && instance.getCurrentRegion().isNylocas() && !Find("Starting Tick").isPresent())
+		{
+			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+			setShouldTrack(true);
+		}
+
+		if (isShouldTrack() && !getData().isEmpty())
+		{
+			updateTotalTime();
+		}
+
 		if (!active())
 		{
 			if (!nyloSelectionManager.isHidden())
@@ -437,6 +512,7 @@ public class NylocasHandler extends RoomHandler
 		{
 			wavesMap.values().removeIf(VALUE_IS_ZERO);
 			wavesMap.replaceAll(DECREMENT_VALUE);
+			waveSpawned = false;
 		}
 
 		if (!bigsMap.isEmpty())
@@ -503,6 +579,81 @@ public class NylocasHandler extends RoomHandler
 		if ((id >= UNK_DESPAWN_GRAPHIC_1 && id <= MAGIC_SMALL_DESPAWN_GRAPHIC) || (id >= UNK_DESPAWN_GRAPHIC_2 && id <= UNK_DESPAWN_GRAPHIC_5))
 		{
 			graphic.setFinished(true);
+		}
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (instance.getCurrentRegion() != NYLOCAS && event.getType() != ChatMessageType.GAMEMESSAGE)
+		{
+			return;
+		}
+
+		String stripped = Text.removeTags(event.getMessage());
+
+		if (NYLOCAS_WAVE.matcher(stripped).find())
+		{
+			setShouldTrack(false);
+			Find("Total Time").get().setValue(getTime());
+
+			if (config.displayRoomTimes().isInfobox())
+			{
+				buildInfobox();
+			}
+
+			if (config.displayRoomTimes().isChat())
+			{
+				sendChatTimes();
+			}
+		}
+	}
+
+	private void buildInfobox()
+	{
+		if (!getData().isEmpty())
+		{
+			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+
+			// waves time, cleanup time, boss spawn time...
+			// need to add considerations for hard-mode because of prince spawns and deaths.. maybe?
+			// maybe add a generate tooltip to method to roomhandler that uses hidden and iterates thru like we do for prerendering times??
+			// need to add demi spawns if HMT
+			String tooltip = "Waves - " + formatTime(FindValue("Waves"), detailed) + "</br>" +
+					"Cleanup - " + formatTime(FindValue("Cleanup"), detailed) + formatTime(FindValue("Cleanup"), FindValue("Waves"), detailed) + "</br>" +
+					"Boss - " + formatTime(FindValue("Boss"), detailed) + formatTime(FindValue("Boss"), FindValue("Cleanup"), detailed) + "</br>" +
+					"Complete - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("Boss"), detailed);
+
+			nylocasInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Nylocas", formatTime(FindValue("Total Time"), detailed), tooltip);
+			infoBoxManager.addInfoBox(nylocasInfoBox);
+		}
+	}
+
+	private void sendChatTimes()
+	{
+		if (!getData().isEmpty())
+		{
+			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+
+			// need to add demi spawns if HMT
+			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+					.append(Color.RED, "Waves")
+					.append(ChatColorType.NORMAL)
+					.append(" - " + formatTime(FindValue("Waves"), detailed) + " - ")
+					.append(Color.RED, "Cleanup")
+					.append(ChatColorType.NORMAL)
+					.append(" - " + formatTime(FindValue("Cleanup"), detailed) + formatTime(FindValue("Cleanup"), FindValue("Waves"), detailed))
+					.append(Color.RED, "Boss")
+					.append(ChatColorType.NORMAL)
+					.append(" - " + formatTime(FindValue("Boss"), detailed) + formatTime(FindValue("Boss"), FindValue("Cleanup"), detailed)));
+
+			if (config.roomTimeValidation())
+			{
+				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+						.append(Color.RED, "Nylocas - Room Complete")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(FindValue("Total Time"), detailed) + " - " + formatTime(FindValue("Total Time"), FindValue("Boss"), detailed)));
+			}
 		}
 	}
 

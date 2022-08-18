@@ -216,6 +216,7 @@ public class TheatreQOLPlugin extends Plugin
 		}
 	}
 
+	// @TODO -> make this so that it doesn't reset twice every since time you leave the raid.. eventbus/instanceservice
 	void reset(boolean global)
 	{
 		if (rooms != null)
@@ -224,7 +225,6 @@ public class TheatreQOLPlugin extends Plugin
 			{
 				room.reset();
 				log.debug("Resetting {}", room.getClass().getSimpleName());
-				log.info("Resetting {}", room.getClass().getSimpleName());
 			}
 		}
 

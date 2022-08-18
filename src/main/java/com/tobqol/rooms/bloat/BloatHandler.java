@@ -40,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.GameState;
 import net.runelite.api.NPC;
+import net.runelite.api.Point;
 import net.runelite.api.events.*;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
@@ -51,6 +52,7 @@ import javax.annotation.CheckForNull;
 import javax.inject.Inject;
 import java.awt.*;
 
+import static com.tobqol.api.game.RaidConstants.THEATRE_OF_BLOOD_ROOM_STATUS;
 import static com.tobqol.api.game.Region.BLOAT;
 import static com.tobqol.api.game.Region.inRegion;
 import static com.tobqol.rooms.bloat.commons.BloatConstants.*;
@@ -92,10 +94,10 @@ public class BloatHandler extends RoomHandler
 	public void reset()
 	{
 		bloatNpc = null;
-		downs = 0;
 
 		if (instance.getRaidStatus() <= 1)
 		{
+			downs = 0;
 			infoBoxManager.removeInfoBox(bloatInfoBox);
 		}
 	}
@@ -169,7 +171,13 @@ public class BloatHandler extends RoomHandler
 			getData().clear();
 		}
 
-		if (instance.isInRaid() && instance.getRoomStatus() == 1 && instance.getCurrentRegion().isBloat() && !Find("Starting Tick").isPresent())
+//		if (instance.isInRaid() && instance.getRoomStatus() == 1 && instance.getCurrentRegion().isBloat() && !Find("Starting Tick").isPresent())
+//		{
+//			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+//			setShouldTrack(true);
+//		}
+
+		if (instance.isInRaid() && instance.getCurrentRegion().isBloat() && !Find("Starting Tick").isPresent() && crossedLine(BLOAT, new Point(39, 30), new Point(39, 33), true, client))
 		{
 			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
 			setShouldTrack(true);
@@ -178,6 +186,19 @@ public class BloatHandler extends RoomHandler
 		if (!getData().isEmpty() && isShouldTrack())
 		{
 			updateTotalTime();
+		}
+	}
+
+	@Subscribe
+	private void onVarbitChanged(VarbitChanged event)
+	{
+		if (instance.isInRaid() && instance.getCurrentRegion().isBloat() && !Find("Starting Tick").isPresent())
+		{
+			if (client.getVarbitValue(THEATRE_OF_BLOOD_ROOM_STATUS) == 1)
+			{
+				getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				setShouldTrack(true);
+			}
 		}
 	}
 
@@ -293,7 +314,7 @@ public class BloatHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Bloat - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), precise)));
+						.append(" - " + formatTime(FindValue("Total Time"), precise) + " - " + formatTime(FindValue("Total Time"), FindValue("Down " + downs), precise)));
 			}
 		}
 	}
