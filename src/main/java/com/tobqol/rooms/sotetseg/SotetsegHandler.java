@@ -437,7 +437,7 @@ public class SotetsegHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Sotetseg - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), detailed) + " - " + formatTime(FindValue("Total Time"), FindValue("33%"), detailed)));
+						.append(" - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("33%"), detailed)));
 			}
 		}
 	}

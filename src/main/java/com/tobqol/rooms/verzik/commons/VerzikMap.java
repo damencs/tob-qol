@@ -75,6 +75,7 @@ public enum VerzikMap
 	public static final int VERZIK_P2_ATK_ANIM = 8114;
 	public static final int VERZIK_P2_BOUNCE_ANIM = 8116;
 	public static final int VERZIK_P2_HEALING_STATE_ANIM = 8117;
+	public static final int VERZIK_P2_TRANSITION = 8118;
 	public static final int VERZIK_P3_MAGIC_ANIM = 8124;
 	public static final int VERZIK_P3_RANGE_ANIM = 8125; // Reused animation for the Green Ball attack
 	public static final int VERZIK_P3_YELLOWS_ANIM = 8126;

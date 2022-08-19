@@ -642,7 +642,7 @@ public class NylocasHandler extends RoomHandler
 					.append(" - " + formatTime(FindValue("Waves"), detailed) + " - ")
 					.append(Color.RED, "Cleanup")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("Cleanup"), detailed) + formatTime(FindValue("Cleanup"), FindValue("Waves"), detailed))
+					.append(" - " + formatTime(FindValue("Cleanup"), detailed) + formatTime(FindValue("Cleanup"), FindValue("Waves"), detailed) + " - ")
 					.append(Color.RED, "Boss")
 					.append(ChatColorType.NORMAL)
 					.append(" - " + formatTime(FindValue("Boss"), detailed) + formatTime(FindValue("Boss"), FindValue("Cleanup"), detailed)));
@@ -652,7 +652,7 @@ public class NylocasHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Nylocas - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), detailed) + " - " + formatTime(FindValue("Total Time"), FindValue("Boss"), detailed)));
+						.append(" - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("Boss"), detailed)));
 			}
 		}
 	}

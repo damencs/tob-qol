@@ -20,7 +20,7 @@ public final class RoomInfoUtil
 
     public static String formatTime(int current, int previous, boolean precise)
     {
-        return " (" + formatTime(current - previous, precise) + ") ";
+        return " (" + formatTime(current - previous, precise) + ")";
     }
 
     public static String formatTime(int ticks, boolean precise)

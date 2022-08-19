@@ -215,7 +215,7 @@ public class BloatHandler extends RoomHandler
 		if (npc == bloatNpc && npc.getAnimation() == DOWN_ANIM)
 		{
 			downs++;
-			getData().add(new RoomDataItem("Down " + downs, getTime(), downs, false));
+			getData().add(new RoomDataItem("Down " + downs, getTime(), downs, true));
 		}
 	}
 
@@ -314,7 +314,7 @@ public class BloatHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Bloat - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), precise) + " - " + formatTime(FindValue("Total Time"), FindValue("Down " + downs), precise)));
+						.append(" - " + formatTime(FindValue("Total Time"), precise) + formatTime(FindValue("Total Time"), FindValue("Down " + downs), precise)));
 			}
 		}
 	}

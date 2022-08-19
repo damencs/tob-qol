@@ -190,6 +190,16 @@ public class XarpusHandler extends RoomHandler
 				phase = XarpusPhase.P3;
 			}
 
+			if (XarpusTable.anyMatch(XarpusTable.XARPUS_P1, n.getId()))
+			{
+				if (!Find("Starting Tick").isPresent())
+				{
+					getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+					setShouldTrack(true);
+					return;
+				}
+			}
+
 			exhumedTracker = new ExhumedTracker();
 		});
 	}
@@ -384,7 +394,7 @@ public class XarpusHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Xarpus - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), detailed) + " - " + formatTime(FindValue("Total Time"), FindValue("Screech"), detailed)));
+						.append(" - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("Screech"), detailed)));
 			}
 		}
 	}

@@ -58,8 +58,7 @@ import java.util.function.Predicate;
 
 import static com.tobqol.api.game.Region.LOOT_ROOM;
 import static com.tobqol.api.game.Region.XARPUS;
-import static com.tobqol.rooms.verzik.commons.VerzikMap.BOSS_IMAGE;
-import static com.tobqol.rooms.verzik.commons.VerzikMap.VERZIK_WAVE;
+import static com.tobqol.rooms.verzik.commons.VerzikMap.*;
 import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
 import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 
@@ -213,16 +212,6 @@ public class VerzikHandler extends RoomHandler
 				}
 				break;
 			}
-			// TODO -> FIX P2 BEING TRACKED
-			case VERZIK_P3_INACTIVE:
-			case VERZIK_P3:
-			{
-				if (!Find("P2").isPresent())
-				{
-					getData().add(new RoomDataItem("P2", getTime(), false));
-				}
-				break;
-			}
 		}
 	}
 
@@ -354,6 +343,18 @@ public class VerzikHandler extends RoomHandler
 	}
 
 	@Subscribe
+	public void onAnimationChanged(AnimationChanged event)
+	{
+		if (event.getActor().getAnimation() == VERZIK_P2_TRANSITION)
+		{
+			if (!Find("P2").isPresent())
+			{
+				getData().add(new RoomDataItem("P2", getTime(), false));
+			}
+		}
+	}
+
+	@Subscribe
 	public void onAreaSoundEffectPlayed(AreaSoundEffectPlayed event)
 	{
 		if (event.getSource() != null && event.getSource().getName() != null && verzikNpc != null && config.muteVerzikSounds())
@@ -420,7 +421,7 @@ public class VerzikHandler extends RoomHandler
 					.append(" - " + formatTime(FindValue("P1"), detailed) + " - ")
 					.append(Color.RED, "Reds")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("Reds"), detailed) + " - " + formatTime(FindValue("Reds"), FindValue("P1"), detailed))
+					.append(" - " + formatTime(FindValue("Reds"), detailed) + " - " + formatTime(FindValue("Reds"), FindValue("P1"), detailed) + " - ")
 					.append(Color.RED, "P2")
 					.append(ChatColorType.NORMAL)
 					.append(" - " + formatTime(FindValue("P2"), detailed) + " - " + formatTime(FindValue("P2"), FindValue("Reds"), detailed)));
@@ -430,7 +431,7 @@ public class VerzikHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Verzik - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), detailed) + " - " + formatTime(FindValue("Total Time"), FindValue("P2"), detailed)));
+						.append(" - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("P2"), detailed)));
 			}
 		}
 	}
