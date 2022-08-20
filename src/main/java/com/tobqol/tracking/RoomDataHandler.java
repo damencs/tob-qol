@@ -61,7 +61,15 @@ public class RoomDataHandler
 
         if (data.isEmpty())
         {
-            LineComponent lineComponent = LineComponent.builder().left("Total Time").right(formatTime(0, detailed)).build();
+            LineComponent lineComponent = LineComponent.builder().left("Room").right(formatTime(0, detailed)).build();
+            timeOverlay.getPanelComponent().getChildren().add(lineComponent);
+
+            return timeOverlay.getPanelComponent();
+        }
+
+        if (Find("Starting Tick").get().isException())
+        {
+            LineComponent lineComponent = LineComponent.builder().left("Room").right(formatTime(FindValue("Room"), detailed) + '*').build();
             timeOverlay.getPanelComponent().getChildren().add(lineComponent);
 
             return timeOverlay.getPanelComponent();
@@ -73,12 +81,12 @@ public class RoomDataHandler
 
         data.forEach((item) ->
         {
-            if (item.isHidden() || (!detailed && item.getName() != "Total Time"))
+            if (item.isHidden() || (!detailed && item.getName() != "Room"))
             {
                 return;
             }
 
-            boolean hasComparable = !item.getCompareName().equals("");
+            boolean hasComparable = (item.getCompareName().equals("") || (isShouldTrack() && item.getName().equals("Room"))) ? false : Find(item.getCompareName()).isPresent();
 
             LineComponent lineComponent = LineComponent.builder().left(item.getName()).right(formatTime(item.getValue(), detailed) +
                     (splitDifferences && hasComparable ? formatTime(item.getValue(), FindValue(item.getCompareName()), detailed) : "")).build();
@@ -110,13 +118,13 @@ public class RoomDataHandler
 
     public void updateTotalTime()
     {
-        if (!Find("Total Time").isPresent())
+        if (!Find("Room").isPresent())
         {
-            getData().add(new RoomDataItem("Total Time", getTime(), 99, false));
+            getData().add(new RoomDataItem("Room", getTime(), 99, false));
         }
         else
         {
-            Find("Total Time").get().setValue(getTime());
+            Find("Room").get().setValue(getTime());
         }
     }
 }

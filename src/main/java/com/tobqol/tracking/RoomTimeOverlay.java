@@ -37,6 +37,11 @@ public class RoomTimeOverlay extends Overlay
             return null;
         }
 
+        if (config.shrunkLiveTimerDesign())
+        {
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        }
+
         this.panelComponent = plugin.getDataHandler().preRenderRoomTimes();
 
         return panelComponent.render(graphics);

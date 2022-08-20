@@ -255,8 +255,10 @@ public class VerzikHandler extends RoomHandler
 		{
 			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
 			{
-				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
 				dataHandler.setShouldTrack(true);
+
+				dataHandler.getData().add(new RoomDataItem("Room", dataHandler.getTime(), 99, false, "P2"));
 			}
 
 			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
@@ -379,7 +381,7 @@ public class VerzikHandler extends RoomHandler
 		if (VERZIK_WAVE.matcher(stripped).find())
 		{
 			dataHandler.setShouldTrack(false);
-			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
+			dataHandler.Find("Room").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -402,9 +404,9 @@ public class VerzikHandler extends RoomHandler
 			String tooltip = "P1 - " + formatTime(dataHandler.FindValue("P1"), detailed) + "</br>" +
 					"Reds - " + formatTime(dataHandler.FindValue("Reds"), detailed) + formatTime(dataHandler.FindValue("Reds"), dataHandler.FindValue("P1"), detailed) + "</br>" +
 					"P2 - " + formatTime(dataHandler.FindValue("P2"), detailed) + formatTime(dataHandler.FindValue("P2"), dataHandler.FindValue("Reds"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("P2"), detailed);
+					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("P2"), detailed);
 
-			verzikInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Verzik", formatTime(dataHandler.FindValue("Total Time"), detailed), tooltip);
+			verzikInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Verzik", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
 			infoBoxManager.addInfoBox(verzikInfoBox);
 		}
 	}
@@ -431,7 +433,7 @@ public class VerzikHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Verzik - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("P2"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("P2"), detailed)));
 			}
 		}
 	}

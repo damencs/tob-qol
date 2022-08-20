@@ -54,6 +54,7 @@ import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.ClientTick;
 import net.runelite.api.events.GameObjectSpawned;
+import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.config.ConfigManager;
@@ -232,6 +233,8 @@ public class TheatreQOLPlugin extends Plugin
 	// @TODO -> make this so that it doesn't reset twice every since time you leave the raid.. eventbus/instanceservice
 	void reset(boolean global)
 	{
+		dataHandler.getData().clear();
+
 		if (rooms != null)
 		{
 			for (RoomHandler room : rooms)
@@ -338,7 +341,7 @@ public class TheatreQOLPlugin extends Plugin
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
-		if (instanceService.getCurrentRegion() != instanceService.getPreviousRegion())
+		if ((instanceService.getCurrentRegion() != instanceService.getPreviousRegion()) && (instanceService.getCurrentRegion() != Region.SOTETSEG_MAZE || instanceService.getPreviousRegion() != Region.SOTETSEG_MAZE))
 		{
 			dataHandler.getData().clear();
 		}
@@ -441,6 +444,15 @@ public class TheatreQOLPlugin extends Plugin
 			case RaidConstants.TOB_ENTRANCE:
 				entrance = event.getGameObject();
 				break;
+		}
+	}
+
+	@Subscribe
+	public void onGameStateChanged(GameStateChanged event)
+	{
+		if (event.getGameState() == GameState.HOPPING)
+		{
+			hideDarkness(false);
 		}
 	}
 

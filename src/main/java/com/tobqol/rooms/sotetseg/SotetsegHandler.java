@@ -139,7 +139,7 @@ public class SotetsegHandler extends RoomHandler
 		switch (e.getKey())
 		{
 			case "sotetsegHideUnderworldRocks":
-				when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, sceneManager::refreshScene);
+				//when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, sceneManager::refreshScene);
 				break;
 		}
 	}
@@ -151,8 +151,10 @@ public class SotetsegHandler extends RoomHandler
 		{
 			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
 			{
-				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
 				dataHandler.setShouldTrack(true);
+
+				dataHandler.getData().add(new RoomDataItem("Room", dataHandler.getTime(), 99, false, "33%"));
 			}
 
 			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
@@ -180,10 +182,7 @@ public class SotetsegHandler extends RoomHandler
 			return;
 		}
 
-		if (portal != null && rocksHidden == false)
-		{
-			when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
-		}
+		//when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
 	}
 
 	@Subscribe
@@ -270,7 +269,7 @@ public class SotetsegHandler extends RoomHandler
 
 		if (UNDERWORLD_ROCKS.contains(obj.getId()))
 		{
-			when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
+			//when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
 		}
 	}
 
@@ -390,7 +389,7 @@ public class SotetsegHandler extends RoomHandler
 		if (SOTETSEG_WAVE.matcher(stripped).find())
 		{
 			dataHandler.setShouldTrack(false);
-			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
+			dataHandler.Find("Room").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -412,9 +411,9 @@ public class SotetsegHandler extends RoomHandler
 
 			String tooltip = "66% - " + formatTime(dataHandler.FindValue("66%"), detailed) + "</br>" +
 					"33% - " + formatTime(dataHandler.FindValue("33%"), detailed) + formatTime(dataHandler.FindValue("33%"), dataHandler.FindValue("66%"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("33%"), detailed);
+					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("33%"), detailed);
 
-			sotetsegInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Sotetseg", formatTime(dataHandler.FindValue("Total Time"), detailed), tooltip);
+			sotetsegInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Sotetseg", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
 			infoBoxManager.addInfoBox(sotetsegInfoBox);
 		}
 	}
@@ -438,14 +437,17 @@ public class SotetsegHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Sotetseg - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("33%"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("33%"), detailed)));
 			}
 		}
 	}
 
 	private void hideUnderworldRocks()
 	{
-		sceneManager.removeTheseGameObjects(3, UNDERWORLD_ROCKS);
+		if (instance.getCurrentRegion().isSotetsegUnderworld())
+		{
+			sceneManager.removeTheseGameObjects(3, UNDERWORLD_ROCKS);
+		}
 		rocksHidden = true;
 	}
 }

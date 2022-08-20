@@ -191,7 +191,7 @@ public class BloatHandler extends RoomHandler
 		{
 			if (client.getVarbitValue(THEATRE_OF_BLOOD_ROOM_STATUS) == 1)
 			{
-				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
 				dataHandler.setShouldTrack(true);
 			}
 		}
@@ -227,7 +227,7 @@ public class BloatHandler extends RoomHandler
 		if (BLOAT_WAVE.matcher(stripped).find())
 		{
 			dataHandler.setShouldTrack(false);
-			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
+			dataHandler.Find("Room").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -251,7 +251,7 @@ public class BloatHandler extends RoomHandler
 		if (dataHandler.FindValue("Starting Tick") > 0)
 		{
 			boolean precise = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
-			String roomTime = formatTime(dataHandler.FindValue("Total Time"));
+			String roomTime = formatTime(dataHandler.FindValue("Room"));
 			StringBuilder tooltip = new StringBuilder();
 
 			if (downs > 0)
@@ -295,7 +295,7 @@ public class BloatHandler extends RoomHandler
 					{
 						chatMessageBuilder.append(Color.RED, d.getName())
 								.append(ChatColorType.NORMAL)
-								.append(" - " + formatTime(d.getValue(), precise) + (downsRemaining > 0 ? " - " : ""));
+								.append(" - " + formatTime(d.getValue(), precise) + (d.getSort() > 1 ? formatTime(d.getValue(), dataHandler.FindValue("Down " + (d.getSort() - 1)), precise) : "") + (downsRemaining > 0 ? " - " : ""));
 
 						downsRemaining--;
 					}
@@ -309,7 +309,7 @@ public class BloatHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Bloat - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), precise) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("Down " + downs), precise)));
+						.append(" - " + formatTime(dataHandler.FindValue("Room"), precise) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Down " + downs), precise)));
 			}
 		}
 	}

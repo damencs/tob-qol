@@ -298,7 +298,7 @@ public class NylocasHandler extends RoomHandler
 
 		if (NylocasConstants.matchesAnyMode(BOSS_DROPPING_MELEE, id))
 		{
-			dataHandler.getData().add(new RoomDataItem("Boss", dataHandler.getTime(), 6, false));
+			dataHandler.getData().add(new RoomDataItem("Boss", dataHandler.getTime(), 6, false, "Cleanup"));
 			return;
 		}
 
@@ -316,7 +316,7 @@ public class NylocasHandler extends RoomHandler
 			demiBoss = NyloBoss.spawned(npc, instance.mode());
 
 			demiCount++;
-			dataHandler.getData().add(new RoomDataItem("Demi " + demiCount, dataHandler.getTime(), demiCount, false));
+			dataHandler.getData().add(new RoomDataItem("Demi " + demiCount, dataHandler.getTime(), demiCount, true, demiCount > 1 ? "Demi " + (demiCount - 1) : ""));
 			return;
 		}
 
@@ -366,7 +366,7 @@ public class NylocasHandler extends RoomHandler
 
 					if (wave == NYLOCAS_WAVES_TOTAL)
 					{
-						dataHandler.getData().add(new RoomDataItem("Waves", dataHandler.getTime(), 4, false));
+						dataHandler.getData().add(new RoomDataItem("Waves", dataHandler.getTime(), 4, false, dataHandler.Find("Demi 3").isPresent() ? "Demi 3" : ""));
 					}
 				}
 			}
@@ -418,7 +418,7 @@ public class NylocasHandler extends RoomHandler
 
 		if (wavesMap.isEmpty() && wave == NYLOCAS_WAVES_TOTAL && !dataHandler.Find("Cleanup").isPresent())
 		{
-			dataHandler.getData().add(new RoomDataItem("Cleanup", dataHandler.getTime(), 5, false));
+			dataHandler.getData().add(new RoomDataItem("Cleanup", dataHandler.getTime(), 5, false, "Waves"));
 		}
 	}
 
@@ -478,8 +478,10 @@ public class NylocasHandler extends RoomHandler
 		{
 			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
 			{
-				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
 				dataHandler.setShouldTrack(true);
+
+				dataHandler.getData().add(new RoomDataItem("Room", dataHandler.getTime(), 99, false, "Boss"));
 			}
 
 			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
@@ -597,7 +599,7 @@ public class NylocasHandler extends RoomHandler
 		if (NYLOCAS_WAVE.matcher(stripped).find())
 		{
 			dataHandler.setShouldTrack(false);
-			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
+			dataHandler.Find("Room").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -624,9 +626,9 @@ public class NylocasHandler extends RoomHandler
 			String tooltip = "Waves - " + formatTime(dataHandler.FindValue("Waves"), detailed) + "</br>" +
 					"Cleanup - " + formatTime(dataHandler.FindValue("Cleanup"), detailed) + formatTime(dataHandler.FindValue("Cleanup"), dataHandler.FindValue("Waves"), detailed) + "</br>" +
 					"Boss - " + formatTime(dataHandler.FindValue("Boss"), detailed) + formatTime(dataHandler.FindValue("Boss"), dataHandler.FindValue("Cleanup"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("Boss"), detailed);
+					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Boss"), detailed);
 
-			nylocasInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Nylocas", formatTime(dataHandler.FindValue("Total Time"), detailed), tooltip);
+			nylocasInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Nylocas", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
 			infoBoxManager.addInfoBox(nylocasInfoBox);
 		}
 	}
@@ -654,7 +656,7 @@ public class NylocasHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Nylocas - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("Boss"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Boss"), detailed)));
 			}
 		}
 	}

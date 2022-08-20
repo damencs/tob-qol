@@ -25,6 +25,10 @@ public class RoomDataItem implements Comparable
     @Setter
     private String compareName;
 
+    @Getter
+    @Setter
+    private boolean exception;
+
     public RoomDataItem(String name, int value)
     {
         this.name = name;
@@ -32,6 +36,7 @@ public class RoomDataItem implements Comparable
         this.sort = -1;
         this.hidden = false;
         this.compareName = null;
+        this.exception = false;
     }
 
     public RoomDataItem(String name, int value, boolean hidden)
@@ -41,6 +46,7 @@ public class RoomDataItem implements Comparable
         this.sort = -1;
         this.hidden = hidden;
         this.compareName = "";
+        this.exception = false;
     }
 
     public RoomDataItem(String name, int value, int sort, boolean hidden)
@@ -50,6 +56,7 @@ public class RoomDataItem implements Comparable
         this.sort = sort;
         this.hidden = hidden;
         this.compareName = "";
+        this.exception = false;
     }
 
     public RoomDataItem(String name, int value, int sort, boolean hidden, String compareName)
@@ -59,6 +66,27 @@ public class RoomDataItem implements Comparable
         this.sort = sort;
         this.hidden = hidden;
         this.compareName = compareName;
+        this.exception = false;
+    }
+
+    public RoomDataItem(String name, int value, boolean hidden, boolean exception)
+    {
+        this.name = name;
+        this.value = value;
+        this.sort = -1;
+        this.hidden = hidden;
+        this.compareName = "";
+        this.exception = exception;
+    }
+
+    public RoomDataItem(String name, int value, int sort, boolean hidden, String compareName, boolean exception)
+    {
+        this.name = name;
+        this.value = value;
+        this.sort = sort;
+        this.hidden = hidden;
+        this.compareName = compareName;
+        this.exception = exception;
     }
 
     @Override
@@ -70,6 +98,6 @@ public class RoomDataItem implements Comparable
     @Override
     public String toString()
     {
-        return "Name: " + name + ", Value: " + value + ", Sort: " + sort + ", Hidden: " + hidden + ", Compared Key Name: " + compareName;
+        return "Name: " + name + ", Value: " + value + ", Sort: " + sort + ", Hidden: " + hidden + ", Compared Key Name: " + compareName + ", Exception: " + exception;
     }
 }

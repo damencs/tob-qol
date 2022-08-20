@@ -686,4 +686,17 @@ public interface TheatreQOLConfig extends Config
 	{
 		return false;
 	}
+
+	@ConfigItem(
+			name = "Shrunk Live Timer Size",
+			keyName = "shrunkLiveTimerDesign",
+			description = "- Live timer overlay with Plain San Serif at a font size of 11 to minimize the overlay size<br>" +
+						"Note: You can use RuneLite's overlay settings in Core 'RuneLite' Settings to configure the overlay",
+			position = 5,
+			section = TIME_SECTION
+	)
+	default boolean shrunkLiveTimerDesign()
+	{
+		return false;
+	}
 }

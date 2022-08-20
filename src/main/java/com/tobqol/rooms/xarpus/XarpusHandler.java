@@ -256,7 +256,7 @@ public class XarpusHandler extends RoomHandler
 		{
 			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
 			{
-				dataHandler.getData().add(new RoomDataItem("Starting Tick", dataHandler.getTime(), true));
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", dataHandler.getTime(), true, true));
 				dataHandler.setShouldTrack(true);
 			}
 
@@ -346,7 +346,7 @@ public class XarpusHandler extends RoomHandler
 		if (XARPUS_WAVE.matcher(stripped).find())
 		{
 			dataHandler.setShouldTrack(false);
-			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
+			dataHandler.Find("Room").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -368,9 +368,9 @@ public class XarpusHandler extends RoomHandler
 
 			String tooltip = "Exhumeds - " + formatTime(dataHandler.FindValue("Exhumeds"), detailed) + "</br>" +
 					"Screech - " + formatTime(dataHandler.FindValue("Screech"), detailed) + formatTime(dataHandler.FindValue("Screech"), dataHandler.FindValue("Exhumeds"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("Screech"), detailed);
+					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Screech"), detailed);
 
-			xarpuInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Xarpus", formatTime(dataHandler.FindValue("Total Time"), detailed), tooltip);
+			xarpuInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Xarpus", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
 			infoBoxManager.addInfoBox(xarpuInfoBox);
 		}
 	}
@@ -394,7 +394,7 @@ public class XarpusHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Xarpus - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("Screech"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Screech"), detailed)));
 			}
 		}
 	}
