@@ -33,6 +33,7 @@ import com.tobqol.rooms.maiden.commons.MaidenHealth;
 import com.tobqol.rooms.maiden.commons.MaidenPhase;
 import com.tobqol.rooms.maiden.commons.MaidenRedCrab;
 import com.tobqol.rooms.maiden.commons.MaidenTable;
+import com.tobqol.tracking.RoomDataHandler;
 import com.tobqol.tracking.RoomDataItem;
 import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
@@ -51,7 +52,8 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
-import static com.tobqol.api.game.Region.*;
+import static com.tobqol.api.game.Region.MAIDEN;
+import static com.tobqol.api.game.Region.inRegion;
 import static com.tobqol.rooms.maiden.commons.MaidenConstants.*;
 import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
 import static com.tobqol.tracking.RoomInfoUtil.formatTime;
@@ -63,6 +65,8 @@ public class MaidenHandler extends RoomHandler
 {
 	@Inject
 	private MaidenSceneOverlay sceneOverlay;
+
+	private RoomDataHandler dataHandler;
 
 	@CheckForNull
 	private NPC maidenNpc = null;
@@ -96,15 +100,14 @@ public class MaidenHandler extends RoomHandler
 	@Override
 	public void load()
 	{
+		dataHandler = plugin.getDataHandler();
 		overlayManager.add(sceneOverlay);
-		overlayManager.add(getTimeOverlay());
 	}
 
 	@Override
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
-		overlayManager.remove(getTimeOverlay());
 		reset();
 	}
 
@@ -144,7 +147,7 @@ public class MaidenHandler extends RoomHandler
 			{
 				crabsMap.put(n.getIndex(), new MaidenRedCrab(client, instance, n, phase));
 
-				if (!getData().isEmpty())
+				if (!dataHandler.getData().isEmpty())
 				{
 					updateInfo();
 					considerCrabs = false;
@@ -155,10 +158,10 @@ public class MaidenHandler extends RoomHandler
 
 		isNpcFromName(npc, BOSS_NAME, n ->
 		{
-			if (!Find("Starting Tick").isPresent())
+			if (!dataHandler.Find("Starting Tick").isPresent())
 			{
-				getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-				setShouldTrack(true);
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.setShouldTrack(true);
 			}
 
 			instance.lazySetMode(() -> MaidenTable.findMode(n.getId()));
@@ -208,20 +211,18 @@ public class MaidenHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
-		if ((!instance.isInRaid() || instance.getCurrentRegion() == BLOAT) && !getData().isEmpty())
+		if (instance.isInRaid() && instance.getCurrentRegion().isMaiden())
 		{
-			getData().clear();
-		}
+			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.setShouldTrack(true);
+			}
 
-		if (instance.isInRaid() && instance.getRoomStatus() == 1 && instance.getCurrentRegion().isMaiden() && !Find("Starting Tick").isPresent())
-		{
-			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-			setShouldTrack(true);
-		}
-
-		if (isShouldTrack() && !getData().isEmpty())
-		{
-			updateTotalTime();
+			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
+			{
+				dataHandler.updateTotalTime();
+			}
 		}
 
 		if (!active())
@@ -337,8 +338,8 @@ public class MaidenHandler extends RoomHandler
 
 		if (MAIDEN_WAVE.matcher(stripped).find())
 		{
-			setShouldTrack(false);
-			Find("Total Time").get().setValue(getTime());
+			dataHandler.setShouldTrack(false);
+			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -354,23 +355,23 @@ public class MaidenHandler extends RoomHandler
 
 	private void updateInfo()
 	{
-		if (!getData().isEmpty())
+		if (!dataHandler.getData().isEmpty())
 		{
 			int bossHP = instance.getBossHealth();
 
 			if (active() && bossHP > 0)
 			{
-				if (bossHP <= 700 && !Find("70s").isPresent())
+				if (bossHP <= 700 && !dataHandler.Find("70s").isPresent())
 				{
-					getData().add(new RoomDataItem("70s", getTime(), 1, false));
+					dataHandler.getData().add(new RoomDataItem("70s", dataHandler.getTime(), 1, false));
 				}
-				else if (bossHP <= 500 && !Find("50s").isPresent())
+				else if (bossHP <= 500 && !dataHandler.Find("50s").isPresent())
 				{
-					getData().add(new RoomDataItem("50s", getTime(), 2, false, "70s"));
+					dataHandler.getData().add(new RoomDataItem("50s", dataHandler.getTime(), 2, false, "70s"));
 				}
-				else if (bossHP <= 300 && !Find("30s").isPresent())
+				else if (bossHP <= 300 && !dataHandler.Find("30s").isPresent())
 				{
-					getData().add(new RoomDataItem("30s", getTime(), 3, false, "50s"));
+					dataHandler.getData().add(new RoomDataItem("30s", dataHandler.getTime(), 3, false, "50s"));
 				}
 			}
 		}
@@ -378,43 +379,43 @@ public class MaidenHandler extends RoomHandler
 
 	private void buildInfobox()
 	{
-		if (!getData().isEmpty())
+		if (!dataHandler.getData().isEmpty())
 		{
 			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
 
-			String tooltip = "70% - " + formatTime(FindValue("70s"), detailed) + "</br>" +
-					"50% - " + formatTime(FindValue("50s"), detailed) + formatTime(FindValue("50s"), FindValue("70s"), detailed) + "</br>" +
-					"30% - " + formatTime(FindValue("30s"), detailed) + formatTime(FindValue("30s"), FindValue("50s"), detailed) + "</br>" +
-					"Complete - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("30s"), detailed);
+			String tooltip = "70% - " + formatTime(dataHandler.FindValue("70s"), detailed) + "</br>" +
+					"50% - " + formatTime(dataHandler.FindValue("50s"), detailed) + formatTime(dataHandler.FindValue("50s"), dataHandler.FindValue("70s"), detailed) + "</br>" +
+					"30% - " + formatTime(dataHandler.FindValue("30s"), detailed) + formatTime(dataHandler.FindValue("30s"), dataHandler.FindValue("50s"), detailed) + "</br>" +
+					"Complete - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("30s"), detailed);
 
-			maidenInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Maiden", formatTime(FindValue("Total Time"), detailed), tooltip);
+			maidenInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Maiden", formatTime(dataHandler.FindValue("Total Time"), detailed), tooltip);
 			infoBoxManager.addInfoBox(maidenInfoBox);
 		}
 	}
 
 	private void sendChatTimes()
 	{
-		if (!getData().isEmpty())
+		if (!dataHandler.getData().isEmpty())
 		{
 			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
 
 			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 					.append(Color.RED, "70%")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("70s"), detailed) + " - ")
+					.append(" - " + formatTime(dataHandler.FindValue("70s"), detailed) + " - ")
 					.append(Color.RED, "50%")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("50s"), detailed) + formatTime(FindValue("50s"), FindValue("70s"), detailed) + " - ")
+					.append(" - " + formatTime(dataHandler.FindValue("50s"), detailed) + formatTime(dataHandler.FindValue("50s"), dataHandler.FindValue("70s"), detailed) + " - ")
 					.append(Color.RED, "30%")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("30s"), detailed) + formatTime(FindValue("30s"), FindValue("50s"), detailed)));
+					.append(" - " + formatTime(dataHandler.FindValue("30s"), detailed) + formatTime(dataHandler.FindValue("30s"), dataHandler.FindValue("50s"), detailed)));
 
 			if (config.roomTimeValidation())
 			{
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Maiden - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("30%"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("30%"), detailed)));
 			}
 		}
 	}

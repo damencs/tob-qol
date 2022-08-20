@@ -46,6 +46,7 @@ import com.tobqol.rooms.nylocas.NylocasHandler;
 import com.tobqol.rooms.sotetseg.SotetsegHandler;
 import com.tobqol.rooms.verzik.VerzikHandler;
 import com.tobqol.rooms.xarpus.XarpusHandler;
+import com.tobqol.tracking.RoomDataHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
@@ -95,10 +96,14 @@ public class TheatreQOLPlugin extends Plugin
 	private EventBus eventBus;
 
 	@Inject
-	private OverlayManager overlayManager;
+	public OverlayManager overlayManager;
 
 	@Inject
 	private EventManager eventManager;
+
+	@Inject
+	@Getter
+	private InstanceService instanceService;
 
 	@Inject
 	private Provider<MaidenHandler> maiden;
@@ -141,6 +146,9 @@ public class TheatreQOLPlugin extends Plugin
 			.arrayListValues()
 			.build();
 
+	@Getter
+	private RoomDataHandler dataHandler;
+
 	private boolean darknessHidden;
 
 	@Getter
@@ -172,6 +180,9 @@ public class TheatreQOLPlugin extends Plugin
 	@Override
 	protected void startUp()
 	{
+		dataHandler = new RoomDataHandler(client, this, config);
+		dataHandler.load();
+
 		buildFont(false);
 
 		overlayManager.add(overlay);
@@ -214,6 +225,8 @@ public class TheatreQOLPlugin extends Plugin
 				room.unload();
 			}
 		}
+
+		dataHandler.unload();
 	}
 
 	// @TODO -> make this so that it doesn't reset twice every since time you leave the raid.. eventbus/instanceservice
@@ -325,6 +338,13 @@ public class TheatreQOLPlugin extends Plugin
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
+		if (instanceService.getCurrentRegion() != instanceService.getPreviousRegion())
+		{
+			dataHandler.getData().clear();
+		}
+
+		instanceService.setPreviousRegion(instanceService.getCurrentRegion());
+
 		if (((isInVerSinhaza() && config.lightUp()) || (isInSotetseg() && config.hideSotetsegWhiteScreen())) && !darknessHidden)
 		{
 			hideDarkness(true);

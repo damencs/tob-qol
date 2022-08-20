@@ -33,6 +33,7 @@ import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.sotetseg.commons.MutableMaze;
 import com.tobqol.rooms.sotetseg.commons.SotetsegTable;
 import com.tobqol.rooms.sotetseg.config.SotetsegProjectileTheme;
+import com.tobqol.tracking.RoomDataHandler;
 import com.tobqol.tracking.RoomDataItem;
 import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
@@ -50,7 +51,6 @@ import javax.inject.Inject;
 import java.awt.*;
 
 import static com.tobqol.api.game.Region.SOTETSEG;
-import static com.tobqol.api.game.Region.XARPUS;
 import static com.tobqol.rooms.sotetseg.commons.SotetsegConstants.*;
 import static com.tobqol.rooms.sotetseg.commons.SotetsegTable.SOTETSEG_CLICKABLE;
 import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
@@ -59,7 +59,10 @@ import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 @Slf4j
 public class SotetsegHandler extends RoomHandler
 {
-	@Inject private SotetsegSceneOverlay sceneOverlay;
+	@Inject
+	private SotetsegSceneOverlay sceneOverlay;
+
+	private RoomDataHandler dataHandler;
 
 	@Getter
 	@CheckForNull
@@ -86,20 +89,20 @@ public class SotetsegHandler extends RoomHandler
 	{
 		super(plugin, config);
 		setRoomRegion(Region.SOTETSEG);
+
+		dataHandler = plugin.getDataHandler();
 	}
 
 	@Override
 	public void load()
 	{
 		overlayManager.add(sceneOverlay);
-		overlayManager.add(getTimeOverlay());
 	}
 
 	@Override
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
-		overlayManager.remove(getTimeOverlay());
 		reset();
 	}
 
@@ -144,20 +147,18 @@ public class SotetsegHandler extends RoomHandler
 	@Subscribe
 	public void onGameTick(GameTick event)
 	{
-		if ((!instance.isInRaid() || instance.getCurrentRegion() == XARPUS) && !getData().isEmpty())
+		if (instance.isInRaid() && instance.getCurrentRegion().isSotetseg())
 		{
-			getData().clear();
-		}
+			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.setShouldTrack(true);
+			}
 
-		if (instance.isInRaid() && instance.getCurrentRegion().isSotetseg() && instance.getRoomStatus() == 1 && !Find("Starting Tick").isPresent())
-		{
-			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-			setShouldTrack(true);
-		}
-
-		if (isShouldTrack() && !getData().isEmpty())
-		{
-			updateTotalTime();
+			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
+			{
+				dataHandler.updateTotalTime();
+			}
 		}
 
 		if (!active())
@@ -208,10 +209,10 @@ public class SotetsegHandler extends RoomHandler
 		{
 			if (clickable = SotetsegTable.anyMatch(SOTETSEG_CLICKABLE, n.getId()))
 			{
-				if (!Find("Starting Tick").isPresent())
+				if (!dataHandler.Find("Starting Tick").isPresent())
 				{
-					getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-					setShouldTrack(true);
+					dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+					dataHandler.setShouldTrack(true);
 				}
 
 				log.debug("[{}] - Sotetseg Changed NPC IDs -> Clickable: {}", client.getTickCount(), clickable);
@@ -369,8 +370,8 @@ public class SotetsegHandler extends RoomHandler
 		{
 			if (considerTeleport && event.getActor().getAnimation() == MAZE_TELE_ANIM)
 			{
-				boolean phase = Find("66%").isPresent();
-				getData().add(new RoomDataItem(phase ? "33%" : "66%", getTime(), phase ? 2 : 1, false));
+				boolean phase = dataHandler.Find("66%").isPresent();
+				dataHandler.getData().add(new RoomDataItem(phase ? "33%" : "66%", dataHandler.getTime(), phase ? 2 : 1, false));
 				considerTeleport = false;
 			}
 		}
@@ -388,8 +389,8 @@ public class SotetsegHandler extends RoomHandler
 
 		if (SOTETSEG_WAVE.matcher(stripped).find())
 		{
-			setShouldTrack(false);
-			Find("Total Time").get().setValue(getTime());
+			dataHandler.setShouldTrack(false);
+			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -405,39 +406,39 @@ public class SotetsegHandler extends RoomHandler
 
 	private void buildInfobox()
 	{
-		if (!getData().isEmpty())
+		if (!dataHandler.getData().isEmpty())
 		{
 			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
 
-			String tooltip = "66% - " + formatTime(FindValue("66%"), detailed) + "</br>" +
-					"33% - " + formatTime(FindValue("33%"), detailed) + formatTime(FindValue("33%"), FindValue("66%"), detailed) + "</br>" +
-					"Complete - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("33%"), detailed);
+			String tooltip = "66% - " + formatTime(dataHandler.FindValue("66%"), detailed) + "</br>" +
+					"33% - " + formatTime(dataHandler.FindValue("33%"), detailed) + formatTime(dataHandler.FindValue("33%"), dataHandler.FindValue("66%"), detailed) + "</br>" +
+					"Complete - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("33%"), detailed);
 
-			sotetsegInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Sotetseg", formatTime(FindValue("Total Time"), detailed), tooltip);
+			sotetsegInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Sotetseg", formatTime(dataHandler.FindValue("Total Time"), detailed), tooltip);
 			infoBoxManager.addInfoBox(sotetsegInfoBox);
 		}
 	}
 
 	private void sendChatTimes()
 	{
-		if (!getData().isEmpty())
+		if (!dataHandler.getData().isEmpty())
 		{
 			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
 
 			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 					.append(Color.RED, "66%")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("66%"), detailed) + " - ")
+					.append(" - " + formatTime(dataHandler.FindValue("66%"), detailed) + " - ")
 					.append(Color.RED, "33%")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("33%"), detailed) + formatTime(FindValue("33%"), FindValue("66%"), detailed)));
+					.append(" - " + formatTime(dataHandler.FindValue("33%"), detailed) + formatTime(dataHandler.FindValue("33%"), dataHandler.FindValue("66%"), detailed)));
 
 			if (config.roomTimeValidation())
 			{
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Sotetseg - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("33%"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("33%"), detailed)));
 			}
 		}
 	}

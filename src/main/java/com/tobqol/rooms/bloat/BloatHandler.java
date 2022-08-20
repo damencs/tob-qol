@@ -32,6 +32,7 @@ import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.bloat.commons.BloatConstants;
 import com.tobqol.rooms.bloat.commons.BloatTable;
+import com.tobqol.tracking.RoomDataHandler;
 import com.tobqol.tracking.RoomDataItem;
 import com.tobqol.tracking.RoomInfoBox;
 import com.tobqol.tracking.RoomInfoUtil;
@@ -62,6 +63,8 @@ import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 @Slf4j
 public class BloatHandler extends RoomHandler
 {
+	private RoomDataHandler dataHandler;
+
 	@Getter
 	@CheckForNull
 	private NPC bloatNpc = null;
@@ -75,18 +78,18 @@ public class BloatHandler extends RoomHandler
 	{
 		super(plugin, config);
 		setRoomRegion(Region.BLOAT);
+
+		dataHandler = plugin.getDataHandler();
 	}
 
 	@Override
 	public void load()
 	{
-		overlayManager.add(getTimeOverlay());
 	}
 
 	@Override
 	public void unload()
 	{
-		overlayManager.remove(getTimeOverlay());
 		reset();
 	}
 
@@ -166,38 +169,30 @@ public class BloatHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick event)
 	{
-		if ((!instance.isInRaid() || instance.getCurrentRegion().isNylocas()) && !getData().isEmpty())
+		if (instance.isInRaid() && instance.getCurrentRegion().isBloat())
 		{
-			getData().clear();
-		}
+			if (!dataHandler.Find("Starting Tick").isPresent() && crossedLine(BLOAT, new Point(39, 30), new Point(39, 33), true, client))
+			{
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.setShouldTrack(true);
+			}
 
-//		if (instance.isInRaid() && instance.getRoomStatus() == 1 && instance.getCurrentRegion().isBloat() && !Find("Starting Tick").isPresent())
-//		{
-//			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-//			setShouldTrack(true);
-//		}
-
-		if (instance.isInRaid() && instance.getCurrentRegion().isBloat() && !Find("Starting Tick").isPresent() && crossedLine(BLOAT, new Point(39, 30), new Point(39, 33), true, client))
-		{
-			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-			setShouldTrack(true);
-		}
-
-		if (!getData().isEmpty() && isShouldTrack())
-		{
-			updateTotalTime();
+			if (!dataHandler.getData().isEmpty() && dataHandler.isShouldTrack())
+			{
+				dataHandler.updateTotalTime();
+			}
 		}
 	}
 
 	@Subscribe
 	private void onVarbitChanged(VarbitChanged event)
 	{
-		if (instance.isInRaid() && instance.getCurrentRegion().isBloat() && !Find("Starting Tick").isPresent())
+		if (instance.isInRaid() && instance.getCurrentRegion().isBloat() && !dataHandler.Find("Starting Tick").isPresent())
 		{
 			if (client.getVarbitValue(THEATRE_OF_BLOOD_ROOM_STATUS) == 1)
 			{
-				getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-				setShouldTrack(true);
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.setShouldTrack(true);
 			}
 		}
 	}
@@ -215,14 +210,14 @@ public class BloatHandler extends RoomHandler
 		if (npc == bloatNpc && npc.getAnimation() == DOWN_ANIM)
 		{
 			downs++;
-			getData().add(new RoomDataItem("Down " + downs, getTime(), downs, true));
+			dataHandler.getData().add(new RoomDataItem("Down " + downs, dataHandler.getTime(), downs, true));
 		}
 	}
 
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
-		if (!active() || event.getType() != ChatMessageType.GAMEMESSAGE || !Find("Starting Tick").isPresent())
+		if (!active() || event.getType() != ChatMessageType.GAMEMESSAGE || !dataHandler.Find("Starting Tick").isPresent())
 		{
 			return;
 		}
@@ -231,8 +226,8 @@ public class BloatHandler extends RoomHandler
 
 		if (BLOAT_WAVE.matcher(stripped).find())
 		{
-			setShouldTrack(false);
-			Find("Total Time").get().setValue(getTime());
+			dataHandler.setShouldTrack(false);
+			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -253,20 +248,20 @@ public class BloatHandler extends RoomHandler
 
 	private void buildInfobox()
 	{
-		if (FindValue("Starting Tick") > 0)
+		if (dataHandler.FindValue("Starting Tick") > 0)
 		{
 			boolean precise = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
-			String roomTime = formatTime(FindValue("Total Time"));
+			String roomTime = formatTime(dataHandler.FindValue("Total Time"));
 			StringBuilder tooltip = new StringBuilder();
 
 			if (downs > 0)
 			{
-				getData().forEach(d ->
+				dataHandler.getData().forEach(d ->
 				{
 					if (d.getName().contains("Down"))
 					{
-						tooltip.append(d.getName() + " - " + formatTime(FindValue("Down " + d.getSort()), precise) +
-								(d.getSort() > 1 ? formatTime(FindValue("Down " + d.getSort()), FindValue("Down " + (d.getSort() - 1)), precise) : "") + "</br>");
+						tooltip.append(d.getName() + " - " + formatTime(dataHandler.FindValue("Down " + d.getSort()), precise) +
+								(d.getSort() > 1 ? formatTime(dataHandler.FindValue("Down " + d.getSort()), dataHandler.FindValue("Down " + (d.getSort() - 1)), precise) : "") + "</br>");
 					}
 				});
 
@@ -284,7 +279,7 @@ public class BloatHandler extends RoomHandler
 
 	private void sendChatTimes()
 	{
-		if (Find("Starting Tick").isPresent())
+		if (dataHandler.Find("Starting Tick").isPresent())
 		{
 			boolean precise = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
 
@@ -294,7 +289,7 @@ public class BloatHandler extends RoomHandler
 
 				int downsRemaining = downs - 1;
 
-				for (RoomDataItem d : getData())
+				for (RoomDataItem d : dataHandler.getData())
 				{
 					if (d.getName().contains("Down"))
 					{
@@ -314,7 +309,7 @@ public class BloatHandler extends RoomHandler
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Bloat - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), precise) + formatTime(FindValue("Total Time"), FindValue("Down " + downs), precise)));
+						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), precise) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("Down " + downs), precise)));
 			}
 		}
 	}

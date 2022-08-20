@@ -43,7 +43,7 @@ import java.util.function.Supplier;
 
 @Slf4j
 @Singleton
-final class InstanceService implements Instance
+public final class InstanceService implements Instance
 {
 	private final Client client;
 	private final TheatreQOLPlugin plugin;
@@ -68,8 +68,9 @@ final class InstanceService implements Instance
 	private boolean regionUpdated = false;
 	private int tickCycle = -1;
 
+	@Getter
 	@Setter
-	private int previousRegion;
+	private Region previousRegion;
 
 	@Inject
 	InstanceService(Client client, TheatreQOLPlugin plugin)

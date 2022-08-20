@@ -36,6 +36,7 @@ import com.tobqol.rooms.nylocas.commons.NyloBoss;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionBox;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionManager;
 import com.tobqol.rooms.nylocas.commons.NylocasConstants;
+import com.tobqol.tracking.RoomDataHandler;
 import com.tobqol.tracking.RoomDataItem;
 import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
@@ -59,7 +60,8 @@ import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.tobqol.api.game.Region.*;
+import static com.tobqol.api.game.Region.NYLOCAS;
+import static com.tobqol.api.game.Region.inRegion;
 import static com.tobqol.rooms.nylocas.commons.NylocasConstants.*;
 import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
 import static com.tobqol.tracking.RoomInfoUtil.formatTime;
@@ -69,6 +71,8 @@ public class NylocasHandler extends RoomHandler
 {
 	@Inject
 	private NylocasSceneOverlay sceneOverlay;
+
+	private RoomDataHandler dataHandler;
 
 	@Inject
 	private SkillIconManager skillIconManager;
@@ -129,6 +133,8 @@ public class NylocasHandler extends RoomHandler
 	{
 		super(plugin, config);
 		setRoomRegion(NYLOCAS);
+
+		dataHandler = plugin.getDataHandler();
 	}
 
 	@Override
@@ -162,7 +168,6 @@ public class NylocasHandler extends RoomHandler
 	public void load()
 	{
 		overlayManager.add(sceneOverlay);
-		overlayManager.add(getTimeOverlay());
 		startupNyloOverlay();
 	}
 
@@ -170,7 +175,6 @@ public class NylocasHandler extends RoomHandler
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
-		overlayManager.remove(getTimeOverlay());
 		shutdownNyloOverlay();
 		reset();
 	}
@@ -294,7 +298,7 @@ public class NylocasHandler extends RoomHandler
 
 		if (NylocasConstants.matchesAnyMode(BOSS_DROPPING_MELEE, id))
 		{
-			getData().add(new RoomDataItem("Boss", getTime(), 6, false));
+			dataHandler.getData().add(new RoomDataItem("Boss", dataHandler.getTime(), 6, false));
 			return;
 		}
 
@@ -312,7 +316,7 @@ public class NylocasHandler extends RoomHandler
 			demiBoss = NyloBoss.spawned(npc, instance.mode());
 
 			demiCount++;
-			getData().add(new RoomDataItem("Demi " + demiCount, getTime(), demiCount, false));
+			dataHandler.getData().add(new RoomDataItem("Demi " + demiCount, dataHandler.getTime(), demiCount, false));
 			return;
 		}
 
@@ -325,10 +329,10 @@ public class NylocasHandler extends RoomHandler
 
 			pillars.putIfAbsent(npc, 100);
 
-			if (!Find("Starting Tick").isPresent())
+			if (!dataHandler.Find("Starting Tick").isPresent())
 			{
-				getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-				setShouldTrack(true);
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.setShouldTrack(true);
 			}
 			return;
 		}
@@ -362,7 +366,7 @@ public class NylocasHandler extends RoomHandler
 
 					if (wave == NYLOCAS_WAVES_TOTAL)
 					{
-						getData().add(new RoomDataItem("Waves", getTime(), 4, false));
+						dataHandler.getData().add(new RoomDataItem("Waves", dataHandler.getTime(), 4, false));
 					}
 				}
 			}
@@ -412,9 +416,9 @@ public class NylocasHandler extends RoomHandler
 		pillars.remove(npc);
 		wavesMap.remove(npc);
 
-		if (wavesMap.isEmpty() && wave == NYLOCAS_WAVES_TOTAL && !Find("Cleanup").isPresent())
+		if (wavesMap.isEmpty() && wave == NYLOCAS_WAVES_TOTAL && !dataHandler.Find("Cleanup").isPresent())
 		{
-			getData().add(new RoomDataItem("Cleanup", getTime(), 5, false));
+			dataHandler.getData().add(new RoomDataItem("Cleanup", dataHandler.getTime(), 5, false));
 		}
 	}
 
@@ -470,20 +474,18 @@ public class NylocasHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
-		if ((!instance.isInRaid() || instance.getCurrentRegion() == SOTETSEG) && !getData().isEmpty())
+		if (instance.isInRaid() && instance.getCurrentRegion().isNylocas())
 		{
-			getData().clear();
-		}
+			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+				dataHandler.setShouldTrack(true);
+			}
 
-		if (instance.isInRaid() && instance.getRoomStatus() == 1 && instance.getCurrentRegion().isNylocas() && !Find("Starting Tick").isPresent())
-		{
-			getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-			setShouldTrack(true);
-		}
-
-		if (isShouldTrack() && !getData().isEmpty())
-		{
-			updateTotalTime();
+			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
+			{
+				dataHandler.updateTotalTime();
+			}
 		}
 
 		if (!active())
@@ -594,8 +596,8 @@ public class NylocasHandler extends RoomHandler
 
 		if (NYLOCAS_WAVE.matcher(stripped).find())
 		{
-			setShouldTrack(false);
-			Find("Total Time").get().setValue(getTime());
+			dataHandler.setShouldTrack(false);
+			dataHandler.Find("Total Time").get().setValue(dataHandler.getTime());
 
 			if (config.displayRoomTimes().isInfobox())
 			{
@@ -611,7 +613,7 @@ public class NylocasHandler extends RoomHandler
 
 	private void buildInfobox()
 	{
-		if (!getData().isEmpty())
+		if (!dataHandler.getData().isEmpty())
 		{
 			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
 
@@ -619,19 +621,19 @@ public class NylocasHandler extends RoomHandler
 			// need to add considerations for hard-mode because of prince spawns and deaths.. maybe?
 			// maybe add a generate tooltip to method to roomhandler that uses hidden and iterates thru like we do for prerendering times??
 			// need to add demi spawns if HMT
-			String tooltip = "Waves - " + formatTime(FindValue("Waves"), detailed) + "</br>" +
-					"Cleanup - " + formatTime(FindValue("Cleanup"), detailed) + formatTime(FindValue("Cleanup"), FindValue("Waves"), detailed) + "</br>" +
-					"Boss - " + formatTime(FindValue("Boss"), detailed) + formatTime(FindValue("Boss"), FindValue("Cleanup"), detailed) + "</br>" +
-					"Complete - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("Boss"), detailed);
+			String tooltip = "Waves - " + formatTime(dataHandler.FindValue("Waves"), detailed) + "</br>" +
+					"Cleanup - " + formatTime(dataHandler.FindValue("Cleanup"), detailed) + formatTime(dataHandler.FindValue("Cleanup"), dataHandler.FindValue("Waves"), detailed) + "</br>" +
+					"Boss - " + formatTime(dataHandler.FindValue("Boss"), detailed) + formatTime(dataHandler.FindValue("Boss"), dataHandler.FindValue("Cleanup"), detailed) + "</br>" +
+					"Complete - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("Boss"), detailed);
 
-			nylocasInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Nylocas", formatTime(FindValue("Total Time"), detailed), tooltip);
+			nylocasInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Nylocas", formatTime(dataHandler.FindValue("Total Time"), detailed), tooltip);
 			infoBoxManager.addInfoBox(nylocasInfoBox);
 		}
 	}
 
 	private void sendChatTimes()
 	{
-		if (!getData().isEmpty())
+		if (!dataHandler.getData().isEmpty())
 		{
 			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
 
@@ -639,20 +641,20 @@ public class NylocasHandler extends RoomHandler
 			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 					.append(Color.RED, "Waves")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("Waves"), detailed) + " - ")
+					.append(" - " + formatTime(dataHandler.FindValue("Waves"), detailed) + " - ")
 					.append(Color.RED, "Cleanup")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("Cleanup"), detailed) + formatTime(FindValue("Cleanup"), FindValue("Waves"), detailed) + " - ")
+					.append(" - " + formatTime(dataHandler.FindValue("Cleanup"), detailed) + formatTime(dataHandler.FindValue("Cleanup"), dataHandler.FindValue("Waves"), detailed) + " - ")
 					.append(Color.RED, "Boss")
 					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(FindValue("Boss"), detailed) + formatTime(FindValue("Boss"), FindValue("Cleanup"), detailed)));
+					.append(" - " + formatTime(dataHandler.FindValue("Boss"), detailed) + formatTime(dataHandler.FindValue("Boss"), dataHandler.FindValue("Cleanup"), detailed)));
 
 			if (config.roomTimeValidation())
 			{
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 						.append(Color.RED, "Nylocas - Room Complete")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(FindValue("Total Time"), detailed) + formatTime(FindValue("Total Time"), FindValue("Boss"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Total Time"), detailed) + formatTime(dataHandler.FindValue("Total Time"), dataHandler.FindValue("Boss"), detailed)));
 			}
 		}
 	}
