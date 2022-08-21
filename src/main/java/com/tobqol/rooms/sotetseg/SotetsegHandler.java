@@ -131,7 +131,7 @@ public class SotetsegHandler extends RoomHandler
 	@Subscribe
 	private void onConfigChanged(ConfigChanged e)
 	{
-		if (!e.getGroup().equals(TheatreQOLConfig.GROUP_NAME))
+		if (!e.getGroup().equals(TheatreQOLConfig.GROUP_NAME) || !instance.getCurrentRegion().isSotetsegUnderworld())
 		{
 			return;
 		}
@@ -139,7 +139,7 @@ public class SotetsegHandler extends RoomHandler
 		switch (e.getKey())
 		{
 			case "sotetsegHideUnderworldRocks":
-				//when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, sceneManager::refreshScene);
+				when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, sceneManager::refreshScene);
 				break;
 		}
 	}
@@ -182,7 +182,7 @@ public class SotetsegHandler extends RoomHandler
 			return;
 		}
 
-		//when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
+		when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
 	}
 
 	@Subscribe
@@ -269,7 +269,7 @@ public class SotetsegHandler extends RoomHandler
 
 		if (UNDERWORLD_ROCKS.contains(obj.getId()))
 		{
-			//when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
+			when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
 		}
 	}
 

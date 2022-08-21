@@ -341,12 +341,16 @@ public class TheatreQOLPlugin extends Plugin
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
-		if ((instanceService.getCurrentRegion() != instanceService.getPreviousRegion()) && (instanceService.getCurrentRegion() != Region.SOTETSEG_MAZE || instanceService.getPreviousRegion() != Region.SOTETSEG_MAZE))
+		if ((instanceService.getCurrentRegion() != instanceService.getPreviousRegion()))
 		{
-			dataHandler.getData().clear();
-		}
+			if (instanceService.getCurrentRegion().isSotetsegUnderworld() && instanceService.getPreviousRegion().isSotetseg())
+			{
+				return;
+			}
 
-		instanceService.setPreviousRegion(instanceService.getCurrentRegion());
+			dataHandler.getData().clear();
+			instanceService.setPreviousRegion(instanceService.getCurrentRegion());
+		}
 
 		if (((isInVerSinhaza() && config.lightUp()) || (isInSotetseg() && config.hideSotetsegWhiteScreen())) && !darknessHidden)
 		{
