@@ -343,7 +343,8 @@ public class TheatreQOLPlugin extends Plugin
 	{
 		if ((instanceService.getCurrentRegion() != instanceService.getPreviousRegion()))
 		{
-			if (instanceService.getCurrentRegion().isSotetsegUnderworld() && instanceService.getPreviousRegion().isSotetseg())
+			if ((instanceService.getCurrentRegion().isSotetsegUnderworld() && instanceService.getPreviousRegion().isSotetseg()
+				|| (instanceService.getCurrentRegion().isMaiden() && instanceService.getPreviousRegion().isUnknown())))
 			{
 				return;
 			}
