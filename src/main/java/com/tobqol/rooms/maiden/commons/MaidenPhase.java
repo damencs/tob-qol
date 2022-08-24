@@ -23,55 +23,79 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.rooms.sotetseg.commons.util;
+package com.tobqol.rooms.maiden.commons;
 
-import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Table;
-import com.tobqol.api.game.Instance;
+import com.google.common.collect.ImmutableMap;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import net.runelite.api.GroundObject;
-import net.runelite.api.NpcID;
-import net.runelite.api.NullNpcID;
+import lombok.experimental.Accessors;
+import net.runelite.api.NPC;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RequiredArgsConstructor
-public enum SotetsegTable implements SotetsegConstants
+@Getter
+@Accessors(fluent = true)
+public enum MaidenPhase
 {
-	SOTETSEG_NOT_CLICKABLE(NpcID.SOTETSEG_10864, NpcID.SOTETSEG, NpcID.SOTETSEG_10867),
-	SOTETSEG_CLICKABLE(NpcID.SOTETSEG_10865, NpcID.SOTETSEG_8388, NpcID.SOTETSEG_10868),
-	TORNADO(NullNpcID.NULL_10866, NullNpcID.NULL_8389, NullNpcID.NULL_10869);
+	P1("70s"),
+	P2("50s"),
+	P3("30s"),
+	OTHER("*");
 
-	private final int sm;
-	private final int rg;
-	private final int hm;
+	private final String key;
 
-	private static final Table<Instance.Mode, Integer, SotetsegTable> TABLE;
+	private static final Map<Integer, MaidenPhase> LOOKUP;
 
 	static
 	{
-		ImmutableTable.Builder<Instance.Mode, Integer, SotetsegTable> builder = ImmutableTable.builder();
+		ImmutableMap.Builder<Integer, MaidenPhase> builder = ImmutableMap.builder();
 
-		for (SotetsegTable table : values())
+		Map<MaidenTable, MaidenPhase> phases = new HashMap<>();
+
+		phases.put(MaidenTable.MAIDEN_P0, MaidenPhase.P1);
+		phases.put(MaidenTable.MAIDEN_P1, MaidenPhase.P2);
+		phases.put(MaidenTable.MAIDEN_P2, MaidenPhase.P3);
+
+
+		phases.forEach((table, phase) ->
 		{
-			builder.put(Instance.Mode.STORY, table.sm, table);
-			builder.put(Instance.Mode.REGULAR, table.rg, table);
-			builder.put(Instance.Mode.HARD, table.hm, table);
+			builder.put(table.sm(), phase);
+			builder.put(table.rg(), phase);
+			builder.put(table.hm(), phase);
+		});
+
+		LOOKUP = builder.build();
+	}
+
+	public static MaidenPhase compose(NPC npc)
+	{
+		if (npc == null)
+		{
+			return OTHER;
 		}
 
-		TABLE = builder.build();
+		return LOOKUP.getOrDefault(npc.getId(), OTHER);
 	}
 
-	public static Instance.Mode findMode(int npcId)
+	public boolean isPhaseOne()
 	{
-		return Instance.findFirstMode(mode -> TABLE.contains(mode, npcId));
+		return this == P1;
 	}
 
-	public static boolean anyMatch(SotetsegTable table, int npcId)
+	public boolean isPhaseTwo()
 	{
-		return table != null && (table.sm == npcId || table.rg == npcId || table.hm == npcId);
+		return this == P2;
 	}
 
-	public static boolean isActiveMazeObject(GroundObject obj)
+	public boolean isPhaseThree()
 	{
-		return obj != null && ACTIVE_MAZE_GROUND_OBJS.contains(obj.getId());
+		return this == P3;
+	}
+
+	public boolean isNonTrackedPhase()
+	{
+		return this == OTHER;
 	}
 }

@@ -34,26 +34,44 @@ import com.tobqol.rooms.xarpus.commons.ExhumedTracker;
 import com.tobqol.rooms.xarpus.commons.XarpusConstants;
 import com.tobqol.rooms.xarpus.commons.XarpusPhase;
 import com.tobqol.rooms.xarpus.commons.XarpusTable;
+import com.tobqol.tracking.RoomDataHandler;
+import com.tobqol.tracking.RoomDataItem;
+import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.NPC;
 import net.runelite.api.events.*;
+import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
 import javax.sound.sampled.*;
+import java.awt.*;
 import java.io.BufferedInputStream;
+
+import static com.tobqol.api.game.Region.XARPUS;
+import static com.tobqol.rooms.xarpus.commons.XarpusConstants.BOSS_IMAGE;
+import static com.tobqol.rooms.xarpus.commons.XarpusConstants.XARPUS_WAVE;
+import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
+import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 
 @Slf4j
 public class XarpusHandler extends RoomHandler
 {
-	@Inject private XarpusSceneOverlay sceneOverlay;
+	@Inject
+	private XarpusSceneOverlay sceneOverlay;
+
+	private RoomDataHandler dataHandler;
 
 	@Getter
 	@CheckForNull
 	private NPC xarpusNpc = null;
+
+	private RoomInfoBox xarpuInfoBox;
 
 	@Getter
 	private XarpusPhase phase = XarpusPhase.UNKNOWN;
@@ -69,6 +87,8 @@ public class XarpusHandler extends RoomHandler
 	{
 		super(plugin, config);
 		setRoomRegion(Region.XARPUS);
+
+		dataHandler = plugin.getDataHandler();
 	}
 
 	public void init()
@@ -122,6 +142,11 @@ public class XarpusHandler extends RoomHandler
 		{
 			exhumedTracker = null;
 		}
+
+		if (instance.getRaidStatus() <= 1)
+		{
+			infoBoxManager.removeInfoBox(xarpuInfoBox);
+		}
 	}
 
 	@Subscribe
@@ -129,7 +154,7 @@ public class XarpusHandler extends RoomHandler
 	{
 		if (event.getGroup().equals("tobqol"))
 		{
-			if (event.getKey().equals("xarpusSoundClipVolume"))
+			if (event.getKey().equals("xarpusSoundClipVolume") && config.xarpusSoundClip())
 			{
 				if (soundClip != null)
 				{
@@ -166,6 +191,16 @@ public class XarpusHandler extends RoomHandler
 				phase = XarpusPhase.P3;
 			}
 
+			if (XarpusTable.anyMatch(XarpusTable.XARPUS_P1, n.getId()))
+			{
+				if (!dataHandler.Find("Starting Tick").isPresent())
+				{
+					dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+					dataHandler.setShouldTrack(true);
+					return;
+				}
+			}
+
 			exhumedTracker = new ExhumedTracker();
 		});
 	}
@@ -178,7 +213,28 @@ public class XarpusHandler extends RoomHandler
 			return;
 		}
 
-		isNpcFromName(e.getNpc(), XarpusConstants.BOSS_NAME, n -> phase = XarpusPhase.compose(n));
+		isNpcFromName(e.getNpc(), XarpusConstants.BOSS_NAME, n ->
+		{
+			phase = XarpusPhase.compose(n);
+
+			if (XarpusTable.anyMatch(XarpusTable.XARPUS_P1, n.getId()))
+			{
+				if (!dataHandler.Find("Starting Tick").isPresent())
+				{
+					dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+					dataHandler.setShouldTrack(true);
+					return;
+				}
+			}
+			else if (XarpusTable.anyMatch(XarpusTable.XARPUS_P23, n.getId()))
+			{
+				if (!dataHandler.Find("Exhumeds").isPresent())
+				{
+					dataHandler.getData().add(new RoomDataItem("Exhumeds", dataHandler.getTime(), 1, false));
+					return;
+				}
+			}
+		});
 	}
 
 	@Subscribe
@@ -195,6 +251,20 @@ public class XarpusHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
+		if (instance.isInRaid() && instance.getCurrentRegion().isXarpus())
+		{
+			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", dataHandler.getTime(), true, true));
+				dataHandler.setShouldTrack(true);
+			}
+
+			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
+			{
+				dataHandler.updateTotalTime();
+			}
+		}
+
 		if (!active())
 		{
 			return;
@@ -256,6 +326,92 @@ public class XarpusHandler extends RoomHandler
 				event.getActor().setOverheadText("Sheeeeeesh!");
 				soundClip.setFramePosition(0);
 				soundClip.start();
+
+				dataHandler.getData().add(new RoomDataItem("Screech", dataHandler.getTime(), 2, false));
+			}
+		}
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (instance.getCurrentRegion() != XARPUS && event.getType() != ChatMessageType.GAMEMESSAGE)
+		{
+			return;
+		}
+
+		String stripped = Text.removeTags(event.getMessage());
+
+		if (XARPUS_WAVE.matcher(stripped).find())
+		{
+			dataHandler.setShouldTrack(false);
+			dataHandler.Find("Room").get().setValue(dataHandler.getTime());
+
+			if (config.displayRoomTimes().isInfobox())
+			{
+				buildInfobox();
+			}
+
+			if (config.displayRoomTimes().isChat())
+			{
+				sendChatTimes();
+			}
+		}
+	}
+
+	private void buildInfobox()
+	{
+		if (!dataHandler.getData().isEmpty())
+		{
+			String tooltip;
+
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				tooltip = "Exhumeds - " + formatTime(dataHandler.FindValue("Exhumeds")) + "</br>" +
+					"Screech - " + formatTime(dataHandler.FindValue("Screech")) + formatTime(dataHandler.FindValue("Screech"), dataHandler.FindValue("Exhumeds")) + "</br>" +
+					"Complete - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Screech"));
+			}
+			else
+			{
+				tooltip = "Complete - " + formatTime(dataHandler.FindValue("Room")) + "*";
+			}
+
+			xarpuInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Xarpus", formatTime(dataHandler.FindValue("Room")), tooltip);
+			infoBoxManager.addInfoBox(xarpuInfoBox);
+		}
+	}
+
+	private void sendChatTimes()
+	{
+		if (!dataHandler.getData().isEmpty())
+		{
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+						.append(Color.RED, "Exhumeds")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("Exhumeds")) + " - ")
+						.append(Color.RED, "Screech")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("Screech")) + formatTime(dataHandler.FindValue("Screech"), dataHandler.FindValue("Exhumeds"))));
+
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Xarpus - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Screech"))));
+				}
+			}
+			else
+			{
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Xarpus - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + "*"));
+				}
 			}
 		}
 	}

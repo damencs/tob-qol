@@ -23,28 +23,32 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.rooms.sotetseg.commons.util;
+package com.tobqol.rooms.maiden.commons;
 
-import com.google.common.collect.ImmutableList;
+import net.runelite.api.NullObjectID;
 
-public interface SotetsegConstants
+import java.util.regex.Pattern;
+
+public interface MaidenConstants
 {
-	String BOSS_NAME = "Sotetseg";
+	String BOSS_NAME = "The Maiden of Sugadinti";
+	String BOSS_NAME_SIMPLE = "Maiden";
 
-	int SOTETSEG_MELEE_ANIM = 8138;
-	int SOTETSEG_MAGIC_ANIM = 8139;
+	int BOSS_IMAGE = 25748;
 
-	int DEATH_BALL = 1604;
-	int MAGIC_ORB = 1606;
-	int RANGE_ORB = 1607;
+	Pattern MAIDEN_WAVE = Pattern.compile("Wave 'The Maiden of Sugadinti' \\(.*\\) complete!");
 
-	int MAZE_UNDERWORLD_PORTAL = 33037; // GameObject
+	String RED_CRAB_NAME = "Nylocas Matomenos";
+	String BLOOD_SPAWN_NAME = "Blood spawn";
 
-	int INACTIVE_MAZE_GROUND_OBJ_0 = 33033; // Overworld
-	int INACTIVE_MAZE_GROUND_OBJ_1 = 33034; // Underworld
-	ImmutableList<Integer> ACTIVE_MAZE_GROUND_OBJS = ImmutableList.of(33035, 41750, 41751, 41752, 41753);
+	int MAIDEN_BLOOD_TOSS_ANIM = 8091;
+	int MAIDEN_ATTACK_ANIM = 8092;
+	int MAIDEN_DEATH_ANIM = 8093;
 
-	int INFERNO_RANGE = 1378;
-	int INFERNO_MAGE = 1380;
-	int INFERNO_DEATH_BALL = 1375;
+	int RED_CRAB_DEATH_ANIM = 8097;
+
+	int BLOOD_TOSS_PROJ = 1578;
+
+	int BLOOD_SPLAT_ID = 1579;                      // GraphicObject
+	int BLOOD_TRAIL_ID = NullObjectID.NULL_32984;   // GameObject
 }

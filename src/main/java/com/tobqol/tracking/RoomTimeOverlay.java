@@ -23,25 +23,52 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.rooms.maiden.commons.util;
+package com.tobqol.tracking;
 
-import net.runelite.api.NullObjectID;
+import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.ui.overlay.Overlay;
+import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.components.PanelComponent;
 
-public interface MaidenConstants
+import javax.inject.Inject;
+import java.awt.*;
+
+@Slf4j
+public class RoomTimeOverlay extends Overlay
 {
-	String BOSS_NAME = "The Maiden of Sugadinti";
-	String BOSS_NAME_SIMPLE = "Maiden";
-	String RED_CRAB_NAME = "Nylocas Matomenos";
-	String BLOOD_SPAWN_NAME = "Blood spawn";
+    private TheatreQOLPlugin plugin;
+    private TheatreQOLConfig config;
 
-	int MAIDEN_BLOOD_TOSS_ANIM = 8091;
-	int MAIDEN_ATTACK_ANIM = 8092;
-	int MAIDEN_DEATH_ANIM = 8093;
+    @Getter
+    protected PanelComponent panelComponent = new PanelComponent();
 
-	int RED_CRAB_DEATH_ANIM = 8097;
+    @Inject
+    public RoomTimeOverlay(TheatreQOLPlugin plugin, TheatreQOLConfig config)
+    {
+        this.plugin = plugin;
+        this.config = config;
 
-	int BLOOD_TOSS_PROJ = 1578;
+        setPosition(OverlayPosition.TOP_LEFT);
+    }
 
-	int BLOOD_SPLAT_ID = 1579;                      // GraphicObject
-	int BLOOD_TRAIL_ID = NullObjectID.NULL_32984;   // GameObject
+    @Override
+    public Dimension render(Graphics2D graphics)
+    {
+        if (!config.displayRoomTimes().isLiveOverlay() || !plugin.getInstanceService().isInRaid())
+        {
+            return null;
+        }
+
+        if (config.shrunkLiveTimerDesign())
+        {
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        }
+
+        this.panelComponent = plugin.getDataHandler().preRenderRoomTimes();
+
+        return panelComponent.render(graphics);
+    }
 }

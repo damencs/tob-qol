@@ -23,28 +23,59 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.config.font;
+package com.tobqol.config.times;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 @Getter
-public enum FontStyles
+public enum TimeDisplayType
 {
-    PLAIN("Plain", 0),
-    BOLD("Bold", 1),
-    ITALIC("Italic", 2),
-    BOLD_ITALICIZED("Bold & Italic", 3);
+    OFF("Off"),
+    CHAT("Chat"),
+    INFOBOX("Infobox"),
+    LIVE_OVERLAY("Live Overlay"),
+    CHAT_AND_INFOBOX("Chat & Infobox"),
+    LIVE_OVERLAY_AND_CHAT("Live & Chat"),
+    LIVE_OVERLAY_AND_INFOBOX("Live & Infobox"),
+    ALL("ALL");
 
-    private final String style;
-
-    @Getter
-    private final int value;
+    private final String type;
 
     @Override
     public String toString()
     {
-        return style;
+        return type;
+    }
+
+    public boolean isOff()
+    {
+        return this == OFF;
+    }
+
+    public boolean isChat()
+    {
+        return this == CHAT || this == CHAT_AND_INFOBOX || this == LIVE_OVERLAY_AND_CHAT || this == ALL;
+    }
+
+    public boolean isInfobox()
+    {
+        return this == INFOBOX || this == CHAT_AND_INFOBOX || this == LIVE_OVERLAY_AND_INFOBOX || this == ALL;
+    }
+
+    public boolean isLiveOverlay()
+    {
+        return this == LIVE_OVERLAY || this == LIVE_OVERLAY_AND_CHAT || this == LIVE_OVERLAY_AND_INFOBOX || this == ALL;
+    }
+
+    public boolean isAll()
+    {
+        return this == ALL;
+    }
+
+    public boolean isAny()
+    {
+        return this == CHAT || this == INFOBOX || this == CHAT_AND_INFOBOX || this == LIVE_OVERLAY || this == LIVE_OVERLAY_AND_CHAT || this == LIVE_OVERLAY_AND_INFOBOX || this == ALL;
     }
 }

@@ -31,23 +31,35 @@ import com.tobqol.api.game.Region;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.verzik.commons.Tornado;
 import com.tobqol.rooms.verzik.commons.VerzikMap;
+import com.tobqol.tracking.RoomDataHandler;
+import com.tobqol.tracking.RoomDataItem;
+import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.ChatMessageType;
 import net.runelite.api.GraphicsObject;
 import net.runelite.api.NPC;
 import net.runelite.api.Player;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
+import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.util.Text;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
+
+import static com.tobqol.api.game.Region.XARPUS;
+import static com.tobqol.rooms.verzik.commons.VerzikMap.*;
+import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
+import static com.tobqol.tracking.RoomInfoUtil.formatTime;
 
 @Slf4j
 public class VerzikHandler extends RoomHandler
@@ -55,8 +67,12 @@ public class VerzikHandler extends RoomHandler
 	@Inject
 	private VerzikOverlay overlay;
 
+	private RoomDataHandler dataHandler;
+
 	@Getter
 	private NPC verzikNpc = null;
+
+	private RoomInfoBox verzikInfoBox;
 
 	@Getter
 	private final Map<NPC, Pair<Integer, Integer>> verzikReds = new HashMap<>();
@@ -77,6 +93,8 @@ public class VerzikHandler extends RoomHandler
 	{
 		super(plugin, config);
 		setRoomRegion(Region.VERZIK);
+
+		dataHandler = plugin.getDataHandler();
 	}
 
 	@Override
@@ -106,6 +124,11 @@ public class VerzikHandler extends RoomHandler
 		tornadoes.clear();
 		ticksLeft = -1;
 		yellows.clear();
+
+		if (instance.getRaidStatus() <= 1)
+		{
+			infoBoxManager.removeInfoBox(verzikInfoBox);
+		}
 	}
 
 	@Subscribe
@@ -129,6 +152,11 @@ public class VerzikHandler extends RoomHandler
 		if (VerzikMap.matchesAnyMode(VerzikMap.RED_NYLO, npc.getId()))
 		{
 			verzikReds.putIfAbsent(npc, MutablePair.of(npc.getHealthRatio(), npc.getHealthScale()));
+
+			if (!dataHandler.Find("Reds").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("Reds", dataHandler.getTime(), false));
+			}
 		}
 
 		if (VerzikMap.matchesAnyMode(VerzikMap.TORNADO, id))
@@ -148,6 +176,43 @@ public class VerzikHandler extends RoomHandler
 				reset();
 				verzikNpc = npc;
 				break;
+		}
+	}
+
+	@Subscribe
+	private void onNpcChanged(NpcChanged e)
+	{
+		if (!active())
+		{
+			return;
+		}
+
+		VerzikMap def = VerzikMap.queryTable(e.getNpc().getId());
+
+		if (def == null)
+		{
+			return;
+		}
+
+		switch (def)
+		{
+			case VERZIK_P1:
+			{
+				if (!dataHandler.Find("Starting Tick").isPresent())
+				{
+					dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+					dataHandler.setShouldTrack(true);
+				}
+				break;
+			}
+			case VERZIK_P2:
+			{
+				if (!dataHandler.Find("P1").isPresent())
+				{
+					dataHandler.getData().add(new RoomDataItem("P1", dataHandler.getTime(), false));
+				}
+				break;
+			}
 		}
 	}
 
@@ -185,6 +250,22 @@ public class VerzikHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
+		if (instance.isInRaid() && instance.getCurrentRegion().isVerzik())
+		{
+			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
+				dataHandler.setShouldTrack(true);
+
+				dataHandler.getData().add(new RoomDataItem("Room", dataHandler.getTime(), 99, false, "P2"));
+			}
+
+			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
+			{
+				dataHandler.updateTotalTime();
+			}
+		}
+
 		if (!active() || verzikNpc == null)
 		{
 			return;
@@ -263,6 +344,18 @@ public class VerzikHandler extends RoomHandler
 	}
 
 	@Subscribe
+	public void onAnimationChanged(AnimationChanged event)
+	{
+		if (event.getActor().getAnimation() == VERZIK_P2_TRANSITION)
+		{
+			if (!dataHandler.Find("P2").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("P2", dataHandler.getTime(), false));
+			}
+		}
+	}
+
+	@Subscribe
 	public void onAreaSoundEffectPlayed(AreaSoundEffectPlayed event)
 	{
 		if (event.getSource() != null && event.getSource().getName() != null && verzikNpc != null && config.muteVerzikSounds())
@@ -270,6 +363,94 @@ public class VerzikHandler extends RoomHandler
 			if (event.getSoundId() == 3991 || event.getSoundId() == 3987)
 			{
 				event.consume();
+			}
+		}
+	}
+
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (instance.getCurrentRegion() != XARPUS && event.getType() != ChatMessageType.GAMEMESSAGE)
+		{
+			return;
+		}
+
+		String stripped = Text.removeTags(event.getMessage());
+
+		if (VERZIK_WAVE.matcher(stripped).find())
+		{
+			dataHandler.setShouldTrack(false);
+			dataHandler.Find("Room").get().setValue(dataHandler.getTime());
+
+			if (config.displayRoomTimes().isInfobox())
+			{
+				buildInfobox();
+			}
+
+			if (config.displayRoomTimes().isChat())
+			{
+				sendChatTimes();
+			}
+		}
+	}
+
+	private void buildInfobox()
+	{
+		if (!dataHandler.getData().isEmpty())
+		{
+			String tooltip;
+
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				tooltip = "P1 - " + formatTime(dataHandler.FindValue("P1")) + "</br>" +
+					"Reds - " + formatTime(dataHandler.FindValue("Reds")) + formatTime(dataHandler.FindValue("Reds"), dataHandler.FindValue("P1")) + "</br>" +
+					"P2 - " + formatTime(dataHandler.FindValue("P2")) + formatTime(dataHandler.FindValue("P2"), dataHandler.FindValue("Reds")) + "</br>" +
+					"Complete - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("P2"));
+			}
+			else
+			{
+				tooltip = "Complete - " + formatTime(dataHandler.FindValue("Room")) + "*";
+			}
+
+			verzikInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Verzik", formatTime(dataHandler.FindValue("Room")), tooltip);
+			infoBoxManager.addInfoBox(verzikInfoBox);
+		}
+	}
+
+	private void sendChatTimes()
+	{
+		if (!dataHandler.getData().isEmpty())
+		{
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+						.append(Color.RED, "P1")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("P1")) + " - ")
+						.append(Color.RED, "Reds")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("Reds")) + " - " + formatTime(dataHandler.FindValue("Reds"), dataHandler.FindValue("P1")) + " - ")
+						.append(Color.RED, "P2")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("P2")) + " - " + formatTime(dataHandler.FindValue("P2"), dataHandler.FindValue("Reds"))));
+
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Verzik - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("P2"))));
+				}
+			}
+			else
+			{
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Verzik - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + "*"));
+				}
 			}
 		}
 	}

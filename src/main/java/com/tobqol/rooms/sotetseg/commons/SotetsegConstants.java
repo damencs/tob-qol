@@ -23,79 +23,38 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.rooms.maiden.commons.util;
+package com.tobqol.rooms.sotetseg.commons;
 
-import com.google.common.collect.ImmutableMap;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.Accessors;
-import net.runelite.api.NPC;
+import com.google.common.collect.ImmutableList;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.regex.Pattern;
 
-@RequiredArgsConstructor
-@Getter
-@Accessors(fluent = true)
-public enum MaidenPhase
+public interface SotetsegConstants
 {
-	P1("70s"),
-	P2("50s"),
-	P3("30s"),
-	OTHER("*");
+	String BOSS_NAME = "Sotetseg";
 
-	private final String key;
+	int BOSS_IMAGE = 25751;
 
-	private static final Map<Integer, MaidenPhase> LOOKUP;
+	Pattern SOTETSEG_WAVE = Pattern.compile("Wave 'Sotetseg' \\(.*\\) complete!");
 
-	static
-	{
-		ImmutableMap.Builder<Integer, MaidenPhase> builder = ImmutableMap.builder();
+	int MAZE_TELE_ANIM = 1816;
 
-		Map<MaidenTable, MaidenPhase> phases = new HashMap<>();
+	int SOTETSEG_MELEE_ANIM = 8138;
+	int SOTETSEG_MAGIC_ANIM = 8139;
 
-		phases.put(MaidenTable.MAIDEN_P0, MaidenPhase.P1);
-		phases.put(MaidenTable.MAIDEN_P1, MaidenPhase.P2);
-		phases.put(MaidenTable.MAIDEN_P2, MaidenPhase.P3);
+	int DEATH_BALL = 1604;
+	int MAGIC_ORB = 1606;
+	int RANGE_ORB = 1607;
 
+	int MAZE_UNDERWORLD_PORTAL = 33037; // GameObject
 
-		phases.forEach((table, phase) ->
-		{
-			builder.put(table.sm(), phase);
-			builder.put(table.rg(), phase);
-			builder.put(table.hm(), phase);
-		});
+	int INACTIVE_MAZE_GROUND_OBJ_0 = 33033; // Overworld
+	int INACTIVE_MAZE_GROUND_OBJ_1 = 33034; // Underworld
+	ImmutableList<Integer> ACTIVE_MAZE_GROUND_OBJS = ImmutableList.of(33035, 41750, 41751, 41752, 41753);
 
-		LOOKUP = builder.build();
-	}
+	ImmutableList<Integer> UNDERWORLD_ROCKS = ImmutableList.of(33063, 33064, 33065);
 
-	public static MaidenPhase compose(NPC npc)
-	{
-		if (npc == null)
-		{
-			return OTHER;
-		}
-
-		return LOOKUP.getOrDefault(npc.getId(), OTHER);
-	}
-
-	public boolean isPhaseOne()
-	{
-		return this == P1;
-	}
-
-	public boolean isPhaseTwo()
-	{
-		return this == P2;
-	}
-
-	public boolean isPhaseThree()
-	{
-		return this == P3;
-	}
-
-	public boolean isNonTrackedPhase()
-	{
-		return this == OTHER;
-	}
+	int INFERNO_RANGE = 1378;
+	int INFERNO_MAGE = 1380;
+	int INFERNO_DEATH_BALL = 1375;
 }

@@ -27,10 +27,18 @@ package com.tobqol.rooms.bloat.commons;
 
 import com.google.common.collect.ImmutableList;
 
+import java.util.regex.Pattern;
+
 public interface BloatConstants
 {
 	String BOSS_NAME = "Pestilent Bloat";
 	String BOSS_NAME_SIMPLE = "Bloat";
+
+	Pattern BLOAT_WAVE = Pattern.compile("Wave 'The Pestilent Bloat' \\(.*\\) complete!Duration: (\\d+):(\\d+)\\.?(\\d+)");
+
+	int BOSS_IMAGE = 25749;
+
+	int DOWN_ANIM = 8082;
 
 	ImmutableList<Integer> TANK = ImmutableList.of(32957, 32955, 32959, 32960, 32964, 33084);                   // GameObjects
 	ImmutableList<Integer> TOP_OF_TANK = ImmutableList.of(32958, 32962, 32964, 32965, 33062);                   // GameObjects

@@ -28,8 +28,6 @@ package com.tobqol.rooms.maiden.commons;
 import com.tobqol.api.game.Health;
 import com.tobqol.api.game.Hitpoints;
 import com.tobqol.api.game.Instance;
-import com.tobqol.rooms.maiden.commons.util.MaidenPhase;
-import com.tobqol.rooms.maiden.commons.util.MaidenTable;
 import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

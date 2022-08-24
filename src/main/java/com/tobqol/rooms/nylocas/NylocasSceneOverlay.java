@@ -29,7 +29,7 @@ import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.rooms.RoomSceneOverlay;
-import com.tobqol.rooms.nylocas.commons.NylocasMap;
+import com.tobqol.rooms.nylocas.commons.NylocasConstants;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
@@ -118,22 +118,26 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 					// Determine whether or not the role even matches prior to matching nylocas name
 					if (room.isDisplayRoleMage() && npc.getName().equals("Nylocas Hagios"))
 					{
-						color = NylocasMap.MAGIC_COLOR;
+						color = NylocasConstants.MAGIC_COLOR;
 					}
 					else if (room.isDisplayRoleMelee() && npc.getName().equals("Nylocas Ischyros"))
 					{
-						color = NylocasMap.MELEE_COLOR;
+						color = NylocasConstants.MELEE_COLOR;
 					}
 					else if (room.isDisplayRoleRange() && npc.getName().equals("Nylocas Toxobolos"))
 					{
-						color = NylocasMap.RANGE_COLOR;
+						color = NylocasConstants.RANGE_COLOR;
 					}
 
 					if (color != null)
 					{
 						final LocalPoint localPoint = npc.getLocalLocation();
 						Polygon polygon = npc.getCanvasTilePoly();
-						OverlayUtil.renderPolygon(graphics, polygon, color);
+
+						if (polygon != null)
+						{
+							OverlayUtil.renderPolygon(graphics, polygon, color);
+						}
 
 						if (room.getBigsMap().containsKey(npc) && displaySWTile)
 						{

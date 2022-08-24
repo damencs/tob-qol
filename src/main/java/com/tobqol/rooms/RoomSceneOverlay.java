@@ -30,7 +30,7 @@ import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.api.util.TriConsumer;
-import com.tobqol.rooms.sotetseg.commons.util.SotetsegTable;
+import com.tobqol.rooms.sotetseg.commons.SotetsegTable;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Point;
 import net.runelite.api.*;
@@ -41,8 +41,8 @@ import javax.inject.Inject;
 import java.awt.*;
 import java.util.function.BiConsumer;
 
-import static com.tobqol.rooms.sotetseg.commons.util.SotetsegTable.SOTETSEG_CLICKABLE;
-import static com.tobqol.rooms.sotetseg.commons.util.SotetsegTable.SOTETSEG_NOT_CLICKABLE;
+import static com.tobqol.rooms.sotetseg.commons.SotetsegTable.SOTETSEG_CLICKABLE;
+import static com.tobqol.rooms.sotetseg.commons.SotetsegTable.SOTETSEG_NOT_CLICKABLE;
 
 @Slf4j
 public abstract class RoomSceneOverlay<R extends RoomHandler> extends Overlay

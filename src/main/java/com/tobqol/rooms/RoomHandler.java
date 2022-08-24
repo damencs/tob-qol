@@ -31,28 +31,33 @@ import com.tobqol.api.game.Instance;
 import com.tobqol.api.game.Region;
 import com.tobqol.api.game.SceneManager;
 import lombok.Getter;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Client;
-import net.runelite.api.MessageNode;
-import net.runelite.api.NPC;
+import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.*;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.client.callback.ClientThread;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.chat.ChatMessageManager;
 import net.runelite.client.chat.QueuedMessage;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.ui.overlay.OverlayManager;
+import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.sound.sampled.*;
+import java.io.BufferedInputStream;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.tobqol.api.game.Region.inRegion;
 import static lombok.AccessLevel.PROTECTED;
 
 @Singleton
+@Slf4j
 public abstract class RoomHandler
 {
 	public static final Predicate<Integer> VALUE_IS_ZERO = v -> v <= 0;
@@ -80,6 +85,12 @@ public abstract class RoomHandler
 
 	@Inject
 	protected ChatMessageManager chatMessageManager;
+
+	@Inject
+	protected ItemManager itemManager;
+
+	@Inject
+	protected InfoBoxManager infoBoxManager;
 
 	@Getter(PROTECTED)
 	private Region roomRegion = Region.UNKNOWN;
@@ -210,5 +221,82 @@ public abstract class RoomHandler
 		}
 
 		chatMessageManager.queue(QueuedMessage.builder().type(type).runeLiteFormattedMessage(message).build());
+	}
+
+	protected final void enqueueChatMessage(ChatMessageType type, ChatMessageBuilder builder)
+	{
+		if (type == null || builder == null)
+		{
+			return;
+		}
+
+		String message = builder.build();
+
+		if (isNullOrEmpty(message))
+		{
+			return;
+		}
+
+		chatMessageManager.queue(QueuedMessage.builder().type(type).runeLiteFormattedMessage(message).build());
+	}
+
+	public static boolean crossedLine(Region region, Point start, Point end, boolean vertical, Client client)
+	{
+		if (inRegion(client, region))
+		{
+			for (Player p : client.getPlayers())
+			{
+				WorldPoint wp = p.getWorldLocation();
+
+				if (vertical)
+				{
+					for (int i = start.getY(); i < end.getY() + 1; i++)
+					{
+						if (wp.getRegionY() == i && wp.getRegionX() == start.getX())
+						{
+							return true;
+						}
+					}
+				}
+				else
+				{
+					for (int i = start.getX(); i < end.getX() + 1; i++)
+					{
+						if (wp.getRegionX() == i && wp.getRegionY() == start.getY())
+						{
+							return true;
+						}
+					}
+				}
+			}
+		}
+
+		return false;
+	}
+
+	public Clip generateSoundClip(String clipName, int volume)
+	{
+		Clip soundClip;
+
+		try
+		{
+			AudioInputStream stream = AudioSystem.getAudioInputStream(new BufferedInputStream(TheatreQOLPlugin.class.getResourceAsStream(clipName)));
+			AudioFormat format = stream.getFormat();
+			DataLine.Info info = new DataLine.Info(Clip.class, format);
+			soundClip = (Clip)AudioSystem.getLine(info);
+			soundClip.open(stream);
+			FloatControl control = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
+
+			if (control != null)
+			{
+				control.setValue((float)(volume / 2 - 45));
+			}
+
+			return soundClip;
+		}
+		catch (Exception ex)
+		{
+			return null;
+		}
 	}
 }

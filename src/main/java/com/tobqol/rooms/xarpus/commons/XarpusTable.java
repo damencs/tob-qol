@@ -27,15 +27,17 @@ package com.tobqol.rooms.xarpus.commons;
 
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
-import com.google.common.collect.Tables;
 import com.tobqol.api.game.Instance;
-import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 import net.runelite.api.NpcID;
 
 import javax.annotation.Nullable;
 
-@Getter(AccessLevel.PACKAGE)
+@RequiredArgsConstructor
+@Getter
+@Accessors(fluent = true)
 public enum XarpusTable implements XarpusConstants
 {
 	XARPUS_INACTIVE(NpcID.XARPUS_10766, NpcID.XARPUS, NpcID.XARPUS_10770),
@@ -43,9 +45,10 @@ public enum XarpusTable implements XarpusConstants
 	XARPUS_P23(NpcID.XARPUS_10768, NpcID.XARPUS_8340, NpcID.XARPUS_10772),
 	XARPUS_DEAD(NpcID.XARPUS_10769, NpcID.XARPUS_8341, NpcID.XARPUS_10773);
 
-	private final Table.Cell<Instance.Mode, Integer, XarpusTable> smCell;
-	private final Table.Cell<Instance.Mode, Integer, XarpusTable> rgCell;
-	private final Table.Cell<Instance.Mode, Integer, XarpusTable> hmCell;
+
+	private final int sm;
+	private final int rg;
+	private final int hm;
 
 	private static final Table<Instance.Mode, Integer, XarpusTable> TABLE;
 
@@ -55,9 +58,9 @@ public enum XarpusTable implements XarpusConstants
 
 		for (XarpusTable table : values())
 		{
-			builder.put(table.smCell);
-			builder.put(table.rgCell);
-			builder.put(table.hmCell);
+			builder.put(Instance.Mode.STORY, table.sm, table);
+			builder.put(Instance.Mode.REGULAR, table.rg, table);
+			builder.put(Instance.Mode.HARD, table.hm, table);
 		}
 
 		TABLE = builder.build();
@@ -69,10 +72,8 @@ public enum XarpusTable implements XarpusConstants
 		return Instance.findFirstMode(mode -> TABLE.contains(mode, npcId));
 	}
 
-	XarpusTable(int smId, int rgId, int hmId)
+	public static boolean anyMatch(XarpusTable table, int npcId)
 	{
-		this.smCell = Tables.immutableCell(Instance.Mode.STORY, smId, this);
-		this.rgCell = Tables.immutableCell(Instance.Mode.REGULAR, rgId, this);
-		this.hmCell = Tables.immutableCell(Instance.Mode.HARD, hmId, this);
+		return table != null && (table.sm == npcId || table.rg == npcId || table.hm == npcId);
 	}
 }

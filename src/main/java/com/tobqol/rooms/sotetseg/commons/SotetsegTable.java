@@ -23,98 +23,55 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.rooms.xarpus.commons;
+package com.tobqol.rooms.sotetseg.commons;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Table;
+import com.tobqol.api.game.Instance;
 import lombok.RequiredArgsConstructor;
-import net.runelite.api.NPC;
-
-import javax.annotation.Nullable;
-import java.util.Map;
+import net.runelite.api.GroundObject;
+import net.runelite.api.NpcID;
+import net.runelite.api.NullNpcID;
 
 @RequiredArgsConstructor
-public enum XarpusPhase
+public enum SotetsegTable implements SotetsegConstants
 {
-	INACTIVE(XarpusTable.XARPUS_INACTIVE),
-	P1(XarpusTable.XARPUS_P1),
-	P2(XarpusTable.XARPUS_P23),
-	P3(null),
-	DEAD(XarpusTable.XARPUS_DEAD),
-	UNKNOWN(null);
+	SOTETSEG_NOT_CLICKABLE(NpcID.SOTETSEG_10864, NpcID.SOTETSEG, NpcID.SOTETSEG_10867),
+	SOTETSEG_CLICKABLE(NpcID.SOTETSEG_10865, NpcID.SOTETSEG_8388, NpcID.SOTETSEG_10868),
+	TORNADO(NullNpcID.NULL_10866, NullNpcID.NULL_8389, NullNpcID.NULL_10869);
 
-	@Nullable
-	private final XarpusTable table;
+	private final int sm;
+	private final int rg;
+	private final int hm;
 
-	private static final Map<Integer, XarpusPhase> LOOKUP_MAP;
+	private static final Table<Instance.Mode, Integer, SotetsegTable> TABLE;
 
 	static
 	{
-		ImmutableMap.Builder<Integer, XarpusPhase> builder = ImmutableMap.builder();
+		ImmutableTable.Builder<Instance.Mode, Integer, SotetsegTable> builder = ImmutableTable.builder();
 
-		for (XarpusPhase phase : values())
+		for (SotetsegTable table : values())
 		{
-			if (phase.isAbsent() || phase.isP3())
-			{
-				continue;
-			}
-
-			XarpusTable table = phase.table;
-
-			if (table == null)
-			{
-				continue;
-			}
-
-			builder.put(table.sm(), phase);
-			builder.put(table.rg(), phase);
-			builder.put(table.hm(), phase);
+			builder.put(Instance.Mode.STORY, table.sm, table);
+			builder.put(Instance.Mode.REGULAR, table.rg, table);
+			builder.put(Instance.Mode.HARD, table.hm, table);
 		}
 
-		LOOKUP_MAP = builder.build();
+		TABLE = builder.build();
 	}
 
-	public static XarpusPhase compose(NPC npc)
+	public static Instance.Mode findMode(int npcId)
 	{
-		return LOOKUP_MAP.getOrDefault(npc.getId(), UNKNOWN);
+		return Instance.findFirstMode(mode -> TABLE.contains(mode, npcId));
 	}
 
-	public boolean isInactive()
+	public static boolean anyMatch(SotetsegTable table, int npcId)
 	{
-		return this == INACTIVE;
+		return table != null && (table.sm == npcId || table.rg == npcId || table.hm == npcId);
 	}
 
-	public boolean isP1()
+	public static boolean isActiveMazeObject(GroundObject obj)
 	{
-		return this == P1;
-	}
-
-	public boolean isInactiveOrP1()
-	{
-		return isInactive() || isP1();
-	}
-
-	public boolean isP2()
-	{
-		return this == P2;
-	}
-
-	public boolean isP3()
-	{
-		return this == P3;
-	}
-
-	public boolean isP2OrP3()
-	{
-		return isP2() || isP3();
-	}
-
-	public boolean isAbsent()
-	{
-		return this == UNKNOWN;
-	}
-
-	public boolean isDead()
-	{
-		return this == DEAD;
+		return obj != null && ACTIVE_MAZE_GROUND_OBJS.contains(obj.getId());
 	}
 }

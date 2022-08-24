@@ -33,6 +33,7 @@ import com.tobqol.config.HPDisplayTypes;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.config.font.FontStyles;
 import com.tobqol.config.font.FontTypes;
+import com.tobqol.config.times.TimeDisplayType;
 import com.tobqol.rooms.nylocas.config.NylocasObjects;
 import com.tobqol.rooms.sotetseg.config.SotetsegInstanceTimerTypes;
 import com.tobqol.rooms.sotetseg.config.SotetsegProjectileTheme;
@@ -44,8 +45,6 @@ import java.awt.*;
 public interface TheatreQOLConfig extends Config
 {
 	String GROUP_NAME = "tobqol";
-	String PLUGIN_VERSION = "1.0.4";
-	String GITHUB_LINK = "damencs/tob-qol/issues";
 
 	/**
 	 * Sections
@@ -113,6 +112,14 @@ public interface TheatreQOLConfig extends Config
 			closedByDefault = true
 	)
 	String FONT_SECTION = "fontSection";
+
+	@ConfigSection(
+			name = "Time Tracking Settings",
+			description = "Configuration settings for the plugin's time tracking features",
+			position = 9,
+			closedByDefault = true
+	)
+	String TIME_SECTION = "timeSection";
 
 	/**
 	 * General Section
@@ -221,6 +228,19 @@ public interface TheatreQOLConfig extends Config
 			section = BLOAT_SECTION
 	)
 	default boolean shouldNullCeilingChains()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			name = "Track Downs in Chat/Infobox",
+			keyName = "trackDowns",
+			description = "- Track the Bloat downs in chat/tooltip after room completion<br>" +
+					"* Must have the Chat/Infobox Data Tracking enabled",
+			position = 2,
+			section = BLOAT_SECTION
+	)
+	default boolean trackDowns()
 	{
 		return false;
 	}
@@ -440,6 +460,44 @@ public interface TheatreQOLConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+			name = "Hide Underworld Rocks",
+			keyName = "sotetsegHideUnderworldRocks",
+			description = "- Hides the rocks surrounding the Sotetseg maze",
+			position = 5,
+			section = SOTETSEG_SECTION
+	)
+	default boolean sotetsegHideUnderworldRocks()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			name = "Sotetseg Death Ball Alarm",
+			keyName = "sotetsegSoundClip",
+			description = "- Replaces the Death Ball sound effect with a wee-woo sound clip<br>" +
+					"* Thank you Hoyaa for providing this sound clip for the project",
+			position = 6,
+			section = SOTETSEG_SECTION
+	)
+	default boolean sotetsegSoundClip()
+	{
+		return false;
+	}
+
+	@Range(max = 100)
+	@ConfigItem(
+			name = "Death Ball Alarm Volume",
+			keyName = "sotetsegSoundClipVolume",
+			description = "- Sets the volume of the sound clip",
+			position = 7,
+			section = SOTETSEG_SECTION
+	)
+	default int sotetsegSoundClipVolume()
+	{
+		return 65;
+	}
+
 	/**
 	 * Xarpus Configs
 	 */
@@ -611,5 +669,59 @@ public interface TheatreQOLConfig extends Config
 	default int instanceTimerOffset()
 	{
 		return 0;
+	}
+
+	/**
+	 * Time Tracking Configs
+	 */
+	@ConfigItem(
+			name = "Display Room Times",
+			keyName = "displayRoomTimes",
+			description = "- Display live time for each room's boss<br>" +
+						"* Please note that this will not show splits on rooms that reveal mechanics until the room has ended (Bloat downs)",
+			position = 1,
+			section = TIME_SECTION
+	)
+	default TimeDisplayType displayRoomTimes()
+	{
+		return TimeDisplayType.OFF;
+	}
+
+	@ConfigItem(
+			name = "Display Split Differences",
+			keyName = "displayTimeSplitDifferences",
+			description = "- Displays the difference in time between each split<br>" +
+						  "- Example: [50s - 1:02.4 (0:24.6)]",
+			position = 2,
+			section = TIME_SECTION
+	)
+	default boolean displayTimeSplitDifferences()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			name = "Validate Room Completion",
+			keyName = "roomTimeValidation",
+			description = "- Displays the room completion time that the plugin tracks independently to validate plugin timing",
+			position = 3,
+			section = TIME_SECTION
+	)
+	default boolean roomTimeValidation()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			name = "Shrunk Live Timer Size",
+			keyName = "shrunkLiveTimerDesign",
+			description = "- Live timer overlay with Plain San Serif at a font size of 11 to minimize the overlay size<br>" +
+						"Note: You can use RuneLite's overlay settings in Core 'RuneLite' Settings to configure the overlay",
+			position = 4,
+			section = TIME_SECTION
+	)
+	default boolean shrunkLiveTimerDesign()
+	{
+		return false;
 	}
 }

@@ -32,17 +32,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
 import net.runelite.api.NpcID;
 import net.runelite.api.NullNpcID;
+import net.runelite.api.Point;
 
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 import static com.google.common.collect.Tables.immutableCell;
 
 @RequiredArgsConstructor
 @Getter
 @Accessors(fluent = true)
-public enum NylocasMap
+public enum NylocasConstants
 {
 	BOSS_DROPPING_MELEE(NpcID.NYLOCAS_VASILIAS_10786, NpcID.NYLOCAS_VASILIAS, NpcID.NYLOCAS_VASILIAS_10807),
 	BOSS_MELEE(NpcID.NYLOCAS_VASILIAS_10787, NpcID.NYLOCAS_VASILIAS_8355, NpcID.NYLOCAS_VASILIAS_10808),
@@ -104,6 +107,11 @@ public enum NylocasMap
 
 	private final int sm, rg, hm, aggro_sm, aggro_rg, aggro_hm;
 
+	public static int BOSS_IMAGE = 25750;
+	public static int NYLOCAS_WAVES_TOTAL = 31;
+
+	public static Pattern NYLOCAS_WAVE = Pattern.compile("Wave 'The Nylocas' \\(.*\\) complete!");
+
 	public static final String BOSS_NAME = "Nylocas Vasilias";
 	public static final String DEMI_BOSS_NAME = "Nylocas Prinkipas";
 	public static final String MELEE_NAME = "Nylocas Ischyros";
@@ -132,21 +140,26 @@ public enum NylocasMap
 	public static final int UNK_DESPAWN_GRAPHIC_4 = 1893;
 	public static final int UNK_DESPAWN_GRAPHIC_5 = 1894;
 
-
-	private static final ImmutableMultimap<NylocasMap, Integer> ENUM_MULTIMAP;
-	private static final Table<Instance.Mode, Integer, NylocasMap> LOOKUP_TABLE;
+	private static final ImmutableMultimap<NylocasConstants, Integer> ENUM_MULTIMAP;
+	private static final Table<Instance.Mode, Integer, NylocasConstants> LOOKUP_TABLE;
 	private static final ImmutableMultimap<NylocasType, Integer> TYPE_IDS;
 
 	public static final Color MAGIC_COLOR = Color.CYAN;
 	public static final Color MELEE_COLOR = new Color(255, 188, 188);
 	public static final Color RANGE_COLOR = Color.GREEN;
 
+	public static final Set<Point> NYLOCAS_VALID_SPAWNS = ImmutableSet.of(
+			new Point(17, 24), new Point(17, 25), new Point(18, 24), new Point(18, 25),
+			new Point(31, 9), new Point(31, 10), new Point(32, 9), new Point(32, 10),
+			new Point(46, 24), new Point(46, 25), new Point(47, 24), new Point(47, 25)
+	);
+
 	static
 	{
-		ImmutableMultimap.Builder<NylocasMap, Integer> enum_builder = ImmutableListMultimap.builder();
-		ImmutableTable.Builder<Instance.Mode, Integer, NylocasMap> t_builder = ImmutableTable.builder();
+		ImmutableMultimap.Builder<NylocasConstants, Integer> enum_builder = ImmutableListMultimap.builder();
+		ImmutableTable.Builder<Instance.Mode, Integer, NylocasConstants> t_builder = ImmutableTable.builder();
 
-		for (NylocasMap def : values())
+		for (NylocasConstants def : values())
 		{
 			if (def.sm == -1 && def.rg == -1)
 			{
@@ -176,7 +189,7 @@ public enum NylocasMap
 
 		ImmutableMultimap.Builder<NylocasType, Integer> type_ids = ImmutableListMultimap.builder();
 
-		List<NylocasMap> melees = ImmutableList.of(
+		List<NylocasConstants> melees = ImmutableList.of(
 				BOSS_DROPPING_MELEE,
 				BOSS_MELEE,
 				BOSS_MAGIC,
@@ -185,7 +198,7 @@ public enum NylocasMap
 
 		melees.forEach(def -> type_ids.putAll(NylocasType.BOSS, def.sm, def.rg, def.hm));
 
-		List<NylocasMap> demis = ImmutableList.of(
+		List<NylocasConstants> demis = ImmutableList.of(
 				DEMI_BOSS_DROPPING_MELEE,
 				DEMI_BOSS_MELEE,
 				DEMI_BOSS_MAGIC,
@@ -194,7 +207,7 @@ public enum NylocasMap
 
 		demis.forEach(def -> type_ids.putAll(NylocasType.DEMI, def.hm));
 
-		List<NylocasMap> bigs = ImmutableList.of(
+		List<NylocasConstants> bigs = ImmutableList.of(
 				MELEE_BIG,
 				RANGE_BIG,
 				MAGIC_BIG
@@ -202,7 +215,7 @@ public enum NylocasMap
 
 		bigs.forEach(def -> type_ids.putAll(NylocasType.BIG, def.sm, def.rg, def.hm, def.aggro_sm, def.aggro_rg, def.aggro_hm));
 
-		List<NylocasMap> smalls = ImmutableList.of(
+		List<NylocasConstants> smalls = ImmutableList.of(
 				MELEE_SMALL,
 				RANGE_SMALL,
 				MAGIC_SMALL
@@ -213,7 +226,7 @@ public enum NylocasMap
 		TYPE_IDS = type_ids.build();
 	}
 
-	public static boolean matchesAnyMode(NylocasMap def, int npcId)
+	public static boolean matchesAnyMode(NylocasConstants def, int npcId)
 	{
 		if (def == null)
 		{
@@ -224,7 +237,7 @@ public enum NylocasMap
 	}
 
 	@Nullable
-	public static NylocasMap queryTable(Instance.Mode mode, int npcId)
+	public static NylocasConstants queryTable(Instance.Mode mode, int npcId)
 	{
 		if (mode == null)
 		{
@@ -265,12 +278,12 @@ public enum NylocasMap
 		return isBigNylo(npcId) || isSmallNylo(npcId);
 	}
 
-	NylocasMap(int sm, int rg, int hm)
+	NylocasConstants(int sm, int rg, int hm)
 	{
 		this(sm, rg, hm, -1, -1, -1);
 	}
 
-	NylocasMap(int hm)
+	NylocasConstants(int hm)
 	{
 		this(-1, -1, hm);
 	}

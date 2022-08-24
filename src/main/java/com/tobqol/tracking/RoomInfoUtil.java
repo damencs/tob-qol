@@ -23,28 +23,39 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.config.font;
+package com.tobqol.tracking;
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.tobqol.TheatreQOLConfig;
+import com.tobqol.TheatreQOLPlugin;
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 
-@RequiredArgsConstructor
-@Getter
-public enum FontStyles
+import java.awt.image.BufferedImage;
+import java.util.concurrent.TimeUnit;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class RoomInfoUtil
 {
-    PLAIN("Plain", 0),
-    BOLD("Bold", 1),
-    ITALIC("Italic", 2),
-    BOLD_ITALICIZED("Bold & Italic", 3);
+    static final int TICK_LENGTH = 600;
 
-    private final String style;
-
-    @Getter
-    private final int value;
-
-    @Override
-    public String toString()
+    public static String formatTime(int current, int previous)
     {
-        return style;
+        return " (" + formatTime(current - previous) + ")";
+    }
+
+    public static String formatTime(int ticks)
+    {
+        int millis = ticks * TICK_LENGTH;
+        String hundredths = String.valueOf(millis % 1000).substring(0, 1);
+
+        return String.format("%d:%02d.%s",
+                TimeUnit.MILLISECONDS.toMinutes(millis) % TimeUnit.HOURS.toMinutes(1),
+                TimeUnit.MILLISECONDS.toSeconds(millis) % TimeUnit.MINUTES.toSeconds(1),
+                hundredths);
+    }
+
+    public static RoomInfoBox createInfoBox(TheatreQOLPlugin plugin, TheatreQOLConfig config, BufferedImage image, String bossName, String time, String tooltip)
+    {
+        return new RoomInfoBox(image, plugin, config, bossName, time, tooltip);
     }
 }
