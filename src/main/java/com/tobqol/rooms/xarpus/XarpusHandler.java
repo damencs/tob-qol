@@ -91,32 +91,11 @@ public class XarpusHandler extends RoomHandler
 		dataHandler = plugin.getDataHandler();
 	}
 
-	public void init()
-	{
-		try
-		{
-			AudioInputStream stream = AudioSystem.getAudioInputStream(new BufferedInputStream(TheatreQOLPlugin.class.getResourceAsStream("sheesh-hoyaa.wav")));
-			AudioFormat format = stream.getFormat();
-			DataLine.Info info = new DataLine.Info(Clip.class, format);
-			soundClip = (Clip)AudioSystem.getLine(info);
-			soundClip.open(stream);
-			FloatControl control = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
-
-			if (control != null)
-			{
-				control.setValue((float)(config.xarpusSoundClipVolume() / 2 - 45));
-			}
-		}
-		catch (Exception ex)
-		{
-			soundClip = null;
-		}
-	}
-
 	@Override
 	public void load()
 	{
 		overlayManager.add(sceneOverlay);
+		soundClip = generateSoundClip("sheesh-hoyaa.wav", config.xarpusSoundClipVolume());
 	}
 
 	@Override
