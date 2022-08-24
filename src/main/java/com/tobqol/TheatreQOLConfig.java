@@ -33,7 +33,6 @@ import com.tobqol.config.HPDisplayTypes;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.config.font.FontStyles;
 import com.tobqol.config.font.FontTypes;
-import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.config.times.TimeDisplayType;
 import com.tobqol.rooms.nylocas.config.NylocasObjects;
 import com.tobqol.rooms.sotetseg.config.SotetsegInstanceTimerTypes;
@@ -229,6 +228,19 @@ public interface TheatreQOLConfig extends Config
 			section = BLOAT_SECTION
 	)
 	default boolean shouldNullCeilingChains()
+	{
+		return false;
+	}
+
+	@ConfigItem(
+			name = "Track Downs in Chat/Infobox",
+			keyName = "trackDowns",
+			description = "- Track the Bloat downs in chat/tooltip after room completion<br>" +
+					"* Must have the Chat/Infobox Data Tracking enabled",
+			position = 2,
+			section = BLOAT_SECTION
+	)
+	default boolean trackDowns()
 	{
 		return false;
 	}
@@ -460,6 +472,32 @@ public interface TheatreQOLConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+			name = "Sotetseg Death Ball Alarm",
+			keyName = "sotetsegSoundClip",
+			description = "- Replaces the Death Ball sound effect with a wee-woo sound clip<br>" +
+					"* Thank you Hoyaa for providing this sound clip for the project",
+			position = 6,
+			section = SOTETSEG_SECTION
+	)
+	default boolean sotetsegSoundClip()
+	{
+		return false;
+	}
+
+	@Range(max = 100)
+	@ConfigItem(
+			name = "Death Ball Alarm Volume",
+			keyName = "sotetsegSoundClipVolume",
+			description = "- Sets the volume of the sound clip",
+			position = 7,
+			section = SOTETSEG_SECTION
+	)
+	default int sotetsegSoundClipVolume()
+	{
+		return 65;
+	}
+
 	/**
 	 * Xarpus Configs
 	 */
@@ -650,24 +688,11 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
-			name = "Display Room Detail",
-			keyName = "displayRoomTimesDetail",
-			description = "- Simple: This will display the times and basic splits, useful for casual raiders<br>" +
-						"- Detailed: This will display the times and all splits at a more precise time measure, useful for speed runners",
-			position = 2,
-			section = TIME_SECTION
-	)
-	default TimeDisplayDetail displayRoomTimesDetail()
-	{
-		return TimeDisplayDetail.SIMPLE;
-	}
-
-	@ConfigItem(
 			name = "Display Split Differences",
 			keyName = "displayTimeSplitDifferences",
 			description = "- Displays the difference in time between each split<br>" +
 						  "- Example: [50s - 1:02.4 (0:24.6)]",
-			position = 4,
+			position = 2,
 			section = TIME_SECTION
 	)
 	default boolean displayTimeSplitDifferences()
@@ -679,7 +704,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Validate Room Completion",
 			keyName = "roomTimeValidation",
 			description = "- Displays the room completion time that the plugin tracks independently to validate plugin timing",
-			position = 4,
+			position = 3,
 			section = TIME_SECTION
 	)
 	default boolean roomTimeValidation()
@@ -692,7 +717,7 @@ public interface TheatreQOLConfig extends Config
 			keyName = "shrunkLiveTimerDesign",
 			description = "- Live timer overlay with Plain San Serif at a font size of 11 to minimize the overlay size<br>" +
 						"Note: You can use RuneLite's overlay settings in Core 'RuneLite' Settings to configure the overlay",
-			position = 5,
+			position = 4,
 			section = TIME_SECTION
 	)
 	default boolean shrunkLiveTimerDesign()

@@ -45,6 +45,8 @@ import net.runelite.client.ui.overlay.infobox.InfoBoxManager;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.sound.sampled.*;
+import java.io.BufferedInputStream;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -270,5 +272,31 @@ public abstract class RoomHandler
 		}
 
 		return false;
+	}
+
+	public Clip generateSoundClip(String clipName, int volume)
+	{
+		Clip soundClip;
+
+		try
+		{
+			AudioInputStream stream = AudioSystem.getAudioInputStream(new BufferedInputStream(TheatreQOLPlugin.class.getResourceAsStream(clipName)));
+			AudioFormat format = stream.getFormat();
+			DataLine.Info info = new DataLine.Info(Clip.class, format);
+			soundClip = (Clip)AudioSystem.getLine(info);
+			soundClip.open(stream);
+			FloatControl control = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
+
+			if (control != null)
+			{
+				control.setValue((float)(volume / 2 - 45));
+			}
+
+			return soundClip;
+		}
+		catch (Exception ex)
+		{
+			return null;
+		}
 	}
 }

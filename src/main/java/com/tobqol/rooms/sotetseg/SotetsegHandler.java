@@ -28,7 +28,6 @@ package com.tobqol.rooms.sotetseg;
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
-import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.sotetseg.commons.MutableMaze;
 import com.tobqol.rooms.sotetseg.commons.SotetsegTable;
@@ -41,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
+import net.runelite.api.widgets.Widget;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
@@ -48,6 +48,7 @@ import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
+import javax.sound.sampled.*;
 import java.awt.*;
 
 import static com.tobqol.api.game.Region.SOTETSEG;
@@ -81,8 +82,9 @@ public class SotetsegHandler extends RoomHandler
 	@CheckForNull
 	private GameObject portal = null;
 
-	private boolean rocksHidden = false;
 	private boolean considerTeleport = true;
+
+	private static Clip soundClip;
 
 	@Inject
 	protected SotetsegHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -97,6 +99,7 @@ public class SotetsegHandler extends RoomHandler
 	public void load()
 	{
 		overlayManager.add(sceneOverlay);
+		soundClip = generateSoundClip("weewoo-hoyaa.wav", config.sotetsegSoundClipVolume());
 	}
 
 	@Override
@@ -119,7 +122,6 @@ public class SotetsegHandler extends RoomHandler
 		clickable = false;
 		maze = null;
 		portal = null;
-		rocksHidden = false;
 		considerTeleport = true;
 
 		if (instance.getRaidStatus() <= 1)
@@ -139,8 +141,26 @@ public class SotetsegHandler extends RoomHandler
 		switch (e.getKey())
 		{
 			case "sotetsegHideUnderworldRocks":
+			{
 				when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, sceneManager::refreshScene);
 				break;
+			}
+
+			case "sotetsegSoundClipVolume":
+			{
+				if (soundClip != null && config.sotetsegSoundClip())
+				{
+					FloatControl control = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
+
+					if (control != null)
+					{
+						control.setValue((float)(config.sotetsegSoundClipVolume() / 2 - 45));
+					}
+
+					soundClip.setFramePosition(0);
+					soundClip.start();
+				}
+			}
 		}
 	}
 
@@ -284,7 +304,6 @@ public class SotetsegHandler extends RoomHandler
 		if (e.getGameObject().getId() == SotetsegTable.MAZE_UNDERWORLD_PORTAL)
 		{
 			portal = null;
-			rocksHidden = false;
 		}
 	}
 
@@ -300,6 +319,12 @@ public class SotetsegHandler extends RoomHandler
 
 		Projectile projectile = projectileMoved.getProjectile();
 		int projectileId = projectile.getId();
+
+		if (projectileId == DEATH_BALL && config.sotetsegSoundClip())
+		{
+			soundClip.setFramePosition(0);
+			soundClip.start();
+		}
 
 		if (!theme.isDefault() && (projectileId != DEATH_BALL || (projectileId == DEATH_BALL && theme.isInfernoTheme())))
 		{
@@ -407,13 +432,20 @@ public class SotetsegHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+			String tooltip;
 
-			String tooltip = "66% - " + formatTime(dataHandler.FindValue("66%"), detailed) + "</br>" +
-					"33% - " + formatTime(dataHandler.FindValue("33%"), detailed) + formatTime(dataHandler.FindValue("33%"), dataHandler.FindValue("66%"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("33%"), detailed);
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				tooltip = "66% - " + formatTime(dataHandler.FindValue("66%")) + "</br>" +
+						"33% - " + formatTime(dataHandler.FindValue("33%")) + formatTime(dataHandler.FindValue("33%"), dataHandler.FindValue("66%")) + "</br>" +
+						"Complete - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("33%"));
+			}
+			else
+			{
+				tooltip = "Complete - " + formatTime(dataHandler.FindValue("Room")) + "*";
+			}
 
-			sotetsegInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Sotetseg", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
+			sotetsegInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Sotetseg", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(sotetsegInfoBox);
 		}
 	}
@@ -422,22 +454,33 @@ public class SotetsegHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
-
-			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-					.append(Color.RED, "66%")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("66%"), detailed) + " - ")
-					.append(Color.RED, "33%")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("33%"), detailed) + formatTime(dataHandler.FindValue("33%"), dataHandler.FindValue("66%"), detailed)));
-
-			if (config.roomTimeValidation())
+			if (!dataHandler.Find("Starting Tick").get().isException())
 			{
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-						.append(Color.RED, "Sotetseg - Room Complete")
+						.append(Color.RED, "66%")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("33%"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("66%")) + " - ")
+						.append(Color.RED, "33%")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("33%")) + formatTime(dataHandler.FindValue("33%"), dataHandler.FindValue("66%"))));
+
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Sotetseg - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("33%"))));
+				}
+			}
+			else
+			{
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Sotetseg - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + "*"));
+				}
 			}
 		}
 	}
@@ -448,6 +491,5 @@ public class SotetsegHandler extends RoomHandler
 		{
 			sceneManager.removeTheseGameObjects(3, UNDERWORLD_ROCKS);
 		}
-		rocksHidden = true;
 	}
 }

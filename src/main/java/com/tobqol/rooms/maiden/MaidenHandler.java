@@ -27,7 +27,6 @@ package com.tobqol.rooms.maiden;
 
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
-import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.maiden.commons.MaidenHealth;
 import com.tobqol.rooms.maiden.commons.MaidenPhase;
@@ -372,14 +371,21 @@ public class MaidenHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+			String tooltip;
 
-			String tooltip = "70% - " + formatTime(dataHandler.FindValue("70s"), detailed) + "</br>" +
-					"50% - " + formatTime(dataHandler.FindValue("50s"), detailed) + formatTime(dataHandler.FindValue("50s"), dataHandler.FindValue("70s"), detailed) + "</br>" +
-					"30% - " + formatTime(dataHandler.FindValue("30s"), detailed) + formatTime(dataHandler.FindValue("30s"), dataHandler.FindValue("50s"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("30s"), detailed);
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				tooltip = "70% - " + formatTime(dataHandler.FindValue("70s")) + "</br>" +
+						"50% - " + formatTime(dataHandler.FindValue("50s")) + formatTime(dataHandler.FindValue("50s"), dataHandler.FindValue("70s")) + "</br>" +
+						"30% - " + formatTime(dataHandler.FindValue("30s")) + formatTime(dataHandler.FindValue("30s"), dataHandler.FindValue("50s")) + "</br>" +
+						"Complete - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("30s"));
+			}
+			else
+			{
+				tooltip = "Complete - " + formatTime(dataHandler.FindValue("Room")) + "*";
+			}
 
-			maidenInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Maiden", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
+			maidenInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Maiden", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(maidenInfoBox);
 		}
 	}
@@ -388,25 +394,36 @@ public class MaidenHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
-
-			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-					.append(Color.RED, "70%")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("70s"), detailed) + " - ")
-					.append(Color.RED, "50%")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("50s"), detailed) + formatTime(dataHandler.FindValue("50s"), dataHandler.FindValue("70s"), detailed) + " - ")
-					.append(Color.RED, "30%")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("30s"), detailed) + formatTime(dataHandler.FindValue("30s"), dataHandler.FindValue("50s"), detailed)));
-
-			if (config.roomTimeValidation())
+			if (!dataHandler.Find("Starting Tick").get().isException())
 			{
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-						.append(Color.RED, "Maiden - Room Complete")
+						.append(Color.RED, "70%")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("30%"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("70s")) + " - ")
+						.append(Color.RED, "50%")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("50s")) + formatTime(dataHandler.FindValue("50s"), dataHandler.FindValue("70s")) + " - ")
+						.append(Color.RED, "30%")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("30s")) + formatTime(dataHandler.FindValue("30s"), dataHandler.FindValue("50s"))));
+
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Maiden - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("30%"))));
+				}
+			}
+			else
+			{
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Maiden - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + "*"));
+				}
 			}
 		}
 	}

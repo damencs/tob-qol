@@ -333,8 +333,6 @@ public class TheatreQOLPlugin extends Plugin
 			{
 				buildFont(true);
 			}
-
-			// TODO: BUILD OUT INFOBOX HANDLING TO REMOVE IT BECAUSE WE NEED TO HIDE OR SHOW WHEN CHANGED
 		}
 	}
 

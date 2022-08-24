@@ -29,7 +29,6 @@ package com.tobqol.rooms.xarpus;
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
-import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.xarpus.commons.ExhumedTracker;
 import com.tobqol.rooms.xarpus.commons.XarpusConstants;
@@ -364,13 +363,20 @@ public class XarpusHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+			String tooltip;
 
-			String tooltip = "Exhumeds - " + formatTime(dataHandler.FindValue("Exhumeds"), detailed) + "</br>" +
-					"Screech - " + formatTime(dataHandler.FindValue("Screech"), detailed) + formatTime(dataHandler.FindValue("Screech"), dataHandler.FindValue("Exhumeds"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Screech"), detailed);
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				tooltip = "Exhumeds - " + formatTime(dataHandler.FindValue("Exhumeds")) + "</br>" +
+					"Screech - " + formatTime(dataHandler.FindValue("Screech")) + formatTime(dataHandler.FindValue("Screech"), dataHandler.FindValue("Exhumeds")) + "</br>" +
+					"Complete - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Screech"));
+			}
+			else
+			{
+				tooltip = "Complete - " + formatTime(dataHandler.FindValue("Room")) + "*";
+			}
 
-			xarpuInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Xarpus", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
+			xarpuInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Xarpus", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(xarpuInfoBox);
 		}
 	}
@@ -379,22 +385,33 @@ public class XarpusHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
-
-			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-					.append(Color.RED, "Exhumeds")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("Exhumeds"), detailed) + " - ")
-					.append(Color.RED, "Screech")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("Screech"), detailed) + formatTime(dataHandler.FindValue("Screech"), dataHandler.FindValue("Exhumeds"), detailed)));
-
-			if (config.roomTimeValidation())
+			if (!dataHandler.Find("Starting Tick").get().isException())
 			{
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-						.append(Color.RED, "Xarpus - Room Complete")
+						.append(Color.RED, "Exhumeds")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Screech"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Exhumeds")) + " - ")
+						.append(Color.RED, "Screech")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("Screech")) + formatTime(dataHandler.FindValue("Screech"), dataHandler.FindValue("Exhumeds"))));
+
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Xarpus - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Screech"))));
+				}
+			}
+			else
+			{
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Xarpus - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + "*"));
+				}
 			}
 		}
 	}

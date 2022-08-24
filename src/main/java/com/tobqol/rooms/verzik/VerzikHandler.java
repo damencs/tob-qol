@@ -28,7 +28,6 @@ package com.tobqol.rooms.verzik;
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
-import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.verzik.commons.Tornado;
 import com.tobqol.rooms.verzik.commons.VerzikMap;
@@ -399,14 +398,21 @@ public class VerzikHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+			String tooltip;
 
-			String tooltip = "P1 - " + formatTime(dataHandler.FindValue("P1"), detailed) + "</br>" +
-					"Reds - " + formatTime(dataHandler.FindValue("Reds"), detailed) + formatTime(dataHandler.FindValue("Reds"), dataHandler.FindValue("P1"), detailed) + "</br>" +
-					"P2 - " + formatTime(dataHandler.FindValue("P2"), detailed) + formatTime(dataHandler.FindValue("P2"), dataHandler.FindValue("Reds"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("P2"), detailed);
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				tooltip = "P1 - " + formatTime(dataHandler.FindValue("P1")) + "</br>" +
+					"Reds - " + formatTime(dataHandler.FindValue("Reds")) + formatTime(dataHandler.FindValue("Reds"), dataHandler.FindValue("P1")) + "</br>" +
+					"P2 - " + formatTime(dataHandler.FindValue("P2")) + formatTime(dataHandler.FindValue("P2"), dataHandler.FindValue("Reds")) + "</br>" +
+					"Complete - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("P2"));
+			}
+			else
+			{
+				tooltip = "Complete - " + formatTime(dataHandler.FindValue("Room")) + "*";
+			}
 
-			verzikInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Verzik", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
+			verzikInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Verzik", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(verzikInfoBox);
 		}
 	}
@@ -415,25 +421,36 @@ public class VerzikHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
-
-			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-					.append(Color.RED, "P1")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("P1"), detailed) + " - ")
-					.append(Color.RED, "Reds")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("Reds"), detailed) + " - " + formatTime(dataHandler.FindValue("Reds"), dataHandler.FindValue("P1"), detailed) + " - ")
-					.append(Color.RED, "P2")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("P2"), detailed) + " - " + formatTime(dataHandler.FindValue("P2"), dataHandler.FindValue("Reds"), detailed)));
-
-			if (config.roomTimeValidation())
+			if (!dataHandler.Find("Starting Tick").get().isException())
 			{
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-						.append(Color.RED, "Verzik - Room Complete")
+						.append(Color.RED, "P1")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("P2"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("P1")) + " - ")
+						.append(Color.RED, "Reds")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("Reds")) + " - " + formatTime(dataHandler.FindValue("Reds"), dataHandler.FindValue("P1")) + " - ")
+						.append(Color.RED, "P2")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("P2")) + " - " + formatTime(dataHandler.FindValue("P2"), dataHandler.FindValue("Reds"))));
+
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Verzik - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("P2"))));
+				}
+			}
+			else
+			{
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Verzik - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + "*"));
+				}
 			}
 		}
 	}

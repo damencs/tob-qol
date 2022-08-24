@@ -30,7 +30,6 @@ import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
 import com.tobqol.api.util.TheatreInputListener;
-import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.nylocas.commons.NyloBoss;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionBox;
@@ -617,18 +616,21 @@ public class NylocasHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
+			String tooltip;
 
-			// waves time, cleanup time, boss spawn time...
-			// need to add considerations for hard-mode because of prince spawns and deaths.. maybe?
-			// maybe add a generate tooltip to method to roomhandler that uses hidden and iterates thru like we do for prerendering times??
-			// need to add demi spawns if HMT
-			String tooltip = "Waves - " + formatTime(dataHandler.FindValue("Waves"), detailed) + "</br>" +
-					"Cleanup - " + formatTime(dataHandler.FindValue("Cleanup"), detailed) + formatTime(dataHandler.FindValue("Cleanup"), dataHandler.FindValue("Waves"), detailed) + "</br>" +
-					"Boss - " + formatTime(dataHandler.FindValue("Boss"), detailed) + formatTime(dataHandler.FindValue("Boss"), dataHandler.FindValue("Cleanup"), detailed) + "</br>" +
-					"Complete - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Boss"), detailed);
+			if (!dataHandler.Find("Starting Tick").get().isException())
+			{
+				tooltip = "Waves - " + formatTime(dataHandler.FindValue("Waves")) + "</br>" +
+						"Cleanup - " + formatTime(dataHandler.FindValue("Cleanup")) + formatTime(dataHandler.FindValue("Cleanup"), dataHandler.FindValue("Waves")) + "</br>" +
+						"Boss - " + formatTime(dataHandler.FindValue("Boss")) + formatTime(dataHandler.FindValue("Boss"), dataHandler.FindValue("Cleanup")) + "</br>" +
+						"Complete - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Boss"));
+			}
+			else
+			{
+				tooltip = "Complete - " + formatTime(dataHandler.FindValue("Room")) + "*";
+			}
 
-			nylocasInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Nylocas", formatTime(dataHandler.FindValue("Room"), detailed), tooltip);
+			nylocasInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Nylocas", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(nylocasInfoBox);
 		}
 	}
@@ -637,26 +639,36 @@ public class NylocasHandler extends RoomHandler
 	{
 		if (!dataHandler.getData().isEmpty())
 		{
-			boolean detailed = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
-
-			// need to add demi spawns if HMT
-			enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-					.append(Color.RED, "Waves")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("Waves"), detailed) + " - ")
-					.append(Color.RED, "Cleanup")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("Cleanup"), detailed) + formatTime(dataHandler.FindValue("Cleanup"), dataHandler.FindValue("Waves"), detailed) + " - ")
-					.append(Color.RED, "Boss")
-					.append(ChatColorType.NORMAL)
-					.append(" - " + formatTime(dataHandler.FindValue("Boss"), detailed) + formatTime(dataHandler.FindValue("Boss"), dataHandler.FindValue("Cleanup"), detailed)));
-
-			if (config.roomTimeValidation())
+			if (!dataHandler.Find("Starting Tick").get().isException())
 			{
 				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-						.append(Color.RED, "Nylocas - Room Complete")
+						.append(Color.RED, "Waves")
 						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Room"), detailed) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Boss"), detailed)));
+						.append(" - " + formatTime(dataHandler.FindValue("Waves")) + " - ")
+						.append(Color.RED, "Cleanup")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("Cleanup")) + formatTime(dataHandler.FindValue("Cleanup"), dataHandler.FindValue("Waves")) + " - ")
+						.append(Color.RED, "Boss")
+						.append(ChatColorType.NORMAL)
+						.append(" - " + formatTime(dataHandler.FindValue("Boss")) + formatTime(dataHandler.FindValue("Boss"), dataHandler.FindValue("Cleanup"))));
+
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Nylocas - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Boss"))));
+				}
+			}
+			else
+			{
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Nylocas - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + "*"));
+				}
 			}
 		}
 	}

@@ -28,7 +28,6 @@ package com.tobqol.rooms.bloat;
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
-import com.tobqol.config.times.TimeDisplayDetail;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.bloat.commons.BloatConstants;
 import com.tobqol.rooms.bloat.commons.BloatTable;
@@ -250,27 +249,37 @@ public class BloatHandler extends RoomHandler
 	{
 		if (dataHandler.FindValue("Starting Tick") > 0)
 		{
-			boolean precise = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
 			String roomTime = formatTime(dataHandler.FindValue("Room"));
 			StringBuilder tooltip = new StringBuilder();
 
-			if (downs > 0)
+			if (!dataHandler.Find("Starting Tick").get().isException())
 			{
-				dataHandler.getData().forEach(d ->
+				if (config.trackDowns())
 				{
-					if (d.getName().contains("Down"))
+					if (downs > 0)
 					{
-						tooltip.append(d.getName() + " - " + formatTime(dataHandler.FindValue("Down " + d.getSort()), precise) +
-								(d.getSort() > 1 ? formatTime(dataHandler.FindValue("Down " + d.getSort()), dataHandler.FindValue("Down " + (d.getSort() - 1)), precise) : "") + "</br>");
+						dataHandler.getData().forEach(d ->
+						{
+							if (d.getName().contains("Down"))
+							{
+								tooltip.append(d.getName() + " - " + formatTime(dataHandler.FindValue("Down " + d.getSort())) +
+										(d.getSort() > 1 ? formatTime(dataHandler.FindValue("Down " + d.getSort()), dataHandler.FindValue("Down " + (d.getSort() - 1))) : "") + "</br>");
+							}
+						});
 					}
-				});
+					else
+					{
+						tooltip.append("No downs");
+					}
+				}
 
 				tooltip.append("Complete - " + roomTime);
 			}
 			else
 			{
-				tooltip.append("No downs");
+				tooltip.append("Complete - " + roomTime + "*");
 			}
+
 
 			bloatInfoBox = RoomInfoUtil.createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Bloat", roomTime, tooltip.toString());
 			plugin.infoBoxManager.addInfoBox(bloatInfoBox);
@@ -281,35 +290,46 @@ public class BloatHandler extends RoomHandler
 	{
 		if (dataHandler.Find("Starting Tick").isPresent())
 		{
-			boolean precise = config.displayRoomTimesDetail() == TimeDisplayDetail.DETAILED;
-
-			if (downs > 0)
+			if (!dataHandler.Find("Starting Tick").get().isException())
 			{
-				ChatMessageBuilder chatMessageBuilder = new ChatMessageBuilder();
-
-				int downsRemaining = downs - 1;
-
-				for (RoomDataItem d : dataHandler.getData())
+				if (downs > 0 && config.trackDowns())
 				{
-					if (d.getName().contains("Down"))
-					{
-						chatMessageBuilder.append(Color.RED, d.getName())
-								.append(ChatColorType.NORMAL)
-								.append(" - " + formatTime(d.getValue(), precise) + (d.getSort() > 1 ? formatTime(d.getValue(), dataHandler.FindValue("Down " + (d.getSort() - 1)), precise) : "") + (downsRemaining > 0 ? " - " : ""));
+					ChatMessageBuilder chatMessageBuilder = new ChatMessageBuilder();
 
-						downsRemaining--;
+					int downsRemaining = downs - 1;
+
+					for (RoomDataItem d : dataHandler.getData())
+					{
+						if (d.getName().contains("Down"))
+						{
+							chatMessageBuilder.append(Color.RED, d.getName())
+									.append(ChatColorType.NORMAL)
+									.append(" - " + formatTime(d.getValue()) + (d.getSort() > 1 ? formatTime(d.getValue(), dataHandler.FindValue("Down " + (d.getSort() - 1))) : "") + (downsRemaining > 0 ? " - " : ""));
+
+							downsRemaining--;
+						}
 					}
+
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, chatMessageBuilder);
 				}
 
-				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, chatMessageBuilder);
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Bloat - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Down " + downs))));
+				}
 			}
-
-			if (config.roomTimeValidation())
+			else
 			{
-				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
-						.append(Color.RED, "Bloat - Room Complete")
-						.append(ChatColorType.NORMAL)
-						.append(" - " + formatTime(dataHandler.FindValue("Room"), precise) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("Down " + downs), precise)));
+				if (config.roomTimeValidation())
+				{
+					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+							.append(Color.RED, "Bloat - Room Complete")
+							.append(ChatColorType.NORMAL)
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + "*"));
+				}
 			}
 		}
 	}
