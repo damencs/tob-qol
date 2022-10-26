@@ -103,7 +103,7 @@ public class RoomDataHandler
 
         data.forEach((item) ->
         {
-            if (item.isHidden() || (item.getName() != "Room"))
+            if (item.isHidden() || (item.isHidden() && item.getName() != "Room"))
             {
                 return;
             }
