@@ -447,15 +447,15 @@ public class NylocasHandler extends RoomHandler
 			target = Text.removeTags(target);
 			Color color = null;
 
-			if (target.startsWith(MELEE_NAME) || id == NylocasConstants.DEMI_BOSS_MELEE.hm())
+			if (target.contains(MELEE_NAME) || id == NylocasConstants.DEMI_BOSS_MELEE.hm())
 			{
 				color = darker ? MELEE_COLOR.darker() : MELEE_COLOR;
 			}
-			else if (target.startsWith(RANGE_NAME) || id == NylocasConstants.DEMI_BOSS_RANGE.hm())
+			else if (target.contains(RANGE_NAME) || id == NylocasConstants.DEMI_BOSS_RANGE.hm())
 			{
 				color = darker ? RANGE_COLOR.darker() : RANGE_COLOR;
 			}
-			else if (target.startsWith(MAGIC_NAME) || id == NylocasConstants.DEMI_BOSS_MAGIC.hm())
+			else if (target.contains(MAGIC_NAME) || id == NylocasConstants.DEMI_BOSS_MAGIC.hm())
 			{
 				color = darker ? MAGIC_COLOR.darker() : MAGIC_COLOR;
 			}
