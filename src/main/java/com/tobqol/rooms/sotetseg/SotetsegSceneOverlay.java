@@ -30,11 +30,14 @@ import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.rooms.RoomSceneOverlay;
 import com.tobqol.rooms.sotetseg.config.SotetsegInstanceTimerTypes;
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.client.ui.overlay.OverlayUtil;
 
 import javax.inject.Inject;
 import java.awt.*;
 
+@Slf4j
 public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 {
 	@Inject
@@ -52,13 +55,19 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
+
 		if (!room.active() || room.isClickable())
 		{
+			if (config.debugSotetsegChosenText())
+			{
+				drawChosenOverlay(graphics);
+			}
 			return null;
 		}
 
 		graphics.setFont(plugin.getInstanceTimerFont());
 		drawSoteInstanceTimers(graphics);
+		drawChosenOverlay(graphics);
 
 		return null;
 	}
@@ -66,6 +75,7 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 	private void drawSoteInstanceTimers(Graphics2D graphics)
 	{
 		SotetsegInstanceTimerTypes type = config.getSotetsegInstanceTimerType();
+		graphics.setFont(plugin.getInstanceTimerFont());
 
 		switch (instance.getRoomStatus())
 		{
@@ -82,6 +92,19 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 					drawInstanceTimer(graphics, room.getSotetsegNpc(), room.getPortal());
 				}
 				break;
+		}
+	}
+
+	private void drawChosenOverlay(Graphics2D graphics)
+	{
+		if ((room.isChosen() || config.debugSotetsegChosenText()) && config.hideSotetsegWhiteScreen() && config.showSotetsegChosenText())
+		{
+			String text = "You have been chosen.";
+			graphics.setFont(new Font(config.fontType().getName(), config.fontStyle().getValue(), 20));
+			int width = graphics.getFontMetrics().stringWidth(text);
+			int drawX = client.getViewportWidth() / 2 - width / 2;
+			int drawY = client.getViewportHeight() - (client.getViewportHeight() / 2) + (config.sotetsegChosenTextOffset() * 10);
+			OverlayUtil.renderTextLocation(graphics, new net.runelite.api.Point(drawX, drawY), text, Color.WHITE);
 		}
 	}
 }

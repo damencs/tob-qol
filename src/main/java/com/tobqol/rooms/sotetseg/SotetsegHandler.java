@@ -30,12 +30,14 @@ import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.sotetseg.commons.MutableMaze;
+import com.tobqol.rooms.sotetseg.commons.SotetsegNotification;
 import com.tobqol.rooms.sotetseg.commons.SotetsegTable;
 import com.tobqol.rooms.sotetseg.config.SotetsegProjectileTheme;
 import com.tobqol.tracking.RoomDataHandler;
 import com.tobqol.tracking.RoomDataItem;
 import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
@@ -44,11 +46,14 @@ import net.runelite.api.widgets.Widget;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.party.PartyService;
+import net.runelite.client.party.WSClient;
 import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
-import javax.sound.sampled.*;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import java.awt.*;
 
 import static com.tobqol.api.game.Region.SOTETSEG;
@@ -85,6 +90,19 @@ public class SotetsegHandler extends RoomHandler
 	private boolean considerTeleport = true;
 
 	private static Clip soundClip;
+	private boolean deathBallSpawned = false;
+	private int deathBallSafetyNet = 0;
+
+	@Getter
+	@Setter
+	private boolean chosen = false;
+	public int chosenTextTimeout;
+
+	@Inject
+	private WSClient wsClient;
+
+	@Inject
+	private PartyService party;
 
 	@Inject
 	protected SotetsegHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -100,12 +118,15 @@ public class SotetsegHandler extends RoomHandler
 	{
 		overlayManager.add(sceneOverlay);
 		soundClip = generateSoundClip("weewoo-hoyaa.wav", config.sotetsegSoundClipVolume());
+
+		wsClient.registerMessage(SotetsegNotification.class);
 	}
 
 	@Override
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
+		wsClient.unregisterMessage(SotetsegNotification.class);
 		reset();
 	}
 
@@ -123,6 +144,10 @@ public class SotetsegHandler extends RoomHandler
 		maze = null;
 		portal = null;
 		considerTeleport = true;
+		deathBallSpawned = false;
+		deathBallSafetyNet = 0;
+		chosen = false;
+		chosenTextTimeout = 0;
 
 		if (instance.getRaidStatus() <= 1)
 		{
@@ -191,6 +216,39 @@ public class SotetsegHandler extends RoomHandler
 		if (!considerTeleport)
 		{
 			considerTeleport = true;
+		}
+
+		if (deathBallSpawned && deathBallSafetyNet++ == 35)
+		{
+			deathBallSafetyNet = 0;
+			deathBallSpawned = false;
+		}
+
+		Widget[] widgetsOfSotetseg = client.getWidget(28, 1).getChildren();
+		if (!chosen && config.hideSotetsegWhiteScreen() && client.getWidget(28, 1) != null)
+		{
+			for (Widget widget : widgetsOfSotetseg)
+			{
+				if (!widget.getText().isEmpty())
+				{
+					if (widget.getText().contains("Sotetseg chooses you"))
+					{
+						chosen = true;
+						widget.setText("");
+					}
+				}
+			}
+		}
+		else if (chosen && chosenTextTimeout++ == 5)
+		{
+			for (Widget widget : widgetsOfSotetseg)
+			{
+				if (!widget.getText().isEmpty())
+				{
+					chosen = false;
+					widget.setText("");
+				}
+			}
 		}
 	}
 
@@ -320,13 +378,18 @@ public class SotetsegHandler extends RoomHandler
 		Projectile projectile = projectileMoved.getProjectile();
 		int projectileId = projectile.getId();
 
-		if (projectileId == DEATH_BALL && config.sotetsegSoundClip())
+		if (projectileId == DEATH_BALL && !deathBallSpawned)
 		{
-			soundClip.setFramePosition(0);
-			soundClip.start();
+			if (config.sotetsegSoundClip())
+			{
+				soundClip.setFramePosition(0);
+				soundClip.start();
+			}
+
+			deathBallSpawned = true;
 		}
 
-		if (!theme.isDefault() && (projectileId != DEATH_BALL || (projectileId == DEATH_BALL && theme.isInfernoTheme())))
+		if (!theme.isDefault())
 		{
 			int replacement = -1;
 
@@ -339,6 +402,10 @@ public class SotetsegHandler extends RoomHandler
 						case INFERNO:
 							replacement = INFERNO_RANGE;
 							break;
+
+						case TOA:
+							replacement = TOA_RANGE;
+							break;
 					}
 					break;
 				}
@@ -349,6 +416,10 @@ public class SotetsegHandler extends RoomHandler
 						case INFERNO:
 							replacement = INFERNO_MAGE;
 							break;
+
+						case TOA:
+							replacement = TOA_MAGE;
+							break;
 					}
 					break;
 				}
@@ -357,12 +428,12 @@ public class SotetsegHandler extends RoomHandler
 					switch (theme)
 					{
 						case INFERNO:
-							if (config.infernoThemeZukBall())
-							{
-								replacement = INFERNO_DEATH_BALL;
-								break;
-							}
+							replacement = INFERNO_DEATH_BALL;
+							break;
 
+						case TOA:
+							replacement = TOA_DEATH_BALL;
+							break;
 					}
 				}
 			}
@@ -397,6 +468,11 @@ public class SotetsegHandler extends RoomHandler
 				boolean phase = dataHandler.Find("66%").isPresent();
 				dataHandler.getData().add(new RoomDataItem(phase ? "33%" : "66%", dataHandler.getTime(), phase ? 2 : 1, false));
 				considerTeleport = false;
+
+				if (deathBallSpawned)
+				{
+					deathBallSpawned = false;
+				}
 			}
 		}
 	}
@@ -410,6 +486,11 @@ public class SotetsegHandler extends RoomHandler
 		}
 
 		String stripped = Text.removeTags(event.getMessage());
+
+		if (stripped.equals(SOTETSEG_DEATHBALL) && party.isInParty())
+		{
+			clientThread.invokeLater(() -> party.send(new SotetsegNotification(client.getLocalPlayer().getName(), true)));
+		}
 
 		if (SOTETSEG_WAVE.matcher(stripped).find())
 		{
@@ -426,6 +507,30 @@ public class SotetsegHandler extends RoomHandler
 				sendChatTimes();
 			}
 		}
+	}
+
+	@Subscribe
+	public void onSotetsegNotification(SotetsegNotification event)
+	{
+		if (!active())
+		{
+			return;
+		}
+
+		clientThread.invokeLater(() -> {
+			if (!deathBallSpawned)
+			{
+				if (config.sotetsegSoundClip())
+				{
+					soundClip.setFramePosition(0);
+					soundClip.start();
+				}
+
+				deathBallSpawned = true;
+				enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
+						.append(new Color(167, 112, 225), event.getName() + " has discovered a large ball of energy shot their way..."));
+			}
+		});
 	}
 
 	private void buildInfobox()

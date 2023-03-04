@@ -33,7 +33,8 @@ import lombok.RequiredArgsConstructor;
 public enum SotetsegProjectileTheme
 {
 	DEFAULT("Default"),
-	INFERNO("Inferno");
+	INFERNO("Inferno"),
+	TOA("ToA");
 
 	private final String option;
 
@@ -45,6 +46,11 @@ public enum SotetsegProjectileTheme
 	public final boolean isInfernoTheme()
 	{
 		return this == INFERNO;
+	}
+
+	public final boolean isToATheme()
+	{
+		return this == TOA;
 	}
 
 	@Override

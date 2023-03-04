@@ -461,10 +461,48 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
+			name = "Show Chosen Text",
+			keyName = "showSotetsegChosenText",
+			description = "- Displays a simulated version of 'You have been chosen.' text when Hide White Screen is enabled",
+			position = 5,
+			section = SOTETSEG_SECTION
+	)
+	default boolean showSotetsegChosenText()
+	{
+		return true;
+	}
+
+	@Range(min=-50, max=50)
+	@ConfigItem(
+			name = "Chosen Text Offset",
+			keyName = "sotetsegChosenTextOffset",
+			description = "- Adjusts the height of 'You have been chosen.' text\n" +
+					"when Show Chosen Text AND Hide White Screen options are enabled",
+			position = 6,
+			section = SOTETSEG_SECTION
+	)
+	default int sotetsegChosenTextOffset()
+	{
+		return 0;
+	}
+
+	@ConfigItem(
+			name = "Debug Chosen Text",
+			keyName = "debugSotetsegChosenText",
+			description = "- Displays a simulated version of 'You have been chosen.' text to see height of text",
+			position = 7,
+			section = SOTETSEG_SECTION
+	)
+	default boolean debugSotetsegChosenText()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 			name = "Hide Underworld Rocks",
 			keyName = "sotetsegHideUnderworldRocks",
 			description = "- Hides the rocks surrounding the Sotetseg maze",
-			position = 5,
+			position = 8,
 			section = SOTETSEG_SECTION
 	)
 	default boolean sotetsegHideUnderworldRocks()
@@ -477,7 +515,7 @@ public interface TheatreQOLConfig extends Config
 			keyName = "sotetsegSoundClip",
 			description = "- Replaces the Death Ball sound effect with a wee-woo sound clip<br>" +
 					"* Thank you Hoyaa for providing this sound clip for the project",
-			position = 6,
+			position = 9,
 			section = SOTETSEG_SECTION
 	)
 	default boolean sotetsegSoundClip()
@@ -490,7 +528,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Death Ball Alarm Volume",
 			keyName = "sotetsegSoundClipVolume",
 			description = "- Sets the volume of the sound clip",
-			position = 7,
+			position = 10,
 			section = SOTETSEG_SECTION
 	)
 	default int sotetsegSoundClipVolume()

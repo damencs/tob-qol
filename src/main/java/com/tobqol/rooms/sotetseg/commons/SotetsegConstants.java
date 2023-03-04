@@ -37,6 +37,9 @@ public interface SotetsegConstants
 
 	Pattern SOTETSEG_WAVE = Pattern.compile("Wave 'Sotetseg' \\(.*\\) complete!");
 
+	String SOTETSEG_DEATHBALL_RAW = "<col=bf0000>A large ball of energy is shot your way...</col>";
+	String SOTETSEG_DEATHBALL = "A large ball of energy is shot your way...";
+
 	int MAZE_TELE_ANIM = 1816;
 
 	int SOTETSEG_MELEE_ANIM = 8138;
@@ -57,4 +60,7 @@ public interface SotetsegConstants
 	int INFERNO_RANGE = 1378;
 	int INFERNO_MAGE = 1380;
 	int INFERNO_DEATH_BALL = 1375;
+	int TOA_RANGE = 2241;
+	int TOA_MAGE = 2224;
+	int TOA_DEATH_BALL = 2176;
 }
