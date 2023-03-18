@@ -435,8 +435,11 @@ public class SotetsegHandler extends RoomHandler
 							}
 
 						case TOA:
-							replacement = TOA_DEATH_BALL;
-							break;
+							if (config.infernoThemeZukBall())
+							{
+								replacement = TOA_DEATH_BALL;
+								break;
+							}
 					}
 				}
 			}

@@ -437,9 +437,9 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
-			name = "Zuk Ball for Death Ball",
+			name = "Zuk/ToA Ball for Death Ball",
 			keyName = "infernoThemeZukBall",
-			description = "- Use the Zuk ball to replace Sotetseg's death ball when the Inferno theme is selected",
+			description = "- Use the Zuk/ToA ball to replace Sotetseg's death ball when the Inferno or ToA theme is selected",
 			position = 3,
 			section = SOTETSEG_SECTION
 	)
