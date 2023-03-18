@@ -428,8 +428,11 @@ public class SotetsegHandler extends RoomHandler
 					switch (theme)
 					{
 						case INFERNO:
-							replacement = INFERNO_DEATH_BALL;
-							break;
+							if (config.infernoThemeZukBall())
+							{
+								replacement = INFERNO_DEATH_BALL;
+								break;
+							}
 
 						case TOA:
 							replacement = TOA_DEATH_BALL;
