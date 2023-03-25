@@ -333,6 +333,12 @@ public class TheatreQOLPlugin extends Plugin
 			{
 				buildFont(true);
 			}
+
+			case "displayTimeSplits":
+			{
+				dataHandler.updateHiddenItems(!Boolean.valueOf(e.getNewValue()));
+				break;
+			}
 		}
 	}
 

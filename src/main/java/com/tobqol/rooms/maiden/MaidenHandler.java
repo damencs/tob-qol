@@ -152,17 +152,17 @@ public class MaidenHandler extends RoomHandler
 
 					if (!dataHandler.Find("70s").isPresent())
 					{
-						dataHandler.getData().add(new RoomDataItem("70s", dataHandler.getTime(), 1, false));
+						dataHandler.getData().add(new RoomDataItem("70s", dataHandler.getTime(), 1, !config.displayTimeSplits()));
 						return;
 					}
 					else if (!dataHandler.Find("50s").isPresent() && dataHandler.Find("70s").isPresent())
 					{
-						dataHandler.getData().add(new RoomDataItem("50s", dataHandler.getTime(), 2, false, "70s"));
+						dataHandler.getData().add(new RoomDataItem("50s", dataHandler.getTime(), 2, !config.displayTimeSplits(), "70s"));
 						return;
 					}
 					else if (!dataHandler.Find("30s").isPresent() && dataHandler.Find("50s").isPresent())
 					{
-						dataHandler.getData().add(new RoomDataItem("30s", dataHandler.getTime(), 3, false, "50s"));
+						dataHandler.getData().add(new RoomDataItem("30s", dataHandler.getTime(), 3, !config.displayTimeSplits(), "50s"));
 						return;
 					}
 				}

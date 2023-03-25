@@ -427,7 +427,8 @@ public interface TheatreQOLConfig extends Config
 			name = "Projectile Theme",
 			keyName = "getSotetsegProjectileTheme",
 			description = "- Modifies the Projectile to appear in a specific theme to assist with colorblind users<br>" +
-					"* Inferno: Utilizes the blob mage and range projectiles",
+					"* Inferno: Utilizes the blob mage and range projectiles<br>" +
+					"* TOA: Utilizes the red skull and rock projectiles from Wardens",
 			position = 2,
 			section = SOTETSEG_SECTION
 	)
@@ -437,13 +438,13 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
-			name = "Zuk Ball for Death Ball",
-			keyName = "infernoThemeZukBall",
-			description = "- Use the Zuk ball to replace Sotetseg's death ball when the Inferno theme is selected",
+			name = "Themed Death Ball",
+			keyName = "themedDeathBall",
+			description = "- Use the theme's ball to replace Sotetseg's death ball when a theme is selected",
 			position = 3,
 			section = SOTETSEG_SECTION
 	)
-	default boolean infernoThemeZukBall()
+	default boolean themedDeathBall()
 	{
 		return true;
 	}
@@ -681,7 +682,7 @@ public interface TheatreQOLConfig extends Config
 		return 16;
 	}
 
-	@Range(min = 12, max = 24)
+	@Range(min = 12, max = 42)
 	@ConfigItem(
 			name = "Instance Timer Size",
 			keyName = "instanceTimerSize",
@@ -726,11 +727,24 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
+			name = "Display Splits",
+			keyName = "displayTimeSplits",
+			description = "- Displays the splits in the room where tracked<br>" +
+						  "- Example: [50s - 1:02.4]",
+			position = 2,
+			section = TIME_SECTION
+	)
+	default boolean displayTimeSplits()
+	{
+		return true;
+	}
+
+	@ConfigItem(
 			name = "Display Split Differences",
 			keyName = "displayTimeSplitDifferences",
 			description = "- Displays the difference in time between each split<br>" +
-						  "- Example: [50s - 1:02.4 (0:24.6)]",
-			position = 2,
+					"- Example: [50s - 1:02.4 (0:24.6)]",
+			position = 3,
 			section = TIME_SECTION
 	)
 	default boolean displayTimeSplitDifferences()
@@ -742,7 +756,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Validate Room Completion",
 			keyName = "roomTimeValidation",
 			description = "- Displays the room completion time that the plugin tracks independently to validate plugin timing",
-			position = 3,
+			position = 4,
 			section = TIME_SECTION
 	)
 	default boolean roomTimeValidation()
@@ -755,7 +769,7 @@ public interface TheatreQOLConfig extends Config
 			keyName = "shrunkLiveTimerDesign",
 			description = "- Live timer overlay with Plain San Serif at a font size of 11 to minimize the overlay size<br>" +
 						"Note: You can use RuneLite's overlay settings in Core 'RuneLite' Settings to configure the overlay",
-			position = 4,
+			position = 5,
 			section = TIME_SECTION
 	)
 	default boolean shrunkLiveTimerDesign()

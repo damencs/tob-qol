@@ -246,6 +246,7 @@ public class SotetsegHandler extends RoomHandler
 				if (!widget.getText().isEmpty())
 				{
 					chosen = false;
+					chosenTextTimeout = 0;
 					widget.setText("");
 				}
 			}
@@ -425,15 +426,18 @@ public class SotetsegHandler extends RoomHandler
 				}
 				case DEATH_BALL:
 				{
-					switch (theme)
+					if (config.themedDeathBall())
 					{
-						case INFERNO:
-							replacement = INFERNO_DEATH_BALL;
-							break;
+						switch (theme)
+						{
+							case INFERNO:
+								replacement = INFERNO_DEATH_BALL;
+								break;
 
-						case TOA:
-							replacement = TOA_DEATH_BALL;
-							break;
+							case TOA:
+								replacement = TOA_DEATH_BALL;
+								break;
+						}
 					}
 				}
 			}
@@ -466,7 +470,7 @@ public class SotetsegHandler extends RoomHandler
 			if (considerTeleport && event.getActor().getAnimation() == MAZE_TELE_ANIM)
 			{
 				boolean phase = dataHandler.Find("66%").isPresent();
-				dataHandler.getData().add(new RoomDataItem(phase ? "33%" : "66%", dataHandler.getTime(), phase ? 2 : 1, false));
+				dataHandler.getData().add(new RoomDataItem(phase ? "33%" : "66%", dataHandler.getTime(), phase ? 2 : 1, !config.displayTimeSplits()));
 				considerTeleport = false;
 
 				if (deathBallSpawned)

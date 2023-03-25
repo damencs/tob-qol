@@ -297,7 +297,7 @@ public class NylocasHandler extends RoomHandler
 
 		if (NylocasConstants.matchesAnyMode(BOSS_DROPPING_MELEE, id))
 		{
-			dataHandler.getData().add(new RoomDataItem("Boss", dataHandler.getTime(), 6, false, "Cleanup"));
+			dataHandler.getData().add(new RoomDataItem("Boss", dataHandler.getTime(), 6, !config.displayTimeSplits(), "Cleanup"));
 			return;
 		}
 
@@ -365,7 +365,7 @@ public class NylocasHandler extends RoomHandler
 
 					if (wave == NYLOCAS_WAVES_TOTAL)
 					{
-						dataHandler.getData().add(new RoomDataItem("Waves", dataHandler.getTime(), 4, false, dataHandler.Find("Demi 3").isPresent() ? "Demi 3" : ""));
+						dataHandler.getData().add(new RoomDataItem("Waves", dataHandler.getTime(), 4, !config.displayTimeSplits(), dataHandler.Find("Demi 3").isPresent() ? "Demi 3" : ""));
 					}
 				}
 			}

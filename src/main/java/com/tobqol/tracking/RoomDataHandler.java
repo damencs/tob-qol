@@ -149,4 +149,15 @@ public class RoomDataHandler
             Find("Room").get().setValue(getTime());
         }
     }
+
+    public void updateHiddenItems(boolean set)
+    {
+        data.forEach(item ->
+        {
+            if (item.getName() != "Starting Tick" && item.getName() != "Room")
+            {
+                item.setHidden(set);
+            }
+        });
+    }
 }

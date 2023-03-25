@@ -209,7 +209,7 @@ public class VerzikHandler extends RoomHandler
 			{
 				if (!dataHandler.Find("P1").isPresent())
 				{
-					dataHandler.getData().add(new RoomDataItem("P1", dataHandler.getTime(), false));
+					dataHandler.getData().add(new RoomDataItem("P1", dataHandler.getTime(), !config.displayTimeSplits()));
 				}
 				break;
 			}
@@ -350,7 +350,7 @@ public class VerzikHandler extends RoomHandler
 		{
 			if (!dataHandler.Find("P2").isPresent())
 			{
-				dataHandler.getData().add(new RoomDataItem("P2", dataHandler.getTime(), false));
+				dataHandler.getData().add(new RoomDataItem("P2", dataHandler.getTime(), !config.displayTimeSplits()));
 			}
 		}
 	}

@@ -49,9 +49,9 @@ import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
-import javax.sound.sampled.*;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import java.awt.*;
-import java.io.BufferedInputStream;
 
 import static com.tobqol.api.game.Region.XARPUS;
 import static com.tobqol.rooms.xarpus.commons.XarpusConstants.BOSS_IMAGE;
