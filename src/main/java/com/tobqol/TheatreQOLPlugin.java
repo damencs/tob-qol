@@ -61,8 +61,6 @@ import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
-import net.runelite.client.events.ExternalPluginsChanged;
-import net.runelite.client.events.PluginChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.FontManager;
@@ -256,17 +254,6 @@ public class TheatreQOLPlugin extends Plugin
 		}
 	}
 
-	@Subscribe(priority = -1)
-	private void onPluginChanged(PluginChanged e)
-	{
-		if (e.getPlugin() != this || !e.isLoaded())
-		{
-			return;
-		}
-
-		eventBus.post(new ExternalPluginsChanged(Collections.emptyList()));
-	}
-
 	public boolean addRemovableOverlay(String configKey, RemovableOverlay removableOverlay)
 	{
 		if (Strings.isNullOrEmpty(configKey) || removableOverlay == null || removableOverlays.containsValue(removableOverlay))
@@ -304,8 +291,6 @@ public class TheatreQOLPlugin extends Plugin
 
 			overlayManager.add(overlay);
 		});
-
-		eventBus.post(new ExternalPluginsChanged(Collections.emptyList()));
 
 		switch (e.getKey())
 		{
