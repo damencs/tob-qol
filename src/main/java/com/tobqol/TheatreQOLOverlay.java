@@ -59,6 +59,7 @@ public class TheatreQOLOverlay extends Overlay
     {
         graphics.setFont(plugin.getPluginFont());
 
+        // Display Chest Loot Reminder
         if (config.lootReminder() && plugin.isInVerSinhaza() && plugin.getLootChest() != null && plugin.isChestHasLoot())
         {
             Shape poly = plugin.getLootChest().getConvexHull();
@@ -69,11 +70,35 @@ public class TheatreQOLOverlay extends Overlay
             }
 
             String text = "You have loot in your chest.";
-            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 10);
+            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 0);
 
             if (textLocation != null)
             {
                 renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, config.lootReminderColor());
+            }
+        }
+
+        // Display Salve Reminder
+        if (config.salveReminder() && plugin.isInVerSinhaza() && !plugin.hasSalve())
+        {
+            String text = "You have forgotten your salve.";
+            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 60);
+
+            if (textLocation != null)
+            {
+                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, Color.CYAN);
+            }
+        }
+
+        // Display Current Spellbook
+        if (config.spellbookReminder() && plugin.isInVerSinhaza())
+        {
+            String text = "Current Spellbook: " + plugin.getSpellbook().toUpperCase();
+            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 120);
+
+            if (textLocation != null)
+            {
+                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, Color.YELLOW);
             }
         }
 

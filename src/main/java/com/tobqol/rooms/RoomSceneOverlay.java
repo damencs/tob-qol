@@ -70,7 +70,7 @@ public abstract class RoomSceneOverlay<R extends RoomHandler> extends Overlay
 
 		setPriority(OverlayPriority.HIGH);
 		setPosition(OverlayPosition.DYNAMIC);
-		setLayer(OverlayLayer.ABOVE_SCENE);
+		setLayer(OverlayLayer.ALWAYS_ON_TOP);
 	}
 
 	protected final void drawInstanceTimer(Graphics2D graphics, @Nullable NPC npc, @Nullable TileObject tileObject)

@@ -52,10 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
-import net.runelite.api.events.ClientTick;
-import net.runelite.api.events.GameObjectSpawned;
-import net.runelite.api.events.GameStateChanged;
-import net.runelite.api.events.GameTick;
+import net.runelite.api.events.*;
 import net.runelite.api.widgets.Widget;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
@@ -74,7 +71,6 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.awt.*;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -182,7 +178,8 @@ public class TheatreQOLPlugin extends Plugin
 		dataHandler = new RoomDataHandler(client, this, config);
 		dataHandler.load();
 
-		buildFont(false);
+		buildFont(false); // build standard font
+		buildFont(true); // build instance timer font
 
 		overlayManager.add(overlay);
 		eventManager.startUp();
@@ -450,6 +447,15 @@ public class TheatreQOLPlugin extends Plugin
 		}
 	}
 
+	@Subscribe
+	public void onChatMessage(ChatMessage event)
+	{
+		if (instanceService.isInRaid() && event.getType().equals(ChatMessageType.GAMEMESSAGE) && event.getMessage().contains("You have failed. The vampyres take pity on you and allow you to try again."))
+		{
+			reset(false);
+		}
+	}
+
 	@Nullable
 	private ObjectComposition getObjectComposition(int id)
 	{
@@ -582,6 +588,42 @@ public class TheatreQOLPlugin extends Plugin
 			}
 
 			return pluginFont = new Font(font == null ? config.fontStyle().getStyle() : font, style, font == null ? config.fontSize() : 16);
+		}
+	}
+
+	public boolean hasSalve()
+	{
+		final ItemContainer itemContainer = client.getItemContainer(InventoryID.INVENTORY);
+
+		if (itemContainer == null)
+		{
+			return false;
+		}
+
+		if (itemContainer.contains(ItemID.SALVE_AMULET) || itemContainer.contains(ItemID.SALVE_AMULET_E)
+			|| itemContainer.contains(ItemID.SALVE_AMULETI) || itemContainer.contains(ItemID.SALVE_AMULETEI)
+			|| itemContainer.contains(ItemID.SALVE_AMULETEI_25278) || itemContainer.contains(ItemID.SALVE_AMULETEI_26782)
+			|| itemContainer.contains(ItemID.SALVE_AMULETI_25250) || itemContainer.contains(ItemID.SALVE_AMULETI_26763))
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	public String getSpellbook()
+	{
+		int spellbookId = client.getVarbitValue(4070);
+
+		switch (spellbookId)
+		{
+			case 0: return "Standard";
+			case 1: return "Ancient";
+			case 2: return "Lunar";
+			case 3: return "Arceuus";
+			default: return "n/a";
 		}
 	}
 }

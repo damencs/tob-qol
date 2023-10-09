@@ -84,6 +84,8 @@ public enum VerzikMap
 	public static final int YELLOW_POOL = 1595;
 	public static final int YELLOW_GRAPHIC = 1597;
 
+	public static final int GREEN_BALL = 1598;
+
 	public static final Color VERZIK_COLOR = new Color(176, 92, 204);
 
 	private static final ImmutableMultimap<VerzikMap, Integer> container;

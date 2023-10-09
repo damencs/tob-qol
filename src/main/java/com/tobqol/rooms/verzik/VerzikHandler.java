@@ -36,19 +36,19 @@ import com.tobqol.tracking.RoomDataItem;
 import com.tobqol.tracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.GraphicsObject;
-import net.runelite.api.NPC;
-import net.runelite.api.Player;
+import net.runelite.api.*;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.util.Text;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
+import javax.sound.sampled.Clip;
+import javax.sound.sampled.FloatControl;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -87,6 +87,9 @@ public class VerzikHandler extends RoomHandler
 
 	@Getter
 	private byte ticksLeft = -1;
+	private static Clip soundClip;
+	private boolean deathBallSpawned = false;
+	private int deathBallSafetyNet = 0;
 
 	@Inject
 	protected VerzikHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -101,6 +104,7 @@ public class VerzikHandler extends RoomHandler
 	public void load()
 	{
 		overlayManager.add(overlay);
+		soundClip = generateSoundClip("weewoo-hoyaa.wav", config.sotetsegSoundClipVolume());
 	}
 
 	@Override
@@ -124,10 +128,40 @@ public class VerzikHandler extends RoomHandler
 		tornadoes.clear();
 		ticksLeft = -1;
 		yellows.clear();
+		deathBallSpawned = false;
+		deathBallSafetyNet = 0;
 
 		if (instance.getRaidStatus() <= 1)
 		{
 			infoBoxManager.removeInfoBox(verzikInfoBox);
+		}
+	}
+
+	@Subscribe
+	private void onConfigChanged(ConfigChanged e)
+	{
+		if (!e.getGroup().equals(TheatreQOLConfig.GROUP_NAME) || !instance.getCurrentRegion().isSotetsegUnderworld())
+		{
+			return;
+		}
+
+		switch (e.getKey())
+		{
+			case "verzikSoundClipVolume":
+			{
+				if (soundClip != null && config.verzikSoundClip())
+				{
+					FloatControl control = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
+
+					if (control != null)
+					{
+						control.setValue((float)(config.sotetsegSoundClipVolume() / 2 - 45));
+					}
+
+					soundClip.setFramePosition(0);
+					soundClip.start();
+				}
+			}
 		}
 	}
 
@@ -302,6 +336,12 @@ public class VerzikHandler extends RoomHandler
 				}
 
 				ticksLeft--;
+
+				if (deathBallSpawned && deathBallSafetyNet++ == 35)
+				{
+					deathBallSafetyNet = 0;
+					deathBallSpawned = false;
+				}
 				break;
 		}
 	}
@@ -320,6 +360,29 @@ public class VerzikHandler extends RoomHandler
 		{
 			WorldPoint wp = WorldPoint.fromLocal(client, obj.getLocation());
 			yellows.add(wp);
+		}
+	}
+
+	@Subscribe
+	public void onProjectileMoved(ProjectileMoved projectileMoved)
+	{
+		if (!active())
+		{
+			return;
+		}
+
+		Projectile projectile = projectileMoved.getProjectile();
+		int projectileId = projectile.getId();
+
+		if (projectileId == GREEN_BALL && !deathBallSpawned)
+		{
+			if (config.verzikSoundClip())
+			{
+				soundClip.setFramePosition(0);
+				soundClip.start();
+			}
+
+			deathBallSpawned = true;
 		}
 	}
 

@@ -189,6 +189,56 @@ public interface TheatreQOLConfig extends Config
 		return new Color(196, 89, 89, 200);
 	}
 
+	@ConfigItem(
+			name = "Salve Reminder",
+			keyName = "salveReminder",
+			description = "- Indicates whether or not you have salve in your inventory prior to entering the raid and putting a message on the entrance<br>",
+			position = 6,
+			section = GENERAL_SECTION
+	)
+	default boolean salveReminder()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+			name = "Salve Reminder Color",
+			keyName = "salveReminderColor",
+			description = "- Set a color for the Salve Reminder overlay<br>",
+			position = 7,
+			section = GENERAL_SECTION
+	)
+	@Alpha
+	default Color salveReminderColor()
+	{
+		return Color.CYAN;
+	}
+
+	@ConfigItem(
+			name = "Spellbook Reminder",
+			keyName = "spellbookReminder",
+			description = "- Indicates what spellbook you are on by putting a message on the entrance<br>",
+			position = 8,
+			section = GENERAL_SECTION
+	)
+	default boolean spellbookReminder()
+	{
+		return true;
+	}
+
+	@ConfigItem(
+			name = "Spellbook Reminder Color",
+			keyName = "spellbookReminderColor",
+			description = "- Set a color for the Spellbook Reminder overlay<br>",
+			position = 9,
+			section = GENERAL_SECTION
+	)
+	@Alpha
+	default Color spellbookReminderColor()
+	{
+		return Color.YELLOW;
+	}
+
 	/**
 	 * Maiden Configs
 	 */
@@ -641,6 +691,32 @@ public interface TheatreQOLConfig extends Config
 	default boolean muteVerzikSounds()
 	{
 		return false;
+	}
+
+	@ConfigItem(
+			name = "Verzik Death Ball Alarm",
+			keyName = "verzikSoundClip",
+			description = "- Replaces the Death Ball sound effect with a wee-woo sound clip<br>" +
+					"* Thank you Hoyaa for providing this sound clip for the project",
+			position = 5,
+			section = VERZIK_SECTION
+	)
+	default boolean verzikSoundClip()
+	{
+		return false;
+	}
+
+	@Range(max = 100)
+	@ConfigItem(
+			name = "Death Ball Alarm Volume",
+			keyName = "sotetsegSoundClipVolume",
+			description = "- Sets the volume of the sound clip",
+			position = 6,
+			section = VERZIK_SECTION
+	)
+	default int verzikSoundClipVolume()
+	{
+		return 65;
 	}
 
 	/**
