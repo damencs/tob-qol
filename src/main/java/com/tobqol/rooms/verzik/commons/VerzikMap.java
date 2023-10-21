@@ -85,6 +85,8 @@ public enum VerzikMap
 	public static final int YELLOW_GRAPHIC = 1597;
 
 	public static final int GREEN_BALL = 1598;
+	public static final String GREEN_BALL_TEXT = "Verzik Vitur fires a powerful projectile in your direction...";
+	public static final String GREEN_BALL_BOUNCE_TEXT = "A powerful projectile bounces into your direction...";
 
 	public static final Color VERZIK_COLOR = new Color(176, 92, 204);
 

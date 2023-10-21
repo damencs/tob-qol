@@ -696,7 +696,7 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "Verzik Death Ball Alarm",
 			keyName = "verzikSoundClip",
-			description = "- Replaces the Death Ball sound effect with a wee-woo sound clip<br>" +
+			description = "- Notifies you of the green ball with a wee-woo sound clip on chat message received<br>" +
 					"* Thank you Hoyaa for providing this sound clip for the project",
 			position = 5,
 			section = VERZIK_SECTION
@@ -709,7 +709,7 @@ public interface TheatreQOLConfig extends Config
 	@Range(max = 100)
 	@ConfigItem(
 			name = "Death Ball Alarm Volume",
-			keyName = "sotetsegSoundClipVolume",
+			keyName = "verzikSoundClipVolume",
 			description = "- Sets the volume of the sound clip",
 			position = 6,
 			section = VERZIK_SECTION

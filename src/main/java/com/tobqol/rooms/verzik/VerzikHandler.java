@@ -337,7 +337,7 @@ public class VerzikHandler extends RoomHandler
 
 				ticksLeft--;
 
-				if (deathBallSpawned && deathBallSafetyNet++ == 35)
+				if (deathBallSpawned && deathBallSafetyNet++ == 10)
 				{
 					deathBallSafetyNet = 0;
 					deathBallSpawned = false;
@@ -360,29 +360,6 @@ public class VerzikHandler extends RoomHandler
 		{
 			WorldPoint wp = WorldPoint.fromLocal(client, obj.getLocation());
 			yellows.add(wp);
-		}
-	}
-
-	@Subscribe
-	public void onProjectileMoved(ProjectileMoved projectileMoved)
-	{
-		if (!active())
-		{
-			return;
-		}
-
-		Projectile projectile = projectileMoved.getProjectile();
-		int projectileId = projectile.getId();
-
-		if (projectileId == GREEN_BALL && !deathBallSpawned)
-		{
-			if (config.verzikSoundClip())
-			{
-				soundClip.setFramePosition(0);
-				soundClip.start();
-			}
-
-			deathBallSpawned = true;
 		}
 	}
 
@@ -453,6 +430,20 @@ public class VerzikHandler extends RoomHandler
 			if (config.displayRoomTimes().isChat())
 			{
 				sendChatTimes();
+			}
+		}
+
+		if (event.getMessage().contains(GREEN_BALL_TEXT) || event.getMessage().contains(GREEN_BALL_BOUNCE_TEXT))
+		{
+			if (!deathBallSpawned)
+			{
+				if (config.verzikSoundClip())
+				{
+					soundClip.setFramePosition(0);
+					soundClip.start();
+				}
+
+				deathBallSpawned = true;
 			}
 		}
 	}
