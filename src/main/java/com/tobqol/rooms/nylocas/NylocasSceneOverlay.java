@@ -36,6 +36,7 @@ import net.runelite.api.NPC;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
 import net.runelite.api.coords.LocalPoint;
+import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayUtil;
 
 import javax.inject.Inject;
@@ -65,6 +66,7 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 			return null;
 		}
 
+		setLayer(OverlayLayer.ABOVE_SCENE);
 		graphics.setFont(plugin.getPluginFont());
 
 		drawPillarsHP(graphics);

@@ -34,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.NPC;
 import net.runelite.api.Point;
+import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayUtil;
 import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -81,6 +82,7 @@ public class VerzikOverlay extends RoomSceneOverlay<VerzikHandler>
 			return null;
 		}
 
+		setLayer(OverlayLayer.ABOVE_SCENE);
 		graphics.setFont(plugin.getPluginFont());
 
 		switch (def)

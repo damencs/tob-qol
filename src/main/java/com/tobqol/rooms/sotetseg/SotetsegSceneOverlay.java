@@ -32,6 +32,7 @@ import com.tobqol.rooms.RoomSceneOverlay;
 import com.tobqol.rooms.sotetseg.config.SotetsegInstanceTimerTypes;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
+import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayUtil;
 
 import javax.inject.Inject;
@@ -55,7 +56,6 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 	@Override
 	public Dimension render(Graphics2D graphics)
 	{
-
 		if (!room.active() || room.isClickable())
 		{
 			if (config.debugSotetsegChosenText())
@@ -65,7 +65,9 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 			return null;
 		}
 
+		setLayer(OverlayLayer.UNDER_WIDGETS);
 		graphics.setFont(plugin.getInstanceTimerFont());
+
 		drawSoteInstanceTimers(graphics);
 		drawChosenOverlay(graphics);
 

@@ -31,6 +31,7 @@ import com.tobqol.api.game.Instance;
 import com.tobqol.rooms.RoomSceneOverlay;
 import com.tobqol.rooms.xarpus.commons.XarpusPhase;
 import net.runelite.api.Client;
+import net.runelite.client.ui.overlay.OverlayLayer;
 
 import javax.inject.Inject;
 import java.awt.*;
@@ -57,6 +58,7 @@ public class XarpusSceneOverlay extends RoomSceneOverlay<XarpusHandler>
 			return null;
 		}
 
+		setLayer(OverlayLayer.ABOVE_SCENE);
 		graphics.setFont(plugin.getInstanceTimerFont());
 
 		XarpusPhase phase = room.getPhase();
