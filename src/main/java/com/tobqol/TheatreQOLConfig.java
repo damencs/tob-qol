@@ -255,10 +255,19 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
+			name = "Display Crab Proc",
+			keyName = "maidenCrabProcDisplay",
+			description = "- Displays what proc a crab is from in the overlay",
+			position = 2,
+			section = MAIDEN_SECTION
+	)
+	default boolean displayCrabProc() { return false; }
+
+	@ConfigItem(
 			name = "Show Leaks",
 			keyName = "maidenLeaks",
 			description = "- Sends a client message per leak showing what leaked, their hp and on what Maiden phase",
-			position = 2,
+			position = 3,
 			section = MAIDEN_SECTION
 	)
 	default boolean displayMaidenLeaks()
