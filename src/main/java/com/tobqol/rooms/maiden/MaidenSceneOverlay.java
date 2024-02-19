@@ -111,6 +111,11 @@ public class MaidenSceneOverlay extends RoomSceneOverlay<MaidenHandler>
 			pieces.add(hpDisplayType.showAsPercent() ? Double.toString(health.truncatedPercent()) : Integer.toString(health.getCurrent()));
 		}
 
+		if(config.displayCrabProc())
+		{
+			pieces.add(crab.phaseKey());
+		}
+
 		if (pieces.isEmpty())
 		{
 			return;
