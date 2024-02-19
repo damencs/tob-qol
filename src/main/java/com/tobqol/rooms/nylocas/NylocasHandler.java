@@ -384,8 +384,14 @@ public class NylocasHandler extends RoomHandler
 
 		if (npc != null)
 		{
-			isNpcFromName(npc, BOSS_NAME, n -> boss.changed());
-			isNpcFromName(npc, DEMI_BOSS_NAME, n -> demiBoss.changed());
+			if(boss != null)
+			{
+				isNpcFromName(npc, BOSS_NAME, n -> boss.changed());
+			}
+			if(demiBoss != null)
+			{
+				isNpcFromName(npc, DEMI_BOSS_NAME, n -> demiBoss.changed());
+			}
 		}
 	}
 
