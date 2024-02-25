@@ -228,26 +228,14 @@ public class VerzikHandler extends RoomHandler
 			return;
 		}
 
-		switch (def)
-		{
-			case VERZIK_P1:
-			{
-				if (!dataHandler.Find("Starting Tick").isPresent())
-				{
-					dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
-					dataHandler.setShouldTrack(true);
-				}
-				break;
-			}
-			case VERZIK_P2:
-			{
-				if (!dataHandler.Find("P1").isPresent())
-				{
-					dataHandler.getData().add(new RoomDataItem("P1", dataHandler.getTime(), !config.displayTimeSplits()));
-				}
-				break;
-			}
-		}
+        if (def == VERZIK_P1)
+        {
+            if (!dataHandler.Find("Starting Tick").isPresent())
+            {
+                dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+                dataHandler.setShouldTrack(true);
+            }
+        }
 	}
 
 	@Subscribe
@@ -262,13 +250,17 @@ public class VerzikHandler extends RoomHandler
 		String name = npc.getName();
 
 		verzikReds.remove(npc);
+        tornadoes.remove(npc);
 
-		if (tornadoes.contains(npc))
+		if(VerzikMap.queryTable(npc.getId()) == VERZIK_P1)
 		{
-			tornadoes.remove(npc);
+			if (!dataHandler.Find("P1").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("P1", dataHandler.getTime(), !config.displayTimeSplits()));
+			}
 		}
 
-		if (npc == null || name == null)
+		if (name == null)
 		{
 			return;
 		}

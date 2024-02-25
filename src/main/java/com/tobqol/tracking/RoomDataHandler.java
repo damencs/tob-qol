@@ -89,7 +89,8 @@ public class RoomDataHandler
             return timeOverlay.getPanelComponent();
         }
 
-        if (Find("Starting Tick").get().isException())
+        Optional<RoomDataItem> o = Find("Starting Tick");
+        if (o.isPresent() && o.get().isException())
         {
             LineComponent lineComponent = LineComponent.builder().left("Room").right(formatTime(FindValue("Room")) + '*').build();
             timeOverlay.getPanelComponent().getChildren().add(lineComponent);
