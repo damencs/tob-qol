@@ -102,6 +102,7 @@ public class XarpusHandler extends RoomHandler
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
+		soundClip.close();
 		reset();
 	}
 

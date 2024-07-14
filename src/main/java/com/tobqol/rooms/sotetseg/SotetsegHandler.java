@@ -126,6 +126,7 @@ public class SotetsegHandler extends RoomHandler
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
+		soundClip.close();
 		wsClient.unregisterMessage(SotetsegNotification.class);
 		reset();
 	}

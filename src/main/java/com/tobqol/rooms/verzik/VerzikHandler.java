@@ -111,6 +111,7 @@ public class VerzikHandler extends RoomHandler
 	public void unload()
 	{
 		overlayManager.remove(overlay);
+		soundClip.close();
 		reset();
 	}
 
