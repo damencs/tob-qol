@@ -116,16 +116,27 @@ public class VerzikOverlay extends RoomSceneOverlay<VerzikHandler>
 	{
 		if (config.verzikReds())
 		{
+			// First loop: Draw the percentages over the crabs
 			room.getVerzikReds().forEach((crab, v) ->
 			{
-				int v_health = v.getValue();
-				int v_healthRation = v.getKey();
-				if (crab.getName() != null && crab.getHealthScale() > 0)
+				int v_health = v.getValue();           // Stored health scale
+				int v_healthRatio = v.getKey();        // Stored health ratio
+
+				int currentHealthScale = crab.getHealthScale();
+				int currentHealthRatio = crab.getHealthRatio();
+
+				// Only update if current health info is valid
+				if (crab.getName() != null && currentHealthScale > 0 && currentHealthRatio > 0)
 				{
-					v_health = crab.getHealthScale();
-					v_healthRation = Math.min(v_healthRation, crab.getHealthRatio());
+					v_health = currentHealthScale;
+					v_healthRatio = Math.min(v_healthRatio, currentHealthRatio);
+
+					// Update the stored values
+					room.getVerzikReds().put(crab, new MutablePair<>(v_healthRatio, v_health));
 				}
-				String percentage = String.valueOf(DECIMAL_FORMAT.format(((float) v_healthRation / (float) v_health) * 100f));
+				// Else, keep using the stored v_health and v_healthRatio
+
+				String percentage = DECIMAL_FORMAT.format(((float) v_healthRatio / (float) v_health) * 100f);
 
 				Point textLocation = crab.getCanvasTextLocation(graphics, percentage, 80);
 
@@ -135,17 +146,19 @@ public class VerzikOverlay extends RoomSceneOverlay<VerzikHandler>
 				}
 			});
 
+			// Second loop: Update stored values if current health info is valid
 			NPC[] reds = room.getVerzikReds().keySet().toArray(new NPC[0]);
 			for (NPC npc : reds)
 			{
-				if (npc.getName() != null && npc.getHealthScale() > 0 && npc.getHealthRatio() < 100)
+				int currentHealthScale = npc.getHealthScale();
+				int currentHealthRatio = npc.getHealthRatio();
+
+				if (npc.getName() != null && currentHealthScale > 0 && currentHealthRatio > 0 && currentHealthRatio < 100)
 				{
-					Pair<Integer, Integer> newVal = new MutablePair<>(npc.getHealthRatio(), npc.getHealthScale());
-					if (room.getVerzikReds().containsKey(npc))
-					{
-						room.getVerzikReds().put(npc, newVal);
-					}
+					Pair<Integer, Integer> newVal = new MutablePair<>(currentHealthRatio, currentHealthScale);
+					room.getVerzikReds().put(npc, newVal);
 				}
+				// If current health ratio is invalid, do not update the stored values
 			}
 		}
 	}
