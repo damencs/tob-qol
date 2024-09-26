@@ -593,24 +593,26 @@ public class TheatreQOLPlugin extends Plugin
 
 	public boolean hasSalve()
 	{
-		final ItemContainer itemContainer = client.getItemContainer(InventoryID.INVENTORY);
+		return containsSalve(client.getItemContainer(InventoryID.INVENTORY)) ||
+				containsSalve(client.getItemContainer(InventoryID.EQUIPMENT));
+	}
 
-		if (itemContainer == null)
+	private boolean containsSalve(ItemContainer container)
+	{
+		if (container != null)
 		{
-			return false;
+			int[] salveItemIds = {
+					ItemID.SALVE_AMULET, ItemID.SALVE_AMULET_E, ItemID.SALVE_AMULETI,
+					ItemID.SALVE_AMULETEI,ItemID.SALVE_AMULETEI_25278,ItemID.SALVE_AMULETEI_26782,
+					ItemID.SALVE_AMULETI_25250, ItemID.SALVE_AMULETI_26763
+			};
+
+			for (int id : salveItemIds)
+				if (container.contains(id))
+					return true;
 		}
 
-		if (itemContainer.contains(ItemID.SALVE_AMULET) || itemContainer.contains(ItemID.SALVE_AMULET_E)
-			|| itemContainer.contains(ItemID.SALVE_AMULETI) || itemContainer.contains(ItemID.SALVE_AMULETEI)
-			|| itemContainer.contains(ItemID.SALVE_AMULETEI_25278) || itemContainer.contains(ItemID.SALVE_AMULETEI_26782)
-			|| itemContainer.contains(ItemID.SALVE_AMULETI_25250) || itemContainer.contains(ItemID.SALVE_AMULETI_26763))
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return false;
 	}
 
 	public String getSpellbook()
