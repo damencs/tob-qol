@@ -264,10 +264,42 @@ public interface TheatreQOLConfig extends Config
 	default boolean displayCrabProc() { return false; }
 
 	@ConfigItem(
+			name = "70s Crab Color",
+			keyName = "maiden70sColor",
+			description = "Crab health color for 70s crabs",
+			position = 3,
+			section = MAIDEN_SECTION
+	)
+	@Alpha
+	default Color maiden70sColor() { return new Color(255, 255, 255); }
+
+	@ConfigItem(
+			name = "50s Crab Color",
+			keyName = "maiden50sColor",
+			description = "Crab health color for 50s crabs",
+			position = 4,
+			section = MAIDEN_SECTION
+	)
+	@Alpha
+	default Color maiden50sColor() { return new Color(255, 255, 255); }
+	@ConfigItem(
+			name = "30s Crab Color",
+			keyName = "maiden30sColor",
+			description = "Crab overlay color for 30s crabs",
+			position = 5,
+			section = MAIDEN_SECTION
+	)
+	@Alpha
+	default Color maiden30sColor()
+	{
+		return new Color(255, 255, 255);
+	}
+
+	@ConfigItem(
 			name = "Show Leaks",
 			keyName = "maidenLeaks",
 			description = "- Sends a client message per leak showing what leaked, their hp and on what Maiden phase",
-			position = 3,
+			position = 6,
 			section = MAIDEN_SECTION
 	)
 	default boolean displayMaidenLeaks()
