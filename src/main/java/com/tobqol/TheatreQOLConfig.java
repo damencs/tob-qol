@@ -571,11 +571,23 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
+			name = "Hide Underworld Tornado",
+			keyName = "sotetsegHideUnderworldTornado",
+			description = "- Hides the tornado surrounding your player in the Sotetseg maze",
+			position = 9,
+			section = SOTETSEG_SECTION
+	)
+	default boolean sotetsegHideUnderworldTornado()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 			name = "Sotetseg Death Ball Alarm",
 			keyName = "sotetsegSoundClip",
 			description = "- Replaces the Death Ball sound effect with a wee-woo sound clip<br>" +
 					"* Thank you Hoyaa for providing this sound clip for the project",
-			position = 9,
+			position = 10,
 			section = SOTETSEG_SECTION
 	)
 	default boolean sotetsegSoundClip()
@@ -588,7 +600,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Death Ball Alarm Volume",
 			keyName = "sotetsegSoundClipVolume",
 			description = "- Sets the volume of the sound clip",
-			position = 10,
+			position = 11,
 			section = SOTETSEG_SECTION
 	)
 	default int sotetsegSoundClipVolume()
