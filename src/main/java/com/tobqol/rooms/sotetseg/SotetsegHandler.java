@@ -263,6 +263,7 @@ public class SotetsegHandler extends RoomHandler
 		}
 
 		when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, null);
+		when(config.sotetsegHideUnderworldTornado(), this::hideUnderworldTornado, null);
 	}
 
 	@Subscribe
@@ -600,6 +601,19 @@ public class SotetsegHandler extends RoomHandler
 		if (instance.getCurrentRegion().isSotetsegUnderworld())
 		{
 			sceneManager.removeTheseGameObjects(3, UNDERWORLD_ROCKS);
+		}
+	}
+
+	private void hideUnderworldTornado()
+	{
+		if (instance.getCurrentRegion().isSotetsegUnderworld())
+		{
+			Player player = client.getLocalPlayer();
+			if (player == null)
+			{
+				return;
+			}
+			player.clearSpotAnims();
 		}
 	}
 }
