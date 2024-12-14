@@ -615,6 +615,39 @@ public class TheatreQOLPlugin extends Plugin
 		return false;
 	}
 
+	private static final int QUIVER_ITEM_COUNT = 4141;
+	private static final int QUIVER_ITEM_ID = 4142;
+
+	public boolean hasAmmo()
+	{
+		// Get quiver ammo details from VarPlayers
+		final int quiverAmmoId = client.getVarpValue(VarPlayer.DIZANAS_QUIVER_ITEM_ID);
+		final int quiverAmmoCount = client.getVarpValue(VarPlayer.DIZANAS_QUIVER_ITEM_COUNT);
+
+		// Check the ammo slot in the equipment container
+		ItemContainer equipment = client.getItemContainer(InventoryID.EQUIPMENT);
+		if (equipment != null)
+		{
+			Item ammoItem = equipment.getItem(EquipmentInventorySlot.AMMO.getSlotIdx());
+			if (ammoItem != null && ammoItem.getId() > -1)
+			{
+				return true; // Ammo is equipped
+			}
+		}
+
+		// Check the quiver contents using VarPlayers
+		int quiverItemId = client.getVarpValue(QUIVER_ITEM_ID);
+		int quiverItemQuantity = client.getVarpValue(QUIVER_ITEM_COUNT);
+
+		if (quiverItemId > -1 && quiverItemQuantity > 0)
+		{
+			return true; // Ammo is in the quiver
+		}
+
+		return false; // No ammo found in either slot
+	}
+
+
 	public String getSpellbook()
 	{
 		int spellbookId = client.getVarbitValue(4070);
