@@ -23,7 +23,7 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.tracking;
+package com.tobqol.timetracking;
 
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Optional;
 
-import static com.tobqol.tracking.RoomInfoUtil.formatTime;
+import static com.tobqol.timetracking.RoomInfoUtil.formatTime;
 
 @Slf4j
 public class RoomDataHandler

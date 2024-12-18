@@ -32,12 +32,17 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.google.gson.Gson;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
+import com.sun.tools.javac.jvm.Items;
 import com.tobqol.api.game.Instance;
 import com.tobqol.api.game.RaidConstants;
 import com.tobqol.api.game.Region;
 import com.tobqol.config.SupplyChestPreference;
+import com.tobqol.loottracking.LootItems;
+import com.tobqol.loottracking.LootTrackingHandler;
+import com.tobqol.loottracking.LootTrackingMemory;
 import com.tobqol.rooms.RemovableOverlay;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.bloat.BloatHandler;
@@ -46,18 +51,22 @@ import com.tobqol.rooms.nylocas.NylocasHandler;
 import com.tobqol.rooms.sotetseg.SotetsegHandler;
 import com.tobqol.rooms.verzik.VerzikHandler;
 import com.tobqol.rooms.xarpus.XarpusHandler;
-import com.tobqol.tracking.RoomDataHandler;
+import com.tobqol.timetracking.RoomDataHandler;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
+import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
+import net.runelite.client.chat.ChatMessageManager;
+import net.runelite.client.chat.QueuedMessage;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.ItemStack;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.ui.FontManager;
@@ -71,8 +80,11 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.awt.*;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @PluginDescriptor(
 		name = "ToB QoL",
@@ -127,6 +139,15 @@ public class TheatreQOLPlugin extends Plugin
 	@Inject
 	public InfoBoxManager infoBoxManager;
 
+	@Inject
+	public ChatMessageManager chatMessageManager;
+
+	@Inject
+	public ConfigManager configManager;
+
+	@Inject
+	public Gson gson;
+
 	@Provides
 	TheatreQOLConfig provideConfig(ConfigManager configManager)
 	{
@@ -144,6 +165,9 @@ public class TheatreQOLPlugin extends Plugin
 	@Getter
 	private RoomDataHandler dataHandler;
 
+	@Getter
+	private LootTrackingHandler lootTrackingHandler;
+
 	private boolean darknessHidden;
 
 	@Getter
@@ -153,7 +177,8 @@ public class TheatreQOLPlugin extends Plugin
 	private GameObject lootChest;
 
 	@Getter
-	boolean chestHasLoot = false;
+	private boolean chestHasLoot = false;
+	private boolean chestViewed = false;
 
 	private final ArrayListMultimap<String, Integer> optionIndexes = ArrayListMultimap.create();
 
@@ -177,6 +202,9 @@ public class TheatreQOLPlugin extends Plugin
 	{
 		dataHandler = new RoomDataHandler(client, this, config);
 		dataHandler.load();
+
+		lootTrackingHandler = new LootTrackingHandler(this, config, configManager, gson);
+		lootTrackingHandler.load();
 
 		buildFont(false); // build standard font
 		buildFont(true); // build instance timer font
@@ -247,7 +275,10 @@ public class TheatreQOLPlugin extends Plugin
 			entrance = null;
 			lootChest = null;
 			chestHasLoot = false;
+			chestViewed = false;
 			client.clearHintArrow();
+
+			lootTrackingHandler.reset();
 		}
 	}
 
@@ -351,7 +382,7 @@ public class TheatreQOLPlugin extends Plugin
 		if (isInVerSinhaza())
 		{
 			// Determine if chest has loot and draw an arrow overhead
-			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == RaidConstants.TOB_CHEST_UNLOOTED && !chestHasLoot)
+			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == RaidConstants.TOB_BANK_CHEST_UNLOOTED && !chestHasLoot)
 			{
 				chestHasLoot = true;
 				if (config.lootReminder())
@@ -361,10 +392,26 @@ public class TheatreQOLPlugin extends Plugin
 			}
 
 			// Clear the arrow if the loot is taken
-			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == RaidConstants.TOB_CHEST_LOOTED && chestHasLoot)
+			if (lootChest != null && Objects.requireNonNull(getObjectComposition(lootChest.getId())).getId() == RaidConstants.TOB_BANK_CHEST_LOOTED && chestHasLoot)
 			{
 				chestHasLoot = false;
 				client.clearHintArrow();
+
+				// Try to reset here as a backup
+				log.info("tobqol: resetting lootTrackingHandler inside of gameTick");
+				if (lootTrackingHandler.isLootHandled())
+				{
+					lootTrackingHandler.reset();
+					chestViewed = false;
+				}
+			}
+
+			if (chestViewed)
+			{
+				chestViewed = false;
+
+				log.info("tobqol: resetting lootTrackinHandler inside of gameTick/chestViewed check");
+				lootTrackingHandler.reset();
 			}
 		}
 		else
@@ -425,9 +472,48 @@ public class TheatreQOLPlugin extends Plugin
 	}
 
 	@Subscribe
+	public void onWidgetLoaded(WidgetLoaded widgetLoaded)
+	{
+		if (widgetLoaded.getGroupId() == InterfaceID.TOB_REWARD)
+		{
+			log.info("tobqol: tob_reward interface loaded");
+
+			if (!chestViewed && lootTrackingHandler.isChestsHandled() && !lootTrackingHandler.isLootHandled())
+			{
+				final ItemContainer container = client.getItemContainer(InventoryID.THEATRE_OF_BLOOD_CHEST);
+
+				if (container != null)
+				{
+					log.info("tobqol: THEATRE_OF_BLOOD_CHEST container loaded");
+
+					final Collection<ItemStack> items = Arrays.stream(container.getItems())
+							.filter(item -> item.getId() > 0)
+							.map(item -> new ItemStack(item.getId(), item.getQuantity()))
+							.collect(Collectors.toList());
+
+					log.info("Items in container: {}", items);
+
+					items.forEach(item ->
+					{
+						if (LootItems.getItemLookup().containsKey(item.getId()))
+						{
+							log.info("Processed loot item from WidgetLoaded");
+							lootTrackingHandler.processLootItem(LootItems.getItemLookup().get(item.getId()));
+						}
+					});
+
+					chestViewed = true;
+				}
+			}
+		}
+	}
+
+	@Subscribe
 	public void onGameObjectSpawned(GameObjectSpawned event)
 	{
-		switch (event.getGameObject().getId())
+		int objectId = event.getGameObject().getId();
+
+		switch (objectId)
 		{
 			case RaidConstants.TOB_BANK_CHEST:
 				lootChest = event.getGameObject();
@@ -435,6 +521,26 @@ public class TheatreQOLPlugin extends Plugin
 			case RaidConstants.TOB_ENTRANCE:
 				entrance = event.getGameObject();
 				break;
+		}
+
+		if (isInLootRoom() && RaidConstants.LOOT_ROOM_ALL_CHEST_IDS.contains(objectId))
+		{
+			log.info("inside loot room and a chest id matched");
+		}
+
+		if (RaidConstants.LOOT_ROOM_ALL_CHEST_IDS.contains(objectId))
+		{
+			int imposterId = client.getObjectDefinition(objectId).getImpostor().getId();
+			log.info("chest spawned: {}, imposterId: {}", objectId, imposterId);
+
+			if (imposterId > 0)
+			{
+				lootTrackingHandler.handleChest(imposterId);
+			}
+			else
+			{
+				lootTrackingHandler.handleChest(objectId);
+			}
 		}
 	}
 
@@ -659,6 +765,60 @@ public class TheatreQOLPlugin extends Plugin
 			case 2: return "Lunar";
 			case 3: return "Arceuus";
 			default: return "n/a";
+		}
+	}
+
+	public void queueChatMessage(String message)
+	{
+		chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).value(message).build());
+	}
+
+	@Subscribe
+	public void onCommandExecuted(CommandExecuted commandExecuted)
+	{
+		if (commandExecuted.getCommand().equalsIgnoreCase("trigger"))
+		{
+			// Personal Purple
+			LootTrackingMemory memory = new LootTrackingMemory(5, "Scythe of vitur", 3);
+			lootTrackingHandler.announceLootTracking(memory, true, true);
+
+			// Other Purple
+			memory = new LootTrackingMemory(3, "Ghrazi rapier", 1);
+			lootTrackingHandler.announceLootTracking(memory, true, false);
+
+			// White Lights for All
+			memory = new LootTrackingMemory(1, null, 1);
+			lootTrackingHandler.announceLootTracking(memory, false, false);
+
+			// B2B personal
+			memory = new LootTrackingMemory(0, "Justiciar faceguard", 0);
+			lootTrackingHandler.announceLootTracking(memory, true, true);
+		}
+
+		if (commandExecuted.getCommand().equalsIgnoreCase("memory"))
+		{
+			log.info("tobqol - existing memory: " + lootTrackingHandler.getExistingMemory().toString());
+		}
+
+		if (commandExecuted.getCommand().equalsIgnoreCase("partysize"))
+		{
+			queueChatMessage("Plugin Instance Party Size: " + instanceService.getPartySize());
+			queueChatMessage("EventManager Party Size: " + eventManager.getInstance().getPartySize());
+
+		}
+
+		if (commandExecuted.getCommand().equalsIgnoreCase("status"))
+		{
+			log.info("chests: {}", lootTrackingHandler.getLoadedChests());
+			log.info("loothandler stats: loot handled - {}, chestshandled - {}", lootTrackingHandler.isLootHandled(), lootTrackingHandler.isChestsHandled());
+		}
+
+		if (commandExecuted.getCommand().equalsIgnoreCase("setmemory"))
+		{
+			LootTrackingMemory existing = lootTrackingHandler.getExistingMemory();
+			existing.setCountSinceOther(existing.getCountSinceOther() + 1);
+			existing.setCountSincePersonal(existing.getCountSincePersonal() + 1);
+			lootTrackingHandler.saveMemory(existing);
 		}
 	}
 }
