@@ -35,9 +35,9 @@ import com.tobqol.rooms.nylocas.commons.NyloBoss;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionBox;
 import com.tobqol.rooms.nylocas.commons.NyloSelectionManager;
 import com.tobqol.rooms.nylocas.commons.NylocasConstants;
-import com.tobqol.tracking.RoomDataHandler;
-import com.tobqol.tracking.RoomDataItem;
-import com.tobqol.tracking.RoomInfoBox;
+import com.tobqol.timetracking.RoomDataHandler;
+import com.tobqol.timetracking.RoomDataItem;
+import com.tobqol.timetracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -62,8 +62,8 @@ import java.util.Map;
 import static com.tobqol.api.game.Region.NYLOCAS;
 import static com.tobqol.api.game.Region.inRegion;
 import static com.tobqol.rooms.nylocas.commons.NylocasConstants.*;
-import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
-import static com.tobqol.tracking.RoomInfoUtil.formatTime;
+import static com.tobqol.timetracking.RoomInfoUtil.createInfoBox;
+import static com.tobqol.timetracking.RoomInfoUtil.formatTime;
 
 @Slf4j
 public class NylocasHandler extends RoomHandler

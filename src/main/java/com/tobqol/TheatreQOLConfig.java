@@ -29,6 +29,7 @@
  */
 package com.tobqol;
 
+import com.tobqol.config.DryLootTracking;
 import com.tobqol.config.HPDisplayTypes;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.config.font.FontStyles;
@@ -120,6 +121,14 @@ public interface TheatreQOLConfig extends Config
 			closedByDefault = true
 	)
 	String TIME_SECTION = "timeSection";
+
+	@ConfigSection(
+			name = "Loot Tracking Settings",
+			description = "Configuration settings for the plugin's loot tracking features",
+			position = 10,
+			closedByDefault = true
+	)
+	String LOOT_TRACKING_SECTION = "lootTrackingSection";
 
 	/**
 	 * General Section
@@ -870,6 +879,33 @@ public interface TheatreQOLConfig extends Config
 			section = TIME_SECTION
 	)
 	default boolean shrunkLiveTimerDesign()
+	{
+		return false;
+	}
+
+	/**
+	 * Loot Tracking Configs
+	 */
+	@ConfigItem(
+			name = "Dry Loot Tracking",
+			keyName = "dryLootTracking",
+			description = "- Tracks how many TOB raids you have completed without seeing a purple (personal/any/off)<br>- This will track regardless of being displayed or not",
+			position = 1,
+			section = LOOT_TRACKING_SECTION
+	)
+	default DryLootTracking dryLootTracking()
+	{
+		return DryLootTracking.ANY;
+	}
+
+	@ConfigItem(
+			name = "Simplify Loot Tracking",
+			keyName = "simplifyLootTracking",
+			description = "- Simplifies the chat outputs of each dry loot tracking metrics into a single message",
+			position = 2,
+			section = LOOT_TRACKING_SECTION
+	)
+	default boolean simplifyLootTracking()
 	{
 		return false;
 	}

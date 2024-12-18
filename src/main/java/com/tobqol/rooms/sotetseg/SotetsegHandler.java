@@ -33,9 +33,9 @@ import com.tobqol.rooms.sotetseg.commons.MutableMaze;
 import com.tobqol.rooms.sotetseg.commons.SotetsegNotification;
 import com.tobqol.rooms.sotetseg.commons.SotetsegTable;
 import com.tobqol.rooms.sotetseg.config.SotetsegProjectileTheme;
-import com.tobqol.tracking.RoomDataHandler;
-import com.tobqol.tracking.RoomDataItem;
-import com.tobqol.tracking.RoomInfoBox;
+import com.tobqol.timetracking.RoomDataHandler;
+import com.tobqol.timetracking.RoomDataItem;
+import com.tobqol.timetracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -59,8 +59,8 @@ import java.awt.*;
 import static com.tobqol.api.game.Region.SOTETSEG;
 import static com.tobqol.rooms.sotetseg.commons.SotetsegConstants.*;
 import static com.tobqol.rooms.sotetseg.commons.SotetsegTable.SOTETSEG_CLICKABLE;
-import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
-import static com.tobqol.tracking.RoomInfoUtil.formatTime;
+import static com.tobqol.timetracking.RoomInfoUtil.createInfoBox;
+import static com.tobqol.timetracking.RoomInfoUtil.formatTime;
 
 @Slf4j
 public class SotetsegHandler extends RoomHandler
