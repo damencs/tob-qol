@@ -102,6 +102,18 @@ public class TheatreQOLOverlay extends Overlay
             }
         }
 
+        // Display Ammo Reminder
+        if (config.ammoReminder() && plugin.isInVerSinhaza() && !plugin.hasAmmo())
+        {
+            String text = "You have forgotten to equip ammo.";
+            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 180);
+
+            if (textLocation != null)
+            {
+                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, Color.GREEN);
+            }
+        }
+
         return null;
     }
 }

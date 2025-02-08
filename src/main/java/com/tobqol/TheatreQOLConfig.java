@@ -239,6 +239,28 @@ public interface TheatreQOLConfig extends Config
 		return Color.YELLOW;
 	}
 
+	@ConfigItem(
+			name = "Ammo Reminder",
+			keyName = "ammoReminder",
+			description = "- Indicates whether or not you have ammo in your equipment slot prior to entering the raid and putting a message on the entrance<br>",
+			position = 10,
+			section = GENERAL_SECTION
+	)
+	default boolean ammoReminder() { return false; }
+
+	@ConfigItem(
+			name = "Ammo Reminder Color",
+			keyName = "ammoReminderColor",
+			description = "- Set a color for the Ammo Reminder overlay<br>",
+			position = 11,
+			section = GENERAL_SECTION
+	)
+	@Alpha
+	default Color ammoReminderColor()
+	{
+		return Color.GREEN;
+	}
+
 	/**
 	 * Maiden Configs
 	 */
