@@ -33,6 +33,7 @@ import com.tobqol.api.game.Health;
 import com.tobqol.api.game.Instance;
 import com.tobqol.config.HPDisplayTypes;
 import com.tobqol.rooms.RoomSceneOverlay;
+import com.tobqol.rooms.maiden.commons.MaidenPhase;
 import com.tobqol.rooms.maiden.commons.MaidenRedCrab;
 import joptsimple.internal.Strings;
 import lombok.extern.slf4j.Slf4j;
@@ -128,8 +129,24 @@ public class MaidenSceneOverlay extends RoomSceneOverlay<MaidenHandler>
 		{
 			return;
 		}
-
-		Color color = Optional.ofNullable(Color.WHITE).orElse(crab.health().color());
+		Color color = getHpColorFromPhaseKey(crab.phaseKey());
 		OverlayUtil.renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY() - offset), text, color);
+	}
+
+	private Color getHpColorFromPhaseKey(String phaseKey)
+	{
+		if (phaseKey.equals(MaidenPhase.P1.key()))
+		{
+			return config.maiden70sColor();
+		}
+		else if (phaseKey.equals(MaidenPhase.P2.key()))
+		{
+			return config.maiden50sColor();
+		}
+		else if (phaseKey.equals(MaidenPhase.P3.key()))
+		{
+			return config.maiden30sColor();
+		}
+		return Color.WHITE;
 	}
 }
