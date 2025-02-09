@@ -244,7 +244,7 @@ public abstract class RoomHandler
 	{
 		if (inRegion(client, region))
 		{
-			for (Player p : client.getPlayers())
+			for (Player p : client.getTopLevelWorldView().players())
 			{
 				WorldPoint wp = p.getWorldLocation();
 
