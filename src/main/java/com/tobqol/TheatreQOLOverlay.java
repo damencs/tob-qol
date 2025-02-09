@@ -110,7 +110,7 @@ public class TheatreQOLOverlay extends Overlay
 
             if (textLocation != null)
             {
-                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, Color.GREEN);
+                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, config.ammoReminderColor());
             }
         }
 
