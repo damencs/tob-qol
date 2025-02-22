@@ -104,7 +104,7 @@ public final class InstanceService implements Instance
 				return;
 			}
 
-			for (Player player : client.getPlayers())
+			for (Player player : client.getTopLevelWorldView().players())
 			{
 				if (region.isPCIL(client, player))
 				{

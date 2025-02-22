@@ -437,7 +437,7 @@ public class NylocasHandler extends RoomHandler
 
 		if (e.getOption().equals("Attack") || e.getType() == MenuAction.WIDGET_TARGET_ON_NPC.getId())
 		{
-			NPC npc = client.getCachedNPCs()[e.getIdentifier()];
+			NPC npc = client.getTopLevelWorldView().npcs().byIndex(e.getIdentifier());
 
 			if (npc == null)
 			{
