@@ -89,6 +89,9 @@ public class MaidenHandler extends RoomHandler
 
 	private boolean considerCrabs = true;
 
+	private net.runelite.api.Point MAIDEN_GATE_START = new net.runelite.api.Point(32 , 29);
+	private net.runelite.api.Point MAIDEN_GATE_END = new net.runelite.api.Point(32, 32);
+
 	@Inject
 	protected MaidenHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
 	{
@@ -227,17 +230,32 @@ public class MaidenHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
-		if (instance.isInRaid() && instance.getCurrentRegion().isMaiden())
+		if (instance.isInRaid())
 		{
-			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
+			if (!dataHandler.Find("Starting Tick").isPresent())
 			{
-				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
-				dataHandler.setShouldTrack(true);
+				boolean crossedMaidenLine = crossedLine(MAIDEN, MAIDEN_GATE_START, MAIDEN_GATE_END, true, client);
+				if (crossedMaidenLine)
+				{
+					dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true));
+					dataHandler.setShouldTrack(true);
+
+					dataHandler.getData().add(new RoomDataItem("Room", dataHandler.getTime(), 99, false, "30s"));
+				}
 			}
 
 			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
 			{
 				dataHandler.updateTotalTime();
+			}
+
+			if (!instance.getCurrentRegion().isMaiden())
+				return;
+
+			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
+			{
+				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
+				dataHandler.setShouldTrack(true);
 			}
 		}
 
