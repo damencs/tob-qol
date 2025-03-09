@@ -230,7 +230,7 @@ public class MaidenHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
-		if (instance.isInRaid())
+		if (instance.isInRaid() && inRegion(client, MAIDEN))
 		{
 			if (!dataHandler.Find("Starting Tick").isPresent())
 			{
