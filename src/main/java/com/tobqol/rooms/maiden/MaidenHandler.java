@@ -40,6 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Hitsplat;
 import net.runelite.api.NPC;
+import net.runelite.api.Point;
 import net.runelite.api.events.*;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
@@ -89,8 +90,8 @@ public class MaidenHandler extends RoomHandler
 
 	private boolean considerCrabs = true;
 
-	private net.runelite.api.Point MAIDEN_GATE_START = new net.runelite.api.Point(32 , 29);
-	private net.runelite.api.Point MAIDEN_GATE_END = new net.runelite.api.Point(32, 32);
+	private final Point MAIDEN_GATE_START = new Point(32 , 29);
+	private final Point MAIDEN_GATE_END = new Point(32, 32);
 
 	@Inject
 	protected MaidenHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -242,20 +243,17 @@ public class MaidenHandler extends RoomHandler
 
 					dataHandler.getData().add(new RoomDataItem("Room", dataHandler.getTime(), 99, false, "30s"));
 				}
+
+				if (instance.getRoomStatus() == 1)
+				{
+					dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
+					dataHandler.setShouldTrack(true);
+				}
 			}
 
 			if (dataHandler.isShouldTrack() && !dataHandler.getData().isEmpty())
 			{
 				dataHandler.updateTotalTime();
-			}
-
-			if (!instance.getCurrentRegion().isMaiden())
-				return;
-
-			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())
-			{
-				dataHandler.getData().add(new RoomDataItem("Starting Tick", client.getTickCount(), true, true));
-				dataHandler.setShouldTrack(true);
 			}
 		}
 
