@@ -77,8 +77,6 @@ public class LootTrackingHandler
 
     public void reset()
     {
-        log.info("tobqol: LootTrackingHandler has been reset");
-
         chestsHandled = false;
         lootHandled = false;
         loadedChests.clear();
@@ -88,22 +86,17 @@ public class LootTrackingHandler
     {
         if (chestsHandled)
         {
-            log.info("tobqol: tried to handleChest but chestsHandled is true");
             return;
         }
 
         loadedChests.add(chestId);
-        log.info("tobqol: called to handleChest (chest: {}) - party size: {}", loadedChests.size(), plugin.getInstanceService().getPartySize());
 
         if (loadedChests.size() == plugin.getInstanceService().getPartySize())
         {
-            log.info("tobqol: loaded chest count equals party size, continue along");
             boolean isPurple = loadedChests.stream().anyMatch(chest -> RaidConstants.LOOT_ROOM_PURPLE_CHEST_IDS.contains(chestId));
             boolean isPersonal = loadedChests.contains(RaidConstants.TOB_LOOT_ROOM_CHEST_PURPLE_PERSONAL);
 
-            log.info("isPurple: {}, isPersonal: {}", isPurple, isPersonal);
             processPurple(isPurple, isPersonal);
-
             chestsHandled = true;
         }
     }
@@ -113,8 +106,6 @@ public class LootTrackingHandler
         // Get existing memory, if available, otherwise create new
         LootTrackingMemory memory = getExistingMemory();
 
-        log.info("current memory stats: {}", memory);
-
         if (isPurple && isPersonal)
         {
             // Announce loot tracking data before we reset to track what streaks have been broken
@@ -123,8 +114,6 @@ public class LootTrackingHandler
             // Reset both if it is a personal
             memory.countSincePersonal = 0;
             memory.countSinceOther = 0;
-
-            log.info("ran isPurple and isPersonal");
         }
         // Reset other if not personal purple, as others want to know how many since their purple
         else if (isPurple)
@@ -134,8 +123,6 @@ public class LootTrackingHandler
 
             // Announce loot tracking data
             announceLootTracking(memory, true, false);
-
-            log.info("ran isPurple");
         }
         // If no-ones purple, increase both
         else
@@ -145,8 +132,6 @@ public class LootTrackingHandler
 
             // Announce loot tracking data
             announceLootTracking(memory, false, false);
-
-            log.info("ran else on loot processPurple");
         }
 
         // Save updated memory
@@ -175,12 +160,10 @@ public class LootTrackingHandler
 
         if (existingMemoryJson != null)
         {
-            log.info("tobqol: found existing loot tracking memory");
             return gson.fromJson(existingMemoryJson, LootTrackingMemory.class);
         }
         else
         {
-            log.info("tobqol: no existing loot tracking memory");
             return new LootTrackingMemory(0, null, 0);
         }
     }

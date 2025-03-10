@@ -139,7 +139,6 @@ final class EventManager
 		{
 			if (instance.getPartySize() > 0)
 			{
-				log.info("reset instance from inside event manager");
 				instance.reset();
 			}
 
@@ -161,8 +160,6 @@ final class EventManager
 				case 1:
 					instance.addRaider(username);
 					instance.addDeadRaider(username);
-					log.info("GameTick: Varbit Analysis for Party Size and Dead Raider - Username Detected: {} - Party Size: {} - Dead Raider Size: {}", username, instance.getPartySize(), instance.getDeathSize());
-					log.info("GameTick Lists: Party: {}, Death: {}", instance.getRaiders(), instance.getDeadRaiders());
 					break;
 				default:
 					instance.addRaider(username);

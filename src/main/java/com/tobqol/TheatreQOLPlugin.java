@@ -60,8 +60,7 @@ import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.*;
 import net.runelite.api.widgets.InterfaceID;
 import net.runelite.api.widgets.Widget;
-import net.runelite.client.chat.ChatMessageManager;
-import net.runelite.client.chat.QueuedMessage;
+import net.runelite.client.chat.*;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
@@ -148,6 +147,9 @@ public class TheatreQOLPlugin extends Plugin
 	@Inject
 	public Gson gson;
 
+	@Inject
+	public ChatCommandManager chatCommandManager;
+
 	@Provides
 	TheatreQOLConfig provideConfig(ConfigManager configManager)
 	{
@@ -227,6 +229,8 @@ public class TheatreQOLPlugin extends Plugin
 			room.load();
 			eventBus.register(room);
 		}
+
+		chatCommandManager.registerCommand(RaidConstants.TOB_DRY_COMMAND, this::postDryStreak);
 	}
 
 	@Override
@@ -251,9 +255,10 @@ public class TheatreQOLPlugin extends Plugin
 		}
 
 		dataHandler.unload();
+
+		chatCommandManager.unregisterCommand(RaidConstants.TOB_DRY_COMMAND);
 	}
 
-	// @TODO -> make this so that it doesn't reset twice every since time you leave the raid.. eventbus/instanceservice
 	void reset(boolean global)
 	{
 		dataHandler.getData().clear();
@@ -279,6 +284,8 @@ public class TheatreQOLPlugin extends Plugin
 			client.clearHintArrow();
 
 			lootTrackingHandler.reset();
+			instanceService.reset();
+			eventManager.getInstance().reset();
 		}
 	}
 
@@ -398,7 +405,6 @@ public class TheatreQOLPlugin extends Plugin
 				client.clearHintArrow();
 
 				// Try to reset here as a backup
-				log.info("tobqol: resetting lootTrackingHandler inside of gameTick");
 				if (lootTrackingHandler.isLootHandled())
 				{
 					lootTrackingHandler.reset();
@@ -409,9 +415,9 @@ public class TheatreQOLPlugin extends Plugin
 			if (chestViewed)
 			{
 				chestViewed = false;
-
-				log.info("tobqol: resetting lootTrackinHandler inside of gameTick/chestViewed check");
 				lootTrackingHandler.reset();
+				instanceService.reset();
+				eventManager.getInstance().reset();
 			}
 		}
 		else
@@ -476,28 +482,21 @@ public class TheatreQOLPlugin extends Plugin
 	{
 		if (widgetLoaded.getGroupId() == InterfaceID.TOB_REWARD)
 		{
-			log.info("tobqol: tob_reward interface loaded");
-
 			if (!chestViewed && lootTrackingHandler.isChestsHandled() && !lootTrackingHandler.isLootHandled())
 			{
 				final ItemContainer container = client.getItemContainer(InventoryID.THEATRE_OF_BLOOD_CHEST);
 
 				if (container != null)
 				{
-					log.info("tobqol: THEATRE_OF_BLOOD_CHEST container loaded");
-
 					final Collection<ItemStack> items = Arrays.stream(container.getItems())
 							.filter(item -> item.getId() > 0)
 							.map(item -> new ItemStack(item.getId(), item.getQuantity()))
 							.collect(Collectors.toList());
 
-					log.info("Items in container: {}", items);
-
 					items.forEach(item ->
 					{
 						if (LootItems.getItemLookup().containsKey(item.getId()))
 						{
-							log.info("Processed loot item from WidgetLoaded");
 							lootTrackingHandler.processLootItem(LootItems.getItemLookup().get(item.getId()));
 						}
 					});
@@ -523,15 +522,10 @@ public class TheatreQOLPlugin extends Plugin
 				break;
 		}
 
-		if (isInLootRoom() && RaidConstants.LOOT_ROOM_ALL_CHEST_IDS.contains(objectId))
-		{
-			log.info("inside loot room and a chest id matched");
-		}
-
 		if (RaidConstants.LOOT_ROOM_ALL_CHEST_IDS.contains(objectId))
 		{
 			int imposterId = client.getObjectDefinition(objectId).getImpostor().getId();
-			log.info("chest spawned: {}, imposterId: {}", objectId, imposterId);
+			log.debug("chest spawned: {}, imposterId: {}", objectId, imposterId);
 
 			if (imposterId > 0)
 			{
@@ -773,52 +767,36 @@ public class TheatreQOLPlugin extends Plugin
 		chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).value(message).build());
 	}
 
-	@Subscribe
-	public void onCommandExecuted(CommandExecuted commandExecuted)
+	private void postDryStreak(ChatMessage chatMessage, String s)
 	{
-		if (commandExecuted.getCommand().equalsIgnoreCase("trigger"))
+		LootTrackingMemory memory = lootTrackingHandler.getExistingMemory();
+
+		ChatMessageBuilder builder = new ChatMessageBuilder()
+				.append(ChatColorType.NORMAL)
+				.append("Current TOB Dry Streak: ")
+				.append(ChatColorType.HIGHLIGHT)
+				.append(Integer.toString(memory.getCountSincePersonal()))
+				.append(ChatColorType.NORMAL);
+
+		if (memory.getLastPersonalItem() != null)
 		{
-			// Personal Purple
-			LootTrackingMemory memory = new LootTrackingMemory(5, "Scythe of vitur", 3);
-			lootTrackingHandler.announceLootTracking(memory, true, true);
-
-			// Other Purple
-			memory = new LootTrackingMemory(3, "Ghrazi rapier", 1);
-			lootTrackingHandler.announceLootTracking(memory, true, false);
-
-			// White Lights for All
-			memory = new LootTrackingMemory(1, null, 1);
-			lootTrackingHandler.announceLootTracking(memory, false, false);
-
-			// B2B personal
-			memory = new LootTrackingMemory(0, "Justiciar faceguard", 0);
-			lootTrackingHandler.announceLootTracking(memory, true, true);
+			builder.append(" (Last Drop: ")
+					.append(ChatColorType.HIGHLIGHT)
+					.append(memory.getLastPersonalItem())
+					.append(ChatColorType.NORMAL)
+					.append(") ");
 		}
 
-		if (commandExecuted.getCommand().equalsIgnoreCase("memory"))
-		{
-			log.info("tobqol - existing memory: " + lootTrackingHandler.getExistingMemory().toString());
-		}
+		builder.append(ChatColorType.NORMAL)
+				.append(" - Any: ")
+				.append(ChatColorType.HIGHLIGHT)
+				.append(Integer.toString(memory.getCountSinceOther()));
 
-		if (commandExecuted.getCommand().equalsIgnoreCase("partysize"))
-		{
-			queueChatMessage("Plugin Instance Party Size: " + instanceService.getPartySize());
-			queueChatMessage("EventManager Party Size: " + eventManager.getInstance().getPartySize());
+		String message = builder.build();
 
-		}
-
-		if (commandExecuted.getCommand().equalsIgnoreCase("status"))
-		{
-			log.info("chests: {}", lootTrackingHandler.getLoadedChests());
-			log.info("loothandler stats: loot handled - {}, chestshandled - {}", lootTrackingHandler.isLootHandled(), lootTrackingHandler.isChestsHandled());
-		}
-
-		if (commandExecuted.getCommand().equalsIgnoreCase("setmemory"))
-		{
-			LootTrackingMemory existing = lootTrackingHandler.getExistingMemory();
-			existing.setCountSinceOther(existing.getCountSinceOther() + 1);
-			existing.setCountSincePersonal(existing.getCountSincePersonal() + 1);
-			lootTrackingHandler.saveMemory(existing);
-		}
+		chatMessageManager.queue(QueuedMessage.builder()
+				.type(chatMessage.getType())
+				.runeLiteFormattedMessage(message)
+				.build());
 	}
 }

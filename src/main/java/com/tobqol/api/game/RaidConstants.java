@@ -41,4 +41,6 @@ public interface RaidConstants
             "Sea turtle",
             "Manta ray"
     );
+
+    String TOB_DRY_COMMAND = "!tobdry";
 }
