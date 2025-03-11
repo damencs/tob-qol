@@ -35,10 +35,10 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.gson.Gson;
 import com.google.inject.Binder;
 import com.google.inject.Provides;
-import com.sun.tools.javac.jvm.Items;
 import com.tobqol.api.game.Instance;
 import com.tobqol.api.game.RaidConstants;
 import com.tobqol.api.game.Region;
+import com.tobqol.api.util.CustomChatClient;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.loottracking.LootItems;
 import com.tobqol.loottracking.LootTrackingHandler;
@@ -64,6 +64,7 @@ import net.runelite.client.chat.*;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.events.ChatInput;
 import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.game.ItemStack;
 import net.runelite.client.plugins.Plugin;
@@ -79,10 +80,12 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.awt.*;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 @PluginDescriptor(
@@ -150,6 +153,9 @@ public class TheatreQOLPlugin extends Plugin
 	@Inject
 	public ChatCommandManager chatCommandManager;
 
+	@Inject
+	private CustomChatClient chatClient;
+
 	@Provides
 	TheatreQOLConfig provideConfig(ConfigManager configManager)
 	{
@@ -193,6 +199,9 @@ public class TheatreQOLPlugin extends Plugin
 	@Getter
 	public int previousRegion;
 
+	@Inject
+	private ScheduledExecutorService executor;
+
 	@Override
 	public void configure(Binder binder)
 	{
@@ -230,7 +239,10 @@ public class TheatreQOLPlugin extends Plugin
 			eventBus.register(room);
 		}
 
-		chatCommandManager.registerCommand(RaidConstants.TOB_DRY_COMMAND, this::postDryStreak);
+		chatCommandManager.registerCommandAsync(RaidConstants.TOB_DRY_COMMAND, this::getDryStreak, this::submitData);
+		chatCommandManager.registerCommandAsync(RaidConstants.TOB_DRY_STREAK_COMMAND, this::getDryStreak, this::submitData);
+		chatCommandManager.registerCommandAsync(RaidConstants.TOB_LAST_COMMAND, this::getLastItem, this::submitData);
+		chatCommandManager.registerCommandAsync(RaidConstants.TOB_LAST_ITEM_COMMAND, this::getLastItem, this::submitData);
 	}
 
 	@Override
@@ -257,6 +269,10 @@ public class TheatreQOLPlugin extends Plugin
 		dataHandler.unload();
 
 		chatCommandManager.unregisterCommand(RaidConstants.TOB_DRY_COMMAND);
+		chatCommandManager.unregisterCommand(RaidConstants.TOB_DRY_STREAK_COMMAND);
+		chatCommandManager.unregisterCommand(RaidConstants.TOB_LAST_COMMAND);
+		chatCommandManager.unregisterCommand(RaidConstants.TOB_LAST_ITEM_COMMAND);
+
 	}
 
 	void reset(boolean global)
@@ -767,36 +783,93 @@ public class TheatreQOLPlugin extends Plugin
 		chatMessageManager.queue(QueuedMessage.builder().type(ChatMessageType.GAMEMESSAGE).value(message).build());
 	}
 
-	private void postDryStreak(ChatMessage chatMessage, String s)
+	private LootTrackingMemory getCommandData(ChatMessage chatMessage, String s)
 	{
-		LootTrackingMemory memory = lootTrackingHandler.getExistingMemory();
-
-		ChatMessageBuilder builder = new ChatMessageBuilder()
-				.append(ChatColorType.NORMAL)
-				.append("Current TOB Dry Streak: ")
-				.append(ChatColorType.HIGHLIGHT)
-				.append(Integer.toString(memory.getCountSincePersonal()))
-				.append(ChatColorType.NORMAL);
-
-		if (memory.getLastPersonalItem() != null)
+		final String player;
+		if (chatMessage.getType().equals(ChatMessageType.PRIVATECHATOUT))
 		{
-			builder.append(" (Last Drop: ")
-					.append(ChatColorType.HIGHLIGHT)
-					.append(memory.getLastPersonalItem())
-					.append(ChatColorType.NORMAL)
-					.append(") ");
+			player = client.getLocalPlayer().getName();
+		}
+		else
+		{
+			player = Text.sanitize(chatMessage.getName());
 		}
 
-		builder.append(ChatColorType.NORMAL)
-				.append(" - Any: ")
+		try
+		{
+			return chatClient.getMemory(player);
+		}
+		catch (IOException ex)
+		{
+			log.debug("unable to lookup player memory", ex);
+			return null;
+		}
+	}
+
+	private void getDryStreak(ChatMessage chatMessage, String s)
+	{
+		LootTrackingMemory memory = getCommandData(chatMessage, s);
+
+		if (memory == null)
+			return;
+
+		String message = new ChatMessageBuilder()
+				.append(new Color(128, 0, 128), "TOB Dry Streak")
 				.append(ChatColorType.HIGHLIGHT)
-				.append(Integer.toString(memory.getCountSinceOther()));
+				.append(" - Personal: ")
+				.append(Color.RED, Integer.toString(memory.getCountSincePersonal()))
+				.append(ChatColorType.HIGHLIGHT)
+				.append(" / Team: ")
+				.append(Color.RED, Integer.toString(memory.getCountSinceOther()))
+				.build();
 
-		String message = builder.build();
+		final MessageNode messageNode = chatMessage.getMessageNode();
+		messageNode.setRuneLiteFormatMessage(message);
+		client.refreshChat();
+	}
 
-		chatMessageManager.queue(QueuedMessage.builder()
-				.type(chatMessage.getType())
-				.runeLiteFormattedMessage(message)
-				.build());
+	private void getLastItem(ChatMessage chatMessage, String s)
+	{
+		LootTrackingMemory memory = getCommandData(chatMessage, s);
+
+		if (memory == null)
+			return;
+
+		String message = new ChatMessageBuilder()
+				.append(new Color(128, 0, 128), "TOB Last Item: ")
+				.append(Color.RED, memory.getLastPersonalItem())
+				.build();
+
+		final MessageNode messageNode = chatMessage.getMessageNode();
+		messageNode.setRuneLiteFormatMessage(message);
+		client.refreshChat();
+	}
+
+	private boolean submitData(ChatInput chatInput, String value)
+	{
+		final String playerName = client.getLocalPlayer().getName();
+
+		LootTrackingMemory memory = getLootTrackingHandler().getExistingMemory();
+
+		if (memory == null)
+			return false;
+
+		executor.execute(() ->
+		{
+			try
+			{
+				chatClient.submitMemory(playerName, memory);
+			}
+			catch (Exception ex)
+			{
+				log.warn("unable to submit memory", ex);
+			}
+			finally
+			{
+				chatInput.resume();
+			}
+		});
+
+		return true;
 	}
 }

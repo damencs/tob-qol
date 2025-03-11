@@ -50,9 +50,13 @@ public enum LootItems
 	@Getter
 	private static final HashMap<Integer, String> itemLookup = new HashMap<>();
 
+	@Getter
+	private static final HashMap<String, Integer> itemLookupByName = new HashMap<>();
+
 	static
 	{
 		EnumSet.allOf(LootItems.class).forEach(item -> itemLookup.put(item.getItemId(), item.getItemName()));
+		EnumSet.allOf(LootItems.class).forEach(item -> itemLookupByName.put(item.getItemName(), item.getItemId()));
 	}
 
 	LootItems(int itemId, String itemName)

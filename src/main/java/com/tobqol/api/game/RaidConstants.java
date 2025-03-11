@@ -43,4 +43,7 @@ public interface RaidConstants
     );
 
     String TOB_DRY_COMMAND = "!tobdry";
+    String TOB_DRY_STREAK_COMMAND = "!tobdrystreak";
+    String TOB_LAST_COMMAND = "!toblast";
+    String TOB_LAST_ITEM_COMMAND = "!toblastitem";
 }
