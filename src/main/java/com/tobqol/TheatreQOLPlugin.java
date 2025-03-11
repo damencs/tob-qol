@@ -561,6 +561,13 @@ public class TheatreQOLPlugin extends Plugin
 		{
 			hideDarkness(false);
 		}
+
+		if (event.getGameState() == GameState.LOGGED_IN)
+		{
+			// Upon login, create a memory for the account if it does not already exist.
+			getLootTrackingHandler().getExistingMemory();
+			log.debug("tobqol: logged in memory check - memory: {}", getLootTrackingHandler().getExistingMemory());
+		}
 	}
 
 	@Subscribe
