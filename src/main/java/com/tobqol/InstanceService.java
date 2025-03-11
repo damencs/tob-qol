@@ -62,7 +62,10 @@ public final class InstanceService implements Instance
 	private Mode mode = null;
 	private Region region = Region.UNKNOWN;
 
+	@Getter
 	private final Set<String> raiders = new HashSet<>();
+
+	@Getter
 	private final Set<String> deadRaiders = new HashSet<>();
 
 	private boolean regionUpdated = false;

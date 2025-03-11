@@ -31,9 +31,9 @@ import com.tobqol.api.game.Region;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.verzik.commons.Tornado;
 import com.tobqol.rooms.verzik.commons.VerzikMap;
-import com.tobqol.tracking.RoomDataHandler;
-import com.tobqol.tracking.RoomDataItem;
-import com.tobqol.tracking.RoomInfoBox;
+import com.tobqol.timetracking.RoomDataHandler;
+import com.tobqol.timetracking.RoomDataItem;
+import com.tobqol.timetracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
@@ -58,8 +58,8 @@ import java.util.function.Predicate;
 
 import static com.tobqol.api.game.Region.XARPUS;
 import static com.tobqol.rooms.verzik.commons.VerzikMap.*;
-import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
-import static com.tobqol.tracking.RoomInfoUtil.formatTime;
+import static com.tobqol.timetracking.RoomInfoUtil.createInfoBox;
+import static com.tobqol.timetracking.RoomInfoUtil.formatTime;
 
 @Slf4j
 public class VerzikHandler extends RoomHandler

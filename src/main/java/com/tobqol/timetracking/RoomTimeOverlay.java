@@ -23,75 +23,52 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.tracking;
+package com.tobqol.timetracking;
 
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
-import net.runelite.client.ui.overlay.infobox.InfoBox;
-import net.runelite.client.ui.overlay.infobox.InfoBoxPriority;
-import org.apache.commons.lang3.StringUtils;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.runelite.client.ui.overlay.Overlay;
+import net.runelite.client.ui.overlay.OverlayPosition;
+import net.runelite.client.ui.overlay.components.PanelComponent;
 
+import javax.inject.Inject;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 
-public class RoomInfoBox extends InfoBox
+@Slf4j
+public class RoomTimeOverlay extends Overlay
 {
-    private final TheatreQOLConfig config;
-    private final String room;
-    private final String time;
-    private final String tooltip;
+    private TheatreQOLPlugin plugin;
+    private TheatreQOLConfig config;
 
-    public RoomInfoBox(
-            BufferedImage image,
-            TheatreQOLPlugin plugin,
-            TheatreQOLConfig config,
-            String room,
-            String time,
-            String tooltip
-    )
+    @Getter
+    protected PanelComponent panelComponent = new PanelComponent();
+
+    @Inject
+    public RoomTimeOverlay(TheatreQOLPlugin plugin, TheatreQOLConfig config)
     {
-        super(image, plugin);
-
+        this.plugin = plugin;
         this.config = config;
-        this.room = room;
-        this.time = time;
-        this.tooltip = tooltip;
 
-        setPriority(InfoBoxPriority.LOW);
+        setPosition(OverlayPosition.TOP_LEFT);
     }
 
     @Override
-    public String getName()
+    public Dimension render(Graphics2D graphics)
     {
-        return room;
-    }
+        if (!config.displayRoomTimes().isLiveOverlay() || !plugin.getInstanceService().isInRaid())
+        {
+            return null;
+        }
 
-    @Override
-    public String getText()
-    {
-        return getTime(true);
-    }
+        if (config.shrunkLiveTimerDesign())
+        {
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        }
 
-    @Override
-    public Color getTextColor()
-    {
-        return Color.GREEN;
-    }
+        this.panelComponent = plugin.getDataHandler().preRenderRoomTimes();
 
-    @Override
-    public String getTooltip()
-    {
-        return tooltip;
-    }
-
-    @Override
-    public boolean render()
-    {
-        return config.displayRoomTimes().isInfobox();
-    }
-
-    private String getTime(boolean simple)
-    {
-        return simple ? StringUtils.substringBefore(time, ".") : time;
+        return panelComponent.render(graphics);
     }
 }

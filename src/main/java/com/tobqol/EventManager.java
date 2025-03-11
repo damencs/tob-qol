@@ -28,6 +28,7 @@ package com.tobqol;
 import com.google.common.base.Strings;
 import com.tobqol.api.game.RaidConstants;
 import com.tobqol.api.game.Region;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
@@ -49,6 +50,8 @@ final class EventManager
 	private final Client client;
 	private final EventBus eventBus;
 	private final TheatreQOLPlugin plugin;
+
+	@Getter
 	private final InstanceService instance;
 
 	@Inject
@@ -72,7 +75,7 @@ final class EventManager
 		instance.reset();
 	}
 
-	private void reset(boolean global)
+	public void reset(boolean global)
 	{
 		plugin.reset(global);
 		instance.reset();
@@ -134,6 +137,11 @@ final class EventManager
 	{
 		if (instance.outside())
 		{
+			if (instance.getPartySize() > 0)
+			{
+				instance.reset();
+			}
+
 			return;
 		}
 

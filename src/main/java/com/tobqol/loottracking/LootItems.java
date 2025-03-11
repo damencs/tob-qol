@@ -23,52 +23,45 @@
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.tobqol.tracking;
+package com.tobqol.loottracking;
 
-import com.tobqol.TheatreQOLConfig;
-import com.tobqol.TheatreQOLPlugin;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import net.runelite.client.ui.overlay.Overlay;
-import net.runelite.client.ui.overlay.OverlayPosition;
-import net.runelite.client.ui.overlay.components.PanelComponent;
+import net.runelite.api.ItemID;
 
-import javax.inject.Inject;
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.List;
 
-@Slf4j
-public class RoomTimeOverlay extends Overlay
+@Getter
+public enum LootItems
 {
-    private TheatreQOLPlugin plugin;
-    private TheatreQOLConfig config;
+	AVERNIC_DEFENDER_HILT(ItemID.AVERNIC_DEFENDER_HILT, "Avernic defender hilt"),
+	JUSTICIAR_FACEGUARD(ItemID.JUSTICIAR_FACEGUARD, "Justiciar faceguard"),
+	JUSTICIAR_CHESTGUARD(ItemID.JUSTICIAR_CHESTGUARD, "Justiciar chestguard"),
+	JUSTICIAR_LEGGUARDS(ItemID.JUSTICIAR_LEGGUARDS, "Justiciar leguards"),
+	GHRAZI_RAPIER(ItemID.GHRAZI_RAPIER, "Ghrazi rapier"),
+	SANGUINESTI_STAFF(ItemID.SANGUINESTI_STAFF_UNCHARGED, "Sanguinesti staff"),
+	SCYTHE_OF_VITUR(ItemID.SCYTHE_OF_VITUR_UNCHARGED, "Scythe of vitur");
 
-    @Getter
-    protected PanelComponent panelComponent = new PanelComponent();
+	private final int itemId;
+	private final String itemName;
 
-    @Inject
-    public RoomTimeOverlay(TheatreQOLPlugin plugin, TheatreQOLConfig config)
-    {
-        this.plugin = plugin;
-        this.config = config;
+	@Getter
+	private static final HashMap<Integer, String> itemLookup = new HashMap<>();
 
-        setPosition(OverlayPosition.TOP_LEFT);
-    }
+	@Getter
+	private static final HashMap<String, Integer> itemLookupByName = new HashMap<>();
 
-    @Override
-    public Dimension render(Graphics2D graphics)
-    {
-        if (!config.displayRoomTimes().isLiveOverlay() || !plugin.getInstanceService().isInRaid())
-        {
-            return null;
-        }
+	static
+	{
+		EnumSet.allOf(LootItems.class).forEach(item -> itemLookup.put(item.getItemId(), item.getItemName()));
+		EnumSet.allOf(LootItems.class).forEach(item -> itemLookupByName.put(item.getItemName(), item.getItemId()));
+	}
 
-        if (config.shrunkLiveTimerDesign())
-        {
-            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
-        }
-
-        this.panelComponent = plugin.getDataHandler().preRenderRoomTimes();
-
-        return panelComponent.render(graphics);
-    }
+	LootItems(int itemId, String itemName)
+	{
+		this.itemId = itemId;
+		this.itemName = itemName;
+	}
 }

@@ -32,9 +32,9 @@ import com.tobqol.rooms.maiden.commons.MaidenHealth;
 import com.tobqol.rooms.maiden.commons.MaidenPhase;
 import com.tobqol.rooms.maiden.commons.MaidenRedCrab;
 import com.tobqol.rooms.maiden.commons.MaidenTable;
-import com.tobqol.tracking.RoomDataHandler;
-import com.tobqol.tracking.RoomDataItem;
-import com.tobqol.tracking.RoomInfoBox;
+import com.tobqol.timetracking.RoomDataHandler;
+import com.tobqol.timetracking.RoomDataItem;
+import com.tobqol.timetracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
@@ -55,8 +55,8 @@ import java.util.*;
 import static com.tobqol.api.game.Region.MAIDEN;
 import static com.tobqol.api.game.Region.inRegion;
 import static com.tobqol.rooms.maiden.commons.MaidenConstants.*;
-import static com.tobqol.tracking.RoomInfoUtil.createInfoBox;
-import static com.tobqol.tracking.RoomInfoUtil.formatTime;
+import static com.tobqol.timetracking.RoomInfoUtil.createInfoBox;
+import static com.tobqol.timetracking.RoomInfoUtil.formatTime;
 import static lombok.AccessLevel.NONE;
 
 @Getter
