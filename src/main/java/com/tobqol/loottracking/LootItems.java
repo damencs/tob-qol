@@ -28,10 +28,8 @@ package com.tobqol.loottracking;
 import lombok.Getter;
 import net.runelite.api.ItemID;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 
 @Getter
 public enum LootItems

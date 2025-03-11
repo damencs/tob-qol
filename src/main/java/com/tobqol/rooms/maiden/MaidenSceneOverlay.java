@@ -47,7 +47,6 @@ import javax.inject.Inject;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 public class MaidenSceneOverlay extends RoomSceneOverlay<MaidenHandler>
