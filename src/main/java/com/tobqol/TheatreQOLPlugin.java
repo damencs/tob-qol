@@ -538,7 +538,7 @@ public class TheatreQOLPlugin extends Plugin
 				break;
 		}
 
-		if (RaidConstants.LOOT_ROOM_ALL_CHEST_IDS.contains(objectId))
+		if (RaidConstants.LOOT_ROOM_ALL_CHEST_IDS.contains(objectId) && instanceService.getRaiders().contains(client.getLocalPlayer().getName()))
 		{
 			int imposterId = client.getObjectDefinition(objectId).getImpostor().getId();
 			log.debug("chest spawned: {}, imposterId: {}", objectId, imposterId);
