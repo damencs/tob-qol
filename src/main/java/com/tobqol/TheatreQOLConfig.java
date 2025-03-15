@@ -29,7 +29,6 @@
  */
 package com.tobqol;
 
-import com.tobqol.config.DryLootTracking;
 import com.tobqol.config.HPDisplayTypes;
 import com.tobqol.config.SupplyChestPreference;
 import com.tobqol.config.font.FontStyles;
@@ -943,13 +942,13 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "Dry Loot Tracking",
 			keyName = "dryLootTracking",
-			description = "- Tracks how many TOB raids you have completed without seeing a purple (personal/any/off)<br>- This will track regardless of being displayed or not",
+			description = "- Tracks how many TOB raids you have completed without seeing a purple<br>- This will track regardless of being displayed or not",
 			position = 1,
 			section = LOOT_TRACKING_SECTION
 	)
-	default DryLootTracking dryLootTracking()
+	default boolean dryLootTracking()
 	{
-		return DryLootTracking.ANY;
+		return true;
 	}
 
 	@ConfigItem(

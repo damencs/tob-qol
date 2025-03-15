@@ -178,6 +178,11 @@ public class LootTrackingHandler
 
     public void announceLootTracking(LootTrackingMemory memory, boolean isPurple, boolean isPersonal)
     {
+        if (!config.dryLootTracking())
+        {
+            return;
+        }
+
         String personalCount = "<col=cf3f21>" + memory.countSincePersonal + "</col>";
         String otherCount = "<col=cf3f21>" + memory.countSinceOther + "</col>";
         String lastItem = memory.getLastPersonalItem() != null ? "(Last Drop: <col=cf3f21>" + memory.lastPersonalItem + "</col>)" : "";
