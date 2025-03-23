@@ -272,7 +272,6 @@ public class TheatreQOLPlugin extends Plugin
 		chatCommandManager.unregisterCommand(RaidConstants.TOB_DRY_STREAK_COMMAND);
 		chatCommandManager.unregisterCommand(RaidConstants.TOB_LAST_COMMAND);
 		chatCommandManager.unregisterCommand(RaidConstants.TOB_LAST_ITEM_COMMAND);
-
 	}
 
 	void reset(boolean global)
@@ -878,5 +877,16 @@ public class TheatreQOLPlugin extends Plugin
 		});
 
 		return true;
+	}
+
+	@Subscribe
+	public void onCommandExecuted(CommandExecuted command)
+	{
+		if (command.getCommand().equalsIgnoreCase("resettobdry"))
+		{
+			LootTrackingMemory memory = getLootTrackingHandler().getExistingMemory();
+			lootTrackingHandler.saveMemory(new LootTrackingMemory(0, memory.getLastPersonalItem(), 0));
+			queueChatMessage("You have successfully reset your TOB Loot Tracking Dry Streak.");
+		}
 	}
 }

@@ -946,7 +946,7 @@ public interface TheatreQOLConfig extends Config
 			position = 1,
 			section = LOOT_TRACKING_SECTION
 	)
-	default boolean dryLootTracking()
+	default boolean displayDryLootTracking()
 	{
 		return true;
 	}
