@@ -66,7 +66,7 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 			return null;
 		}
 
-		setLayer(OverlayLayer.ABOVE_SCENE);
+		setLayer(OverlayLayer.UNDER_WIDGETS);
 		graphics.setFont(plugin.getPluginFont());
 
 		drawPillarsHP(graphics);
