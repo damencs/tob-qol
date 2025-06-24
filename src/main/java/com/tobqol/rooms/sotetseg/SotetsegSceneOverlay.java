@@ -51,6 +51,7 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 	)
 	{
 		super(client, instance, room, plugin, config);
+		setLayer(OverlayLayer.UNDER_WIDGETS);
 	}
 
 	@Override
@@ -65,7 +66,6 @@ public class SotetsegSceneOverlay extends RoomSceneOverlay<SotetsegHandler>
 			return null;
 		}
 
-		setLayer(OverlayLayer.UNDER_WIDGETS);
 		graphics.setFont(plugin.getInstanceTimerFont());
 
 		drawSoteInstanceTimers(graphics);
