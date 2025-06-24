@@ -450,14 +450,12 @@ public class SotetsegHandler extends RoomHandler
 			}
 
 			Projectile p = client.createProjectile(replacement,
-					projectile.getFloor(),
-					projectile.getX1(), projectile.getY1(),
-					projectile.getHeight(),
+					projectile.getSourcePoint(),
+					projectile.getStartHeight(), projectile.getSourceActor(),
+					projectile.getTargetPoint(),
+					projectile.getEndHeight(), projectile.getTargetActor(),
 					projectile.getStartCycle(), projectile.getEndCycle(),
-					projectile.getSlope(),
-					projectile.getStartHeight(), projectile.getEndHeight(),
-					projectile.getInteracting(),
-					projectile.getTarget().getX(), projectile.getTarget().getY());
+					projectile.getSlope(), projectile.getStartPos());
 
 			client.getProjectiles().addLast(p);
 			projectile.setEndCycle(0);
