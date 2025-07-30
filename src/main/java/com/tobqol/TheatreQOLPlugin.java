@@ -769,6 +769,33 @@ public class TheatreQOLPlugin extends Plugin
 		return false; // No ammo found in either slot
 	}
 
+	public boolean hasBadSurgePotionDose()
+	{
+		ItemContainer inventory = client.getItemContainer(InventoryID.INVENTORY);
+		if (inventory == null)
+			return false;
+
+		int highestDoseFound = 0;
+		// get highest dose of surge potion
+		for (Item item : inventory.getItems())
+		{
+			if (item.getId() == net.runelite.api.gameval.ItemID._1DOSESURGE)
+				if (highestDoseFound <= 1)
+					highestDoseFound = 1;
+			if (item.getId() == net.runelite.api.gameval.ItemID._2DOSESURGE)
+				if (highestDoseFound <= 2)
+					highestDoseFound = 2;
+			if (item.getId() == net.runelite.api.gameval.ItemID._3DOSESURGE)
+				if (highestDoseFound <= 3)
+					highestDoseFound = 3;
+			if (item.getId() == net.runelite.api.gameval.ItemID._4DOSESURGE)
+					highestDoseFound = 4;
+		}
+
+		int wantedDose = config.surgePotionReminder().getDose();
+		return wantedDose > highestDoseFound;
+	}
+
 
 	public String getSpellbook()
 	{

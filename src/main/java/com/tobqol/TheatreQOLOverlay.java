@@ -27,6 +27,7 @@
 package com.tobqol;
 
 import com.google.inject.Inject;
+import com.tobqol.config.SurgePotionPreference;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.Point;
 import net.runelite.client.ui.overlay.Overlay;
@@ -114,6 +115,17 @@ public class TheatreQOLOverlay extends Overlay
             }
         }
 
+        // Display Surge Potion Reminder
+        if (config.surgePotionReminder() != SurgePotionPreference.OFF && plugin.isInVerSinhaza() && plugin.hasBadSurgePotionDose())
+        {
+            String text = "You don't have enough doses of Surge Potion.";
+            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 240);
+
+            if (textLocation != null)
+            {
+                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, config.surgePotionReminderColor());
+            }
+        }
         return null;
     }
 }
