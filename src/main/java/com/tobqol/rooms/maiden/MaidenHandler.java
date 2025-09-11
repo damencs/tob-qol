@@ -37,13 +37,12 @@ import com.tobqol.timetracking.RoomDataItem;
 import com.tobqol.timetracking.RoomInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.ChatMessageType;
-import net.runelite.api.Hitsplat;
-import net.runelite.api.NPC;
+import net.runelite.api.*;
 import net.runelite.api.Point;
 import net.runelite.api.events.*;
 import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.eventbus.Subscribe;
+import net.runelite.client.util.ColorUtil;
 import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
@@ -136,6 +135,60 @@ public class MaidenHandler extends RoomHandler
 	public boolean active()
 	{
 		return inRegion(client, MAIDEN) && maidenNpc != null && !maidenNpc.isDead();
+	}
+
+	@Subscribe(priority = Integer.MAX_VALUE)
+	private void onMenuEntryAdded(MenuEntryAdded e) {
+		if (!active()) {
+			return;
+		}
+
+		if (e.getOption().equals("Attack") || e.getType() == MenuAction.WIDGET_TARGET_ON_NPC.getId()) {
+			//System.out.println("Added an Attack option");
+			NPC npc = client.getTopLevelWorldView().npcs().byIndex(e.getIdentifier());
+
+			if (npc == null)
+			{
+				return;
+			}
+			//System.out.println("valid NPC");
+
+			if (crabsMap.containsKey(npc.getIndex())) {
+				// This is a live crab.
+				//System.out.println("live crab");
+
+				MaidenRedCrab crab = crabsMap.get(npc.getIndex());
+
+				MenuEntry[] entries = client.getMenu().getMenuEntries();
+				MenuEntry head = entries[entries.length - 1];
+
+				String target = e.getTarget();
+				target = Text.removeTags(target);
+				Color color = null;
+
+				if (crab.phaseKey().equals(MaidenPhase.P1.key()))
+				{
+					color = config.maiden70sColor();
+				}
+				else if (crab.phaseKey().equals(MaidenPhase.P2.key()))
+				{
+					color = config.maiden50sColor();
+				}
+				else if (crab.phaseKey().equals(MaidenPhase.P3.key()))
+				{
+					color = config.maiden30sColor();
+				}
+
+				if (color != null)
+				{
+					target = ColorUtil.prependColorTag(target, color);
+				}
+
+				head.setTarget(target);
+				client.getMenu().setMenuEntries(entries);
+			}
+		}
+
 	}
 
 	@Subscribe
