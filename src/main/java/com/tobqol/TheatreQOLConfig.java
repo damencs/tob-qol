@@ -31,6 +31,7 @@ package com.tobqol;
 
 import com.tobqol.config.HPDisplayTypes;
 import com.tobqol.config.SupplyChestPreference;
+import com.tobqol.config.SurgePotionPreference;
 import com.tobqol.config.font.FontStyles;
 import com.tobqol.config.font.FontTypes;
 import com.tobqol.config.times.TimeDisplayType;
@@ -265,6 +266,28 @@ public interface TheatreQOLConfig extends Config
 	)
 	@Alpha
 	default Color ammoReminderColor()
+	{
+		return Color.GREEN;
+	}
+
+	@ConfigItem(
+			name = "Surge Potion Reminder",
+			keyName = "surgePotionReminder",
+			description = "- Indicates whether or not you have sufficient surge potion doses and putting a message on the entrance<br>",
+			position = 12,
+			section = GENERAL_SECTION
+	)
+	default SurgePotionPreference surgePotionReminder() { return SurgePotionPreference.OFF; }
+
+	@ConfigItem(
+			name = "Surge Potion Reminder Color",
+			keyName = "surgePotionReminderColor",
+			description = "- Set a color for the Surge Potion Reminder overlay<br>",
+			position = 13,
+			section = GENERAL_SECTION
+	)
+	@Alpha
+	default Color surgePotionReminderColor()
 	{
 		return Color.GREEN;
 	}
