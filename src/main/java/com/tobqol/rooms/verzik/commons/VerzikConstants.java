@@ -29,8 +29,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import net.runelite.api.ItemID;
-import net.runelite.api.NpcID;
+import net.runelite.api.gameval.ItemID;
+import net.runelite.api.gameval.NpcID;
 import net.runelite.api.NullNpcID;
 
 import java.util.List;
@@ -45,42 +45,42 @@ public final class VerzikConstants
 	Pattern COMPLETION = Pattern.compile("Theatre of Blood total completion time:");
 
 	// NPC IDs
-	public static final int SM_VERZIK_P1_INACTIVE_NPC = NpcID.VERZIK_VITUR_10830; // Not Attackable
-	public static final int SM_VERZIK_P1_NPC = NpcID.VERZIK_VITUR_10831;
-	public static final int SM_VERZIK_P2_INACTIVE_NPC = NpcID.VERZIK_VITUR_10832; // Transitioning into P2
-	public static final int SM_VERZIK_P2_NPC = NpcID.VERZIK_VITUR_10833;
-	public static final int SM_VERZIK_P3_INACTIVE_NPC = NpcID.VERZIK_VITUR_10834; // Transitioning into P3
-	public static final int SM_VERZIK_P3_NPC = NpcID.VERZIK_VITUR_10835;
-	public static final int SM_VERZIK_P3_DEATH_NPC = NpcID.VERZIK_VITUR_10836; // Dying and turning into a bat
+	public static final int SM_VERZIK_P1_INACTIVE_NPC = NpcID.VERZIK_INITIAL_STORY; // Not Attackable
+	public static final int SM_VERZIK_P1_NPC = NpcID.VERZIK_PHASE1_STORY;
+	public static final int SM_VERZIK_P2_INACTIVE_NPC = NpcID.VERZIK_PHASE1_TO2_TRANSITION_STORY; // Transitioning into P2
+	public static final int SM_VERZIK_P2_NPC = NpcID.VERZIK_PHASE2_STORY;
+	public static final int SM_VERZIK_P3_INACTIVE_NPC = NpcID.VERZIK_PHASE2_TO3_TRANSITION_STORY; // Transitioning into P3
+	public static final int SM_VERZIK_P3_NPC = NpcID.VERZIK_PHASE3_STORY;
+	public static final int SM_VERZIK_P3_DEATH_NPC = NpcID.VERZIK_DEATH_BAT_STORY; // Dying and turning into a bat
 
-	public static final int RG_VERZIK_P1_INACTIVE_NPC = NpcID.VERZIK_VITUR_8369; // Not Attackable
-	public static final int RG_VERZIK_P1_NPC = NpcID.VERZIK_VITUR_8370;
-	public static final int RG_VERZIK_P2_INACTIVE_NPC = NpcID.VERZIK_VITUR_8371; // Transitioning into P2
-	public static final int RG_VERZIK_P2_NPC = NpcID.VERZIK_VITUR_8372;
-	public static final int RG_VERZIK_P3_INACTIVE_NPC = NpcID.VERZIK_VITUR_8373; // Transitioning into P3
-	public static final int RG_VERZIK_P3_NPC = NpcID.VERZIK_VITUR_8374;
-	public static final int RG_VERZIK_P3_DEATH_NPC = NpcID.VERZIK_VITUR_8375; // Dying and turning into a bat
+	public static final int RG_VERZIK_P1_INACTIVE_NPC = NpcID.VERZIK_INITIAL; // Not Attackable
+	public static final int RG_VERZIK_P1_NPC = NpcID.VERZIK_PHASE1;
+	public static final int RG_VERZIK_P2_INACTIVE_NPC = NpcID.VERZIK_PHASE1_TO2_TRANSITION; // Transitioning into P2
+	public static final int RG_VERZIK_P2_NPC = NpcID.VERZIK_PHASE2;
+	public static final int RG_VERZIK_P3_INACTIVE_NPC = NpcID.VERZIK_PHASE2_TO3_TRANSITION; // Transitioning into P3
+	public static final int RG_VERZIK_P3_NPC = NpcID.VERZIK_PHASE3;
+	public static final int RG_VERZIK_P3_DEATH_NPC = NpcID.VERZIK_DEATH_BAT; // Dying and turning into a bat
 
-	public static final int HM_VERZIK_P1_INACTIVE_NPC = NpcID.VERZIK_VITUR_10847; // Not Attackable
-	public static final int HM_VERZIK_P1_NPC = NpcID.VERZIK_VITUR_10848;
-	public static final int HM_VERZIK_P2_INACTIVE_NPC = NpcID.VERZIK_VITUR_10849; // Transitioning into P2
-	public static final int HM_VERZIK_P2_NPC = NpcID.VERZIK_VITUR_10850;
-	public static final int HM_VERZIK_P3_INACTIVE_NPC = NpcID.VERZIK_VITUR_10851; // Transitioning into P3
-	public static final int HM_VERZIK_P3_NPC = NpcID.VERZIK_VITUR_10852;
-	public static final int HM_VERZIK_P3_DEATH_NPC = NpcID.VERZIK_VITUR_10853; // Dying and turning into a bat
+	public static final int HM_VERZIK_P1_INACTIVE_NPC = NpcID.VERZIK_INITIAL_HARD; // Not Attackable
+	public static final int HM_VERZIK_P1_NPC = NpcID.VERZIK_PHASE1_HARD;
+	public static final int HM_VERZIK_P2_INACTIVE_NPC = NpcID.VERZIK_PHASE1_TO2_TRANSITION_HARD; // Transitioning into P2
+	public static final int HM_VERZIK_P2_NPC = NpcID.VERZIK_PHASE2_HARD;
+	public static final int HM_VERZIK_P3_INACTIVE_NPC = NpcID.VERZIK_PHASE2_TO3_TRANSITION_HARD; // Transitioning into P3
+	public static final int HM_VERZIK_P3_NPC = NpcID.VERZIK_PHASE3;
+	public static final int HM_VERZIK_P3_DEATH_NPC = NpcID.VERZIK_DEATH_BAT_HARD; // Dying and turning into a bat
 
 	public static final List<Integer> P2_NPC_IDS = ImmutableList.of(SM_VERZIK_P2_NPC, RG_VERZIK_P2_NPC, HM_VERZIK_P2_NPC);
 	public static final List<Integer> P3_NPC_IDS = ImmutableList.of(SM_VERZIK_P3_NPC, RG_VERZIK_P3_NPC, HM_VERZIK_P3_NPC);
 
-	public static final int TORNADO_NPC = NullNpcID.NULL_8386;
+	public static final int TORNADO_NPC = NpcID.TOB_VERZIK_CREEPER;
 
 	// Pillar Name has color tags and is called "Supporting Pillar"
-	public static final int PILLAR_NPC = NpcID.SUPPORTING_PILLAR;
-	public static final int PILLAR_DEATH_NPC = NpcID.COLLAPSING_PILLAR_8378;
+	public static final int PILLAR_NPC = NpcID.VERZIK_PILLAR_NPC;
+	public static final int PILLAR_DEATH_NPC = NpcID.VERZIK_COLLAPSING_PILLAR_NPC;
 
-	public static final int SM_WEB = NpcID.WEB_10837;
-	public static final int RG_WEB = NpcID.WEB;
-	public static final int HM_WEB = NpcID.WEB_10854;
+	public static final int SM_WEB = NpcID.VERZIK_WEB_NPC_STORY;
+	public static final int RG_WEB = NpcID.VERZIK_WEB_NPC;
+	public static final int HM_WEB = NpcID.VERZIK_WEB_NPC_HARD;
 
 	// Graphic Object IDs
 	public static final int YELLOW_POOL = 1595;
@@ -93,7 +93,7 @@ public final class VerzikConstants
 
 	public static final Set<Integer> HELMET_SET = ImmutableSet.of(
 			ItemID.SERPENTINE_HELM,
-			ItemID.TANZANITE_HELM,
-			ItemID.MAGMA_HELM
+			ItemID.SERPENTINE_HELM_CYAN,
+			ItemID.SERPENTINE_HELM_RED
 	);
 }
