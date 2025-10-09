@@ -284,6 +284,9 @@ public class BloatHandler extends RoomHandler
 			bloatInfoBox = RoomInfoUtil.createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Bloat", roomTime, tooltip.toString());
 			plugin.infoBoxManager.addInfoBox(bloatInfoBox);
 		}
+
+		// Update total time infobox
+		plugin.updateTotalTimeInfoBox();
 	}
 
 	private void sendChatTimes()

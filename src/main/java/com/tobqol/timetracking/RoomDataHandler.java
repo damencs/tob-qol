@@ -58,6 +58,10 @@ public class RoomDataHandler
     @Setter
     private boolean shouldTrack = false;
 
+    @Getter
+    @Setter
+    private int totalTime = 0;
+
     public RoomDataHandler(Client client, TheatreQOLPlugin plugin, TheatreQOLConfig config)
     {
         this.client = client;
@@ -160,5 +164,19 @@ public class RoomDataHandler
                 item.setHidden(set);
             }
         });
+    }
+
+    public void addRoomTimeToTotal()
+    {
+        Optional<RoomDataItem> roomItem = Find("Room");
+        if (roomItem.isPresent())
+        {
+            totalTime += roomItem.get().getValue();
+        }
+    }
+
+    public void resetTotalTime()
+    {
+        totalTime = 0;
     }
 }
