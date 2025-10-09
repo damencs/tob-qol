@@ -144,19 +144,14 @@ public class MaidenHandler extends RoomHandler
 		}
 
 		if (e.getOption().equals("Attack") || e.getType() == MenuAction.WIDGET_TARGET_ON_NPC.getId()) {
-			//System.out.println("Added an Attack option");
 			NPC npc = client.getTopLevelWorldView().npcs().byIndex(e.getIdentifier());
 
 			if (npc == null)
 			{
 				return;
 			}
-			//System.out.println("valid NPC");
 
 			if (crabsMap.containsKey(npc.getIndex())) {
-				// This is a live crab.
-				//System.out.println("live crab");
-
 				MaidenRedCrab crab = crabsMap.get(npc.getIndex());
 
 				MenuEntry[] entries = client.getMenu().getMenuEntries();
