@@ -90,8 +90,6 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
-import static com.tobqol.rooms.bloat.commons.BloatConstants.BOSS_IMAGE;
-
 @PluginDescriptor(
 		name = "ToB QoL",
 		description = "Theatre of Blood Quality of Life Enhancement Features to be used throughout a raid",
