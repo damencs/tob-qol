@@ -87,7 +87,7 @@ public class TheatreQOLOverlay extends Overlay
 
             if (textLocation != null)
             {
-                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, Color.CYAN);
+                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, config.salveReminderColor());
             }
         }
 
@@ -99,7 +99,7 @@ public class TheatreQOLOverlay extends Overlay
 
             if (textLocation != null)
             {
-                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, Color.YELLOW);
+                renderTextLocation(graphics, new Point(textLocation.getX(), textLocation.getY()), text, config.spellbookReminderColor());
             }
         }
 
