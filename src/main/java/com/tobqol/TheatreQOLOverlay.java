@@ -29,6 +29,7 @@ package com.tobqol;
 import com.google.inject.Inject;
 import com.tobqol.config.SurgePotionPreference;
 import lombok.extern.slf4j.Slf4j;
+import net.runelite.api.GameObject;
 import net.runelite.api.Point;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -60,6 +61,12 @@ public class TheatreQOLOverlay extends Overlay
     {
         graphics.setFont(plugin.getPluginFont());
 
+        GameObject entrance = plugin.getEntrance();
+        if (entrance == null)
+        {
+            return null;
+        }
+
         // Display Chest Loot Reminder
         if (config.lootReminder() && plugin.isInVerSinhaza() && plugin.getLootChest() != null && plugin.isChestHasLoot())
         {
@@ -71,7 +78,7 @@ public class TheatreQOLOverlay extends Overlay
             }
 
             String text = "You have loot in your chest.";
-            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 0);
+            Point textLocation = entrance.getCanvasTextLocation(graphics, text, 0);
 
             if (textLocation != null)
             {
@@ -83,7 +90,7 @@ public class TheatreQOLOverlay extends Overlay
         if (config.salveReminder() && plugin.isInVerSinhaza() && !plugin.hasSalve())
         {
             String text = "You have forgotten your salve.";
-            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 60);
+            Point textLocation = entrance.getCanvasTextLocation(graphics, text, 60);
 
             if (textLocation != null)
             {
@@ -95,7 +102,7 @@ public class TheatreQOLOverlay extends Overlay
         if (config.spellbookReminder() && plugin.isInVerSinhaza())
         {
             String text = "Current Spellbook: " + plugin.getSpellbook().toUpperCase();
-            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 120);
+            Point textLocation = entrance.getCanvasTextLocation(graphics, text, 120);
 
             if (textLocation != null)
             {
@@ -107,7 +114,7 @@ public class TheatreQOLOverlay extends Overlay
         if (config.ammoReminder() && plugin.isInVerSinhaza() && !plugin.hasAmmo())
         {
             String text = "You have forgotten to equip ammo.";
-            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 180);
+            Point textLocation = entrance.getCanvasTextLocation(graphics, text, 180);
 
             if (textLocation != null)
             {
@@ -119,7 +126,7 @@ public class TheatreQOLOverlay extends Overlay
         if (config.surgePotionReminder() != SurgePotionPreference.OFF && plugin.isInVerSinhaza() && plugin.hasBadSurgePotionDose())
         {
             String text = "You don't have enough doses of Surge Potion.";
-            Point textLocation = plugin.getEntrance().getCanvasTextLocation(graphics, text, 240);
+            Point textLocation = entrance.getCanvasTextLocation(graphics, text, 240);
 
             if (textLocation != null)
             {

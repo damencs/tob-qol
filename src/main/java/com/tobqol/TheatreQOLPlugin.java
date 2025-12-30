@@ -179,9 +179,11 @@ public class TheatreQOLPlugin extends Plugin
 	private boolean darknessHidden;
 
 	@Getter
+    @CheckForNull
 	private GameObject entrance;
 
 	@Getter
+    @CheckForNull
 	private GameObject lootChest;
 
 	@Getter
