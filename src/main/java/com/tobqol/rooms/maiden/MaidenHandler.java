@@ -134,7 +134,7 @@ public class MaidenHandler extends RoomHandler
 	@Override
 	public boolean active()
 	{
-		return inRegion(client, MAIDEN) && maidenNpc != null && !maidenNpc.isDead();
+		return instance.getCurrentRegion().isMaiden() && maidenNpc != null && !maidenNpc.isDead();
 	}
 
 	@Subscribe(priority = Integer.MAX_VALUE)

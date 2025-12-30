@@ -91,7 +91,7 @@ public enum Region
 
 	public static int getCurrentRegionID(Client client, Player player)
 	{
-		if (!client.isInInstancedRegion() || player == null)
+		if (!client.getTopLevelWorldView().isInstance() || player == null)
 		{
 			return -1;
 		}
