@@ -52,6 +52,7 @@ import com.tobqol.rooms.sotetseg.SotetsegHandler;
 import com.tobqol.rooms.verzik.VerzikHandler;
 import com.tobqol.rooms.xarpus.XarpusHandler;
 import com.tobqol.timetracking.RoomDataHandler;
+import com.tobqol.timetracking.TotalTimeInfoBox;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.*;
@@ -66,6 +67,7 @@ import net.runelite.client.eventbus.EventBus;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ChatInput;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.game.ItemManager;
 import net.runelite.client.game.ItemStack;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
@@ -109,6 +111,9 @@ public class TheatreQOLPlugin extends Plugin
 
 	@Inject
 	private EventManager eventManager;
+
+	@Inject
+	protected ItemManager itemManager;
 
 	@Inject
 	@Getter
@@ -175,6 +180,8 @@ public class TheatreQOLPlugin extends Plugin
 
 	@Getter
 	private LootTrackingHandler lootTrackingHandler;
+
+	private TotalTimeInfoBox totalTimeInfoBox;
 
 	private boolean darknessHidden;
 
@@ -289,6 +296,12 @@ public class TheatreQOLPlugin extends Plugin
 			}
 		}
 
+		// Remove total time infobox when leaving raid or resetting
+		if (instanceService.getRaidStatus() <= 1)
+		{
+			removeTotalTimeInfoBox();
+		}
+
 		if (global)
 		{
 			darknessHidden = false;
@@ -303,6 +316,8 @@ public class TheatreQOLPlugin extends Plugin
 			lootTrackingHandler.reset();
 			instanceService.reset();
 			eventManager.getInstance().reset();
+			dataHandler.resetTotalTime();
+			removeTotalTimeInfoBox();
 		}
 	}
 
@@ -916,6 +931,46 @@ public class TheatreQOLPlugin extends Plugin
 			LootTrackingMemory memory = getLootTrackingHandler().getExistingMemory();
 			lootTrackingHandler.saveMemory(new LootTrackingMemory(0, memory.getLastPersonalItem(), 0));
 			queueChatMessage("You have successfully reset your TOB Loot Tracking Dry Streak.");
+		}
+	}
+
+	public void updateTotalTimeInfoBox()
+	{
+		if (!config.displayTotalTime())
+		{
+			removeTotalTimeInfoBox();
+			return;
+		}
+
+		// Add current room time to total if room is completed
+		dataHandler.addRoomTimeToTotal();
+
+		// Create or update the total time infobox
+		removeTotalTimeInfoBox();
+		
+		if (dataHandler.getTotalTime() > 0)
+		{
+			String totalTimeFormatted = com.tobqol.timetracking.RoomInfoUtil.formatTime(dataHandler.getTotalTime());
+			String tooltip = "Challenge Time";
+			
+			totalTimeInfoBox = new TotalTimeInfoBox(
+					itemManager.getImage(ItemID.WATCH),
+				this,
+				config,
+				totalTimeFormatted,
+				tooltip
+			);
+			
+			infoBoxManager.addInfoBox(totalTimeInfoBox);
+		}
+	}
+
+	private void removeTotalTimeInfoBox()
+	{
+		if (totalTimeInfoBox != null)
+		{
+			infoBoxManager.removeInfoBox(totalTimeInfoBox);
+			totalTimeInfoBox = null;
 		}
 	}
 }

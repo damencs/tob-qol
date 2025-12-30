@@ -452,6 +452,9 @@ public class MaidenHandler extends RoomHandler
 			maidenInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Maiden", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(maidenInfoBox);
 		}
+
+		// Update total time infobox
+		plugin.updateTotalTimeInfoBox();
 	}
 
 	private void sendChatTimes()

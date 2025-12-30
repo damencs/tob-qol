@@ -959,6 +959,18 @@ public interface TheatreQOLConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+			name = "Display Total Time",
+			keyName = "displayTotalTime",
+			description = "- Display an infobox showing the cumulative time of all completed rooms",
+			position = 6,
+			section = TIME_SECTION
+	)
+	default boolean displayTotalTime()
+	{
+		return false;
+	}
+
 	/**
 	 * Loot Tracking Configs
 	 */

@@ -557,6 +557,9 @@ public class SotetsegHandler extends RoomHandler
 			sotetsegInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Sotetseg", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(sotetsegInfoBox);
 		}
+
+		// Update total time infobox
+		plugin.updateTotalTimeInfoBox();
 	}
 
 	private void sendChatTimes()

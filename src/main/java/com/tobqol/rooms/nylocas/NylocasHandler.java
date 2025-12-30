@@ -639,6 +639,9 @@ public class NylocasHandler extends RoomHandler
 			nylocasInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Nylocas", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(nylocasInfoBox);
 		}
+
+		// Update total time infobox
+		plugin.updateTotalTimeInfoBox();
 	}
 
 	private void sendChatTimes()

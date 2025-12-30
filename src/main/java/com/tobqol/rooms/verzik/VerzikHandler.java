@@ -465,6 +465,9 @@ public class VerzikHandler extends RoomHandler
 			verzikInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Verzik", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(verzikInfoBox);
 		}
+
+		// Update total time infobox
+		plugin.updateTotalTimeInfoBox();
 	}
 
 	private void sendChatTimes()

@@ -359,6 +359,9 @@ public class XarpusHandler extends RoomHandler
 			xarpuInfoBox = createInfoBox(plugin, config, itemManager.getImage(BOSS_IMAGE), "Xarpus", formatTime(dataHandler.FindValue("Room")), tooltip);
 			infoBoxManager.addInfoBox(xarpuInfoBox);
 		}
+
+		// Update total time infobox
+		plugin.updateTotalTimeInfoBox();
 	}
 
 	private void sendChatTimes()
