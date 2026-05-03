@@ -46,6 +46,8 @@ import net.runelite.client.chat.ChatColorType;
 import net.runelite.client.chat.ChatMessageBuilder;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.events.ConfigChanged;
+import net.runelite.client.plugins.Plugin;
+import net.runelite.client.plugins.PluginManager;
 import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
@@ -62,6 +64,17 @@ import static com.tobqol.timetracking.RoomInfoUtil.formatTime;
 @Slf4j
 public class BloatHandler extends RoomHandler
 {
+	private static final String HD_GROUP = "hd";
+	private static final String HD_DEFAULT_SKY_COLOR = "defaultSkyColor";
+	private static final String HD_OVERRIDE_SKY = "overrideSky";
+	private static final String SKYBOX_GROUP = "skybox";
+	private static final String SKYBOX_CAVE_COLOR = "customOtherColor";
+	private static final String HD_PLUGIN_NAME = "117 HD";
+	private static final String SKYBOX_PLUGIN_NAME = "Skybox";
+	private static final int BLACK_SKY_COLOR = Color.BLACK.getRGB();
+	private static final int HD_DEFAULT_SKY_COLOR_RGB = new Color(185, 214, 255).getRGB();
+	private static final int HD_2008_SKY_COLOR_RGB = new Color(200, 192, 169).getRGB();
+
 	private RoomDataHandler dataHandler;
 
 	@Getter
@@ -71,6 +84,12 @@ public class BloatHandler extends RoomHandler
 	private RoomInfoBox bloatInfoBox;
 
 	private int downs = 0;
+	private boolean wasActive = false;
+	private boolean hdConfigApplied = false;
+	private String originalHdSkyColor;
+
+	@Inject
+	private PluginManager pluginManager;
 
 	@Inject
 	protected BloatHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -89,6 +108,14 @@ public class BloatHandler extends RoomHandler
 	@Override
 	public void unload()
 	{
+		if (active() && config.hideBloatFloor())
+		{
+			sceneManager.refreshScene();
+		}
+
+		restoreTemporaryHdSkyOverride();
+		client.setSkyboxColor(0);
+		wasActive = false;
 		reset();
 	}
 
@@ -123,18 +150,42 @@ public class BloatHandler extends RoomHandler
 			case "hideCeilingChains":
 				when(config.shouldNullCeilingChains(), this::nullCeilingChains, sceneManager::refreshScene);
 				break;
+			case "hideBloatFloor":
+				if (active())
+				{
+					when(config.hideBloatFloor(), this::hideBloatFloor, sceneManager::refreshScene);
+				}
+				break;
+			case "bloatSkyboxOverride":
+				if (active())
+				{
+					if (config.bloatSkyboxOverride())
+					{
+						applyTemporaryHdSkyOverride();
+					}
+					else
+					{
+						restoreTemporaryHdSkyOverride();
+					}
+				}
+
+				if (!config.bloatSkyboxOverride())
+				{
+					client.setSkyboxColor(0);
+				}
+				break;
 		}
 	}
 
 	@Subscribe(priority = -1)
 	private void onGameStateChanged(GameStateChanged e)
 	{
-		if (!active() || e.getGameState() != GameState.LOGGED_IN)
+		if (e.getGameState() == GameState.LOGIN_SCREEN)
 		{
-			return;
+			restoreTemporaryHdSkyOverride();
+			client.setSkyboxColor(0);
+			wasActive = false;
 		}
-
-		when(config.shouldNullCeilingChains(), this::nullCeilingChains, null);
 	}
 
 	@Subscribe
@@ -168,6 +219,26 @@ public class BloatHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick event)
 	{
+		boolean active = active();
+		if (!wasActive && active)
+		{
+			when(config.shouldNullCeilingChains(), this::nullCeilingChains, null);
+			when(config.hideBloatFloor(), this::hideBloatFloor, null);
+			applyTemporaryHdSkyOverride();
+		}
+		else if (wasActive && !active)
+		{
+			if (config.hideBloatFloor())
+			{
+				sceneManager.refreshScene();
+			}
+
+			restoreTemporaryHdSkyOverride();
+			client.setSkyboxColor(0);
+		}
+
+		wasActive = active;
+
 		if (instance.isInRaid() && instance.getCurrentRegion().isBloat())
 		{
 			if (!dataHandler.Find("Starting Tick").isPresent() && crossedLine(BLOAT, new Point(39, 30), new Point(39, 33), true, client))
@@ -240,9 +311,130 @@ public class BloatHandler extends RoomHandler
 		}
 	}
 
+	@Subscribe(priority = -1)
+	private void onBeforeRender(BeforeRender event)
+	{
+		if (!active() || !config.bloatSkyboxOverride() || client.getGameState() != GameState.LOGGED_IN)
+		{
+			return;
+		}
+
+		client.setSkyboxColor(resolveBloatSkyboxColor());
+	}
+
 	private void nullCeilingChains()
 	{
 		sceneManager.removeTheseGameObjects(1, BloatTable.CEILING_CHAINS);
+	}
+
+	private void hideBloatFloor()
+	{
+		sceneManager.removeTheseGroundObjects(client.getPlane(), BLOAT_FLOOR);
+	}
+
+	private int resolveBloatSkyboxColor()
+	{
+		if (!isHdSkyOverrideActive())
+		{
+			return resolveSkyboxPluginColorOrBlack();
+		}
+
+		String defaultSkyColor = plugin.configManager.getConfiguration(HD_GROUP, HD_DEFAULT_SKY_COLOR);
+		if ("RUNELITE".equals(defaultSkyColor))
+		{
+			return resolveSkyboxPluginColorOrBlack();
+		}
+
+		if ("OSRS".equals(defaultSkyColor))
+		{
+			return BLACK_SKY_COLOR;
+		}
+
+		if ("HD2008".equals(defaultSkyColor))
+		{
+			return HD_2008_SKY_COLOR_RGB;
+		}
+
+		return HD_DEFAULT_SKY_COLOR_RGB;
+	}
+
+	private int resolveSkyboxPluginColorOrBlack()
+	{
+		if (isSkyboxPluginActive())
+		{
+			Color skyboxColor = plugin.configManager.getConfiguration(SKYBOX_GROUP, SKYBOX_CAVE_COLOR, Color.class);
+			if (skyboxColor != null)
+			{
+				return skyboxColor.getRGB();
+			}
+		}
+
+		return BLACK_SKY_COLOR;
+	}
+
+	private boolean isSkyboxPluginActive()
+	{
+		return isPluginActive(SKYBOX_PLUGIN_NAME);
+	}
+
+	private boolean isHdPluginActive()
+	{
+		return isPluginActive(HD_PLUGIN_NAME);
+	}
+
+	private boolean isHdSkyOverrideActive()
+	{
+		return Boolean.TRUE.equals(plugin.configManager.getConfiguration(HD_GROUP, HD_OVERRIDE_SKY, Boolean.class));
+	}
+
+	private void applyTemporaryHdSkyOverride()
+	{
+		if (!config.bloatSkyboxOverride() || hdConfigApplied || !isHdPluginActive() || isHdSkyOverrideActive())
+		{
+			return;
+		}
+
+		originalHdSkyColor = plugin.configManager.getConfiguration(HD_GROUP, HD_DEFAULT_SKY_COLOR);
+		plugin.configManager.setConfiguration(HD_GROUP, HD_DEFAULT_SKY_COLOR, "RUNELITE");
+		plugin.configManager.setConfiguration(HD_GROUP, HD_OVERRIDE_SKY, true);
+		hdConfigApplied = true;
+	}
+
+	private void restoreTemporaryHdSkyOverride()
+	{
+		if (!hdConfigApplied)
+		{
+			return;
+		}
+
+		restoreConfiguration(HD_DEFAULT_SKY_COLOR, originalHdSkyColor);
+		originalHdSkyColor = null;
+		plugin.configManager.unsetConfiguration(HD_GROUP, HD_OVERRIDE_SKY);
+		hdConfigApplied = false;
+	}
+
+	private boolean isPluginActive(String name)
+	{
+		for (Plugin plugin : pluginManager.getPlugins())
+		{
+			if (name.equals(plugin.getName()) && pluginManager.isPluginActive(plugin))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private void restoreConfiguration(String key, String value)
+	{
+		if (value == null)
+		{
+			plugin.configManager.unsetConfiguration(HD_GROUP, key);
+			return;
+		}
+
+		plugin.configManager.setConfiguration(HD_GROUP, key, value);
 	}
 
 	private void buildInfobox()

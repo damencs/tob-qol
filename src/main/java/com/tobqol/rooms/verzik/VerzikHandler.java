@@ -67,6 +67,8 @@ import static com.tobqol.timetracking.RoomInfoUtil.formatTime;
 @Slf4j
 public class VerzikHandler extends RoomHandler
 {
+	private static final int VERZIK_CAMERA_RESTORE_TICKS = 3;
+
 	@Inject
 	private VerzikOverlay overlay;
 
@@ -93,6 +95,10 @@ public class VerzikHandler extends RoomHandler
 	private static Clip soundClip;
 	private boolean deathBallSpawned = false;
 	private int deathBallSafetyNet = 0;
+	private boolean wasActive = false;
+	private int savedCameraYawTarget = -1;
+	private int savedCameraPitchTarget = -1;
+	private int cameraRestoreTicksRemaining = 0;
 
 	@Inject
 	protected VerzikHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -134,6 +140,7 @@ public class VerzikHandler extends RoomHandler
 		yellows.clear();
 		deathBallSpawned = false;
 		deathBallSafetyNet = 0;
+		cameraRestoreTicksRemaining = 0;
 
 		if (instance.getRaidStatus() <= 1)
 		{
@@ -280,6 +287,30 @@ public class VerzikHandler extends RoomHandler
 	@Subscribe
 	private void onGameTick(GameTick e)
 	{
+		boolean active = active();
+		if (config.preserveVerzikEntryCamera())
+		{
+			if (!active)
+			{
+				savedCameraYawTarget = client.getCameraYawTarget();
+				savedCameraPitchTarget = client.getCameraPitchTarget();
+				cameraRestoreTicksRemaining = 0;
+			}
+			else if (!wasActive && savedCameraYawTarget >= 0 && savedCameraPitchTarget >= 0)
+			{
+				cameraRestoreTicksRemaining = VERZIK_CAMERA_RESTORE_TICKS;
+			}
+
+			if (cameraRestoreTicksRemaining > 0 && savedCameraYawTarget >= 0 && savedCameraPitchTarget >= 0)
+			{
+				client.setCameraYawTarget(savedCameraYawTarget);
+				client.setCameraPitchTarget(savedCameraPitchTarget);
+				cameraRestoreTicksRemaining--;
+			}
+		}
+
+		wasActive = active;
+
 		if (instance.isInRaid() && instance.getCurrentRegion().isVerzik())
 		{
 			if (instance.getRoomStatus() == 1 && !dataHandler.Find("Starting Tick").isPresent())

@@ -180,7 +180,7 @@ public class SceneManager
 
 	private void removeTheseGroundObjects(int plane, int... groundObjectIds)
 	{
-		if (plane < 0 || plane > 3)
+		if (groundObjectIds.length == 0 || plane < 0 || plane > 3)
 		{
 			return;
 		}
@@ -189,9 +189,20 @@ public class SceneManager
 		{
 			GroundObject object = tile.getGroundObject();
 
-			if (object != null)
+			if (object == null)
 			{
+				return;
+			}
+
+			for (int id : groundObjectIds)
+			{
+				if (object.getId() != id)
+				{
+					continue;
+				}
+
 				tile.setGroundObject(null);
+				break;
 			}
 		});
 	}
