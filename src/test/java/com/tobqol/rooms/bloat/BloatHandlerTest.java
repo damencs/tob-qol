@@ -101,7 +101,6 @@ public class BloatHandlerTest
 	{
 		Plugin hdPlugin = mock(Plugin.class);
 
-		when(config.bloatSkyboxOverride()).thenReturn(true);
 		when(config.hideBloatFloor()).thenReturn(true);
 		when(config.shouldNullCeilingChains()).thenReturn(false);
 		when(client.getPlane()).thenReturn(0);
@@ -133,8 +132,7 @@ public class BloatHandlerTest
 	@Test
 	public void enteringBloatDoesNotTouchHdConfigWhen117HdIsInactive()
 	{
-		when(config.bloatSkyboxOverride()).thenReturn(true);
-		when(config.hideBloatFloor()).thenReturn(false);
+		when(config.hideBloatFloor()).thenReturn(true);
 		when(config.shouldNullCeilingChains()).thenReturn(false);
 		when(pluginManager.getPlugins()).thenReturn(Collections.<Plugin>emptyList());
 
@@ -151,7 +149,7 @@ public class BloatHandlerTest
 	@Test
 	public void beforeRenderAppliesResolvedSkyboxColor()
 	{
-		when(config.bloatSkyboxOverride()).thenReturn(true);
+		when(config.hideBloatFloor()).thenReturn(true);
 		when(client.getGameState()).thenReturn(GameState.LOGGED_IN);
 		when(configManager.getConfiguration("hd", "overrideSky", Boolean.class)).thenReturn(Boolean.TRUE);
 		when(configManager.getConfiguration("hd", "defaultSkyColor")).thenReturn("OSRS");

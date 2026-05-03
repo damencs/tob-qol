@@ -153,25 +153,17 @@ public class BloatHandler extends RoomHandler
 			case "hideBloatFloor":
 				if (active())
 				{
-					when(config.hideBloatFloor(), this::hideBloatFloor, sceneManager::refreshScene);
-				}
-				break;
-			case "bloatSkyboxOverride":
-				if (active())
-				{
-					if (config.bloatSkyboxOverride())
+					if (config.hideBloatFloor())
 					{
+						hideBloatFloor();
 						applyTemporaryHdSkyOverride();
 					}
 					else
 					{
+						sceneManager.refreshScene();
 						restoreTemporaryHdSkyOverride();
+						client.setSkyboxColor(0);
 					}
-				}
-
-				if (!config.bloatSkyboxOverride())
-				{
-					client.setSkyboxColor(0);
 				}
 				break;
 		}
@@ -314,7 +306,7 @@ public class BloatHandler extends RoomHandler
 	@Subscribe(priority = -1)
 	private void onBeforeRender(BeforeRender event)
 	{
-		if (!active() || !config.bloatSkyboxOverride() || client.getGameState() != GameState.LOGGED_IN)
+		if (!active() || !config.hideBloatFloor() || client.getGameState() != GameState.LOGGED_IN)
 		{
 			return;
 		}
@@ -389,7 +381,7 @@ public class BloatHandler extends RoomHandler
 
 	private void applyTemporaryHdSkyOverride()
 	{
-		if (!config.bloatSkyboxOverride() || hdConfigApplied || !isHdPluginActive() || isHdSkyOverrideActive())
+		if (!config.hideBloatFloor() || hdConfigApplied || !isHdPluginActive() || isHdSkyOverrideActive())
 		{
 			return;
 		}

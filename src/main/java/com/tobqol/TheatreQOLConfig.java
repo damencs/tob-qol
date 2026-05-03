@@ -393,24 +393,12 @@ public interface TheatreQOLConfig extends Config
 			name = "Hide Floor",
 			keyName = "hideBloatFloor",
 			description = "- Hides the floor ground objects in the Bloat room<br>" +
+						"* Replaces the hidden floor with your 117 HD sky override when set, otherwise the Skybox plugin cave color when enabled and set, otherwise black<br>" +
 						"* Disabling this feature whilst in Bloat will cause a stutter to refresh the scene",
 			position = 3,
 			section = BLOAT_SECTION
 	)
 	default boolean hideBloatFloor()
-	{
-		return false;
-	}
-
-	@ConfigItem(
-			name = "Skybox Override",
-			keyName = "bloatSkyboxOverride",
-			description = "- Overrides the Bloat room skybox color<br>" +
-						"* Uses your 117 HD sky override when enabled, otherwise uses the Skybox plugin cave color when Skybox is enabled and set, otherwise defaults to black",
-			position = 4,
-			section = BLOAT_SECTION
-	)
-	default boolean bloatSkyboxOverride()
 	{
 		return false;
 	}
