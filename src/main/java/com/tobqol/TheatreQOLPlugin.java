@@ -409,11 +409,11 @@ public class TheatreQOLPlugin extends Plugin
 			instanceService.setPreviousRegion(instanceService.getCurrentRegion());
 		}
 
-		if (((isInVerSinhaza() && config.lightUp()) || (isInSotetseg() && config.hideSotetsegWhiteScreen())) && !darknessHidden)
+		if (((isInVerSinhaza() && config.lightUp()) || (instanceService.getCurrentRegion().isSotetsegUnderworld() && config.hideSotetsegWhiteScreen())) && !darknessHidden)
 		{
 			hideDarkness(true);
 		}
-		else if ((!isInVerSinhaza() && !isInSotetseg()) && darknessHidden)
+		else if ((!isInVerSinhaza() && !instanceService.getCurrentRegion().isSotetsegUnderworld()) && darknessHidden)
 		{
 			hideDarkness(false);
 		}
