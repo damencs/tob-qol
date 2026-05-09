@@ -184,6 +184,8 @@ public class TheatreQOLPlugin extends Plugin
 	private TotalTimeInfoBox totalTimeInfoBox;
 
 	private boolean darknessHidden;
+	private boolean sotetsegHideRequested;
+	private long sotetsegHideStartAtMillis = -1L;
 
 	@Getter
     @CheckForNull
@@ -286,6 +288,8 @@ public class TheatreQOLPlugin extends Plugin
 	void reset(boolean global)
 	{
 		dataHandler.getData().clear();
+		sotetsegHideRequested = false;
+		sotetsegHideStartAtMillis = -1L;
 
 		if (rooms != null)
 		{
@@ -409,11 +413,13 @@ public class TheatreQOLPlugin extends Plugin
 			instanceService.setPreviousRegion(instanceService.getCurrentRegion());
 		}
 
-		if (((isInVerSinhaza() && config.lightUp()) || (instanceService.getCurrentRegion().isSotetsegUnderworld() && config.hideSotetsegWhiteScreen())) && !darknessHidden)
+		boolean sotetsegHideActive = sotetsegHideRequested && System.currentTimeMillis() >= sotetsegHideStartAtMillis && config.hideSotetsegWhiteScreen();
+
+		if (((isInVerSinhaza() && config.lightUp()) || (isInSotetseg() && sotetsegHideActive)) && !darknessHidden)
 		{
 			hideDarkness(true);
 		}
-		else if ((!isInVerSinhaza() && !instanceService.getCurrentRegion().isSotetsegUnderworld()) && darknessHidden)
+		else if ((!isInVerSinhaza() && !isInSotetseg()) && darknessHidden)
 		{
 			hideDarkness(false);
 		}
@@ -458,6 +464,26 @@ public class TheatreQOLPlugin extends Plugin
 			{
 				lootChest = null;
 			}
+		}
+	}
+
+	@Subscribe
+	private void onMenuOptionClicked(MenuOptionClicked event)
+	{
+		String option = Text.removeTags(event.getMenuOption());
+		String target = Text.removeTags(event.getMenuTarget());
+		if (option == null || target == null)
+		{
+			return;
+		}
+
+		boolean passageClick = ("Quick-Enter".equalsIgnoreCase(option) || "Enter".equalsIgnoreCase(option))
+				&& target.toLowerCase().contains("formidable passage");
+
+		if (passageClick)
+		{
+			sotetsegHideRequested = true;
+			sotetsegHideStartAtMillis = System.currentTimeMillis() + 10000L;
 		}
 	}
 
