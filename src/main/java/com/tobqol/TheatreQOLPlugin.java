@@ -309,6 +309,8 @@ public class TheatreQOLPlugin extends Plugin
 			removeTotalTimeInfoBox();
 		}
 
+		boardScreenshot.reset();
+
 		if (global)
 		{
 			darknessHidden = false;

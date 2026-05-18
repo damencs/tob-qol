@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025, contributors
+ * Copyright (c) 2026, Levente Kurusa <lev@xarp.us>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,8 +46,6 @@ import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
 import net.runelite.api.GameState;
 import net.runelite.api.SpritePixels;
-import net.runelite.api.Varbits;
-import net.runelite.api.events.VarbitChanged;
 import net.runelite.api.events.WidgetLoaded;
 import net.runelite.api.gameval.SpriteID;
 import net.runelite.api.widgets.JavaScriptCallback;
@@ -131,14 +129,9 @@ public class BoardScreenshot
 		}
 	}
 
-	@Subscribe
-	public void onVarbitChanged(VarbitChanged event)
+	public void reset()
 	{
-		// Reset so the next raid gets an auto-screenshot too.
-		if (event.getVarbitId() == Varbits.THEATRE_OF_BLOOD && event.getValue() == 0)
-		{
-			autoScreenshotTaken = false;
-		}
+		autoScreenshotTaken = false;
 	}
 
 	@Subscribe
@@ -308,10 +301,6 @@ public class BoardScreenshot
 		client.getSpriteOverrides().remove(CAMERA_HOVER_SPRITE_IDX);
 	}
 
-	// -------------------------------------------------------------------------
-	// Screenshot capture
-	// -------------------------------------------------------------------------
-
 	private void screenshot(boolean clipboardOnly)
 	{
 		if (client.getGameState() != GameState.LOGGED_IN)
@@ -409,10 +398,6 @@ public class BoardScreenshot
 			}
 		});
 	}
-
-	// -------------------------------------------------------------------------
-	// Clipboard
-	// -------------------------------------------------------------------------
 
 	private void copyImageToClipboard(BufferedImage image)
 	{
