@@ -169,7 +169,6 @@ public class BoardScreenshot
 			return;
 		}
 
-
 		// Don't add the button twice if the widget script fires more than once.
 		Widget[] existing = parent.getDynamicChildren();
 		if (existing != null)
