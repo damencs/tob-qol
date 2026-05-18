@@ -70,10 +70,8 @@ public class BoardScreenshot
 	private static final int CAMERA_SPRITE_IDX = -422;
 	private static final int CAMERA_HOVER_SPRITE_IDX = -423;
 
-	private static final BufferedImage CAMERA_IMG =
-		ImageUtil.loadImageResource(BoardScreenshot.class, "camera.png");
-	private static final BufferedImage WHITE_CAMERA_IMG =
-		ImageUtil.recolorImage(CAMERA_IMG, Color.WHITE);
+	private static final BufferedImage CAMERA_IMG = ImageUtil.loadImageResource(BoardScreenshot.class, "camera.png");
+	private static final BufferedImage WHITE_CAMERA_IMG = ImageUtil.recolorImage(CAMERA_IMG, Color.WHITE);
 
 	@Inject
 	private Client client;
@@ -239,6 +237,7 @@ public class BoardScreenshot
 
 		SpritePixels[] emptyBox;
 		SpritePixels[] selectedBox;
+		
 		try
 		{
 			emptyBox = client.getSprites(client.getIndexSprites(), SpriteID.OptionsBoxes.EMPTY, 0);
@@ -257,10 +256,8 @@ public class BoardScreenshot
 
 		BufferedImage camera = config.boardScreenshotWhiteIcon() ? WHITE_CAMERA_IMG : CAMERA_IMG;
 
-		client.getSpriteOverrides().put(CAMERA_SPRITE_IDX,
-			ImageUtil.getImageSpritePixels(overlapImages(camera, emptyBox[0].toBufferedImage()), client));
-		client.getSpriteOverrides().put(CAMERA_HOVER_SPRITE_IDX,
-			ImageUtil.getImageSpritePixels(overlapImages(camera, selectedBox[0].toBufferedImage()), client));
+		client.getSpriteOverrides().put(CAMERA_SPRITE_IDX, ImageUtil.getImageSpritePixels(overlapImages(camera, emptyBox[0].toBufferedImage()), client));
+		client.getSpriteOverrides().put(CAMERA_HOVER_SPRITE_IDX, ImageUtil.getImageSpritePixels(overlapImages(camera, selectedBox[0].toBufferedImage()), client));
 
 		return true;
 	}
@@ -290,6 +287,7 @@ public class BoardScreenshot
 		g.drawImage(background, 0, 0, null);
 		g.drawImage(foreground, x, y, fgW, fgH, null);
 		g.dispose();
+		
 		return combined;
 	}
 
@@ -341,14 +339,17 @@ public class BoardScreenshot
 					button.revalidate();
 				}
 			});
+			
 			// getCanvasLocation() is unreliable for some containers, so walk the tree manually.
 			int wx = 0;
 			int wy = 0;
+			
 			for (Widget node = capture; node != null; node = node.getParent())
 			{
 				wx += node.getRelativeX();
 				wy += node.getRelativeY();
 			}
+			
 			int ww = capture.getWidth();
 			int wh = capture.getHeight();
 
@@ -425,6 +426,7 @@ public class BoardScreenshot
 					+ tmp.getAbsolutePath()
 					+ "\") as «class PNGf»)"
 			};
+			
 			new ProcessBuilder(cmd).start().waitFor();
 			tmp.delete();
 		}
@@ -468,10 +470,12 @@ public class BoardScreenshot
 				ImageIO.write(image, "png", baos);
 				return new ByteArrayInputStream(baos.toByteArray());
 			}
+			
 			if (flavor.equals(DataFlavor.imageFlavor) && image != null)
 			{
 				return image;
 			}
+			
 			throw new UnsupportedFlavorException(flavor);
 		}
 
