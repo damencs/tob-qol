@@ -622,11 +622,17 @@ public class TheatreQOLPlugin extends Plugin
 
 	public boolean isInVerSinhaza()
 	{
+		if (client.getLocalPlayer() == null)
+			return false;
+
 		return RaidConstants.VER_SINHAZA_REGIONS.contains(client.getLocalPlayer().getWorldLocation().getRegionID());
 	}
 
 	public boolean isInSotetseg()
 	{
+		if (client.getLocalPlayer() == null)
+			return false;
+
 		LocalPoint local = LocalPoint.fromWorld(client, client.getLocalPlayer().getWorldLocation());
 		int region = WorldPoint.fromLocalInstance(client, local).getRegionID();
 		return region == Region.SOTETSEG.regionId() || region == Region.SOTETSEG_MAZE.regionId();
@@ -634,6 +640,9 @@ public class TheatreQOLPlugin extends Plugin
 
 	private boolean isInLootRoom()
 	{
+		if (client.getLocalPlayer() == null)
+			return false;
+
 		LocalPoint local = LocalPoint.fromWorld(client, client.getLocalPlayer().getWorldLocation());
 		return WorldPoint.fromLocalInstance(client, local).getRegionID() == 12867;
 	}

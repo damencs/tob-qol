@@ -117,7 +117,7 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 				{
 					Color color = null;
 
-					// Determine whether or not the role even matches prior to matching nylocas name
+					// Determine whether the role even matches before matching nylocas name
 					if (room.isDisplayRoleMage() && npc.getName().equals("Nylocas Hagios"))
 					{
 						color = NylocasConstants.MAGIC_COLOR;
@@ -134,17 +134,21 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 					if (color != null)
 					{
 						final LocalPoint localPoint = npc.getLocalLocation();
-						Polygon polygon = npc.getCanvasTilePoly();
 
-						if (polygon != null)
+						if (localPoint != null)
 						{
-							OverlayUtil.renderPolygon(graphics, polygon, color);
-						}
+							Polygon polygon = npc.getCanvasTilePoly();
 
-						if (room.getBigsMap().containsKey(npc) && displaySWTile)
-						{
-							polygon = Perspective.getCanvasTilePoly(client, new LocalPoint(localPoint.getX() - (Perspective.LOCAL_TILE_SIZE / 2), localPoint.getY() - (Perspective.LOCAL_TILE_SIZE / 2)));
-							OverlayUtil.renderPolygon(graphics, polygon, color);
+							if (polygon != null)
+							{
+								OverlayUtil.renderPolygon(graphics, polygon, color);
+							}
+
+							if (room.getBigsMap().containsKey(npc) && displaySWTile)
+							{
+								polygon = Perspective.getCanvasTilePoly(client, new LocalPoint(localPoint.getX() - (Perspective.LOCAL_TILE_SIZE / 2), localPoint.getY() - (Perspective.LOCAL_TILE_SIZE / 2)));
+								OverlayUtil.renderPolygon(graphics, polygon, color);
+							}
 						}
 					}
 				}
