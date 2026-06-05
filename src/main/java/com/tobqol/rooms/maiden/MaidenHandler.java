@@ -479,7 +479,7 @@ public class MaidenHandler extends RoomHandler
 					enqueueChatMessage(ChatMessageType.GAMEMESSAGE, b -> b
 							.append(Color.RED, "Maiden - Room Complete")
 							.append(ChatColorType.NORMAL)
-							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("30%"))));
+							.append(" - " + formatTime(dataHandler.FindValue("Room")) + formatTime(dataHandler.FindValue("Room"), dataHandler.FindValue("30s"))));
 				}
 			}
 			else
