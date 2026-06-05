@@ -159,7 +159,7 @@ public class VerzikHandler extends RoomHandler
 
 					if (control != null)
 					{
-						control.setValue((float)(config.sotetsegSoundClipVolume() / 2 - 45));
+						control.setValue((float)(config.verzikSoundClipVolume() / 2 - 45));
 					}
 
 					soundClip.setFramePosition(0);
