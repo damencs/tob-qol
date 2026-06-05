@@ -429,9 +429,7 @@ public interface TheatreQOLConfig extends Config
 			name = "Recolor Menu",
 			keyName = "nyloWavesRecolorMenu",
 			description = "- Recolors each entry in the menu to their respective color<br>" +
-					"* Gray: Melee (Nylocas Ischyros)<br>" +
-					"* Green: Range (Nylocas Toxobolos)<br>" +
-					"* Blue: Magic (Nylocas Hagios)",
+					"* Note: The color config options will override their respective types.",
 			position = 3,
 			section = NYLO_SECTION
 	)
@@ -455,7 +453,7 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			name = "Role Selector",
 			keyName = "displayNyloRoleSelector",
-			description = "- Shows the Nylocas Room Role Selection Overlay that you can use to highlight the tiles of your role's nylos",
+			description = "- Shows the Nylocas Room Role Selection Overlay that you can use to highlight the tiles of your role's nylos (or multiple types)",
 			position = 5,
 			section = NYLO_SECTION
 	)
@@ -522,10 +520,52 @@ public interface TheatreQOLConfig extends Config
 	void nyloSetRoleSelectedRange(boolean enabled);
 
 	@ConfigItem(
+			name = "Mage Nylo Color",
+			keyName = "nyloMageHighlightColor",
+			description = "- Set the color of the highlighted mage nylocas<br>" +
+					"* Note: This color will be used for both highlighting and menu options",
+			position = 6,
+			section = NYLO_SECTION
+	)
+	@Alpha
+	default Color nyloMageHighlightColor()
+	{
+		return Color.CYAN;
+	}
+
+	@ConfigItem(
+			name = "Range Nylo Color",
+			keyName = "nyloRangeHighlightColor",
+			description = "- Set the color of the highlighted range nylocas<br>" +
+					"* Note: This color will be used for both highlighting and menu options",
+			position = 7,
+			section = NYLO_SECTION
+	)
+	@Alpha
+	default Color nyloRangeHighlightColor()
+	{
+		return Color.GREEN;
+	}
+
+	@ConfigItem(
+			name = "Melee Nylo Color",
+			keyName = "nyloMeleeHighlightColor",
+			description = "- Set the color of the highlighted melee nylocas<br>" +
+					"* Note: This color will be used for both highlighting and menu options",
+			position = 8,
+			section = NYLO_SECTION
+	)
+	@Alpha
+	default Color nyloMeleeHighlightColor()
+	{
+		return new Color(255, 188, 188);
+	}
+
+	@ConfigItem(
 			name = "Bigs SW Tile",
 			keyName = "nyloWavesBigsSWTile",
 			description = "- Display the SW Tile of big nylos",
-			position = 6,
+			position = 9,
 			section = NYLO_SECTION
 	)
 	default boolean nyloWavesBigsSWTile()
@@ -534,10 +574,23 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
+			name = "Display Dead Nylo Overlays",
+			keyName = "nyloDisplayDeadNpcOverlays",
+			description = "- Display the tile markers for nylocas if they are considered dead<br>" +
+						  "* Note: Entity Hider can hide a nylo as it's considered dead and the overlay would still appear if enabled",
+			position = 10,
+			section = NYLO_SECTION
+	)
+	default boolean nyloDisplayDeadNpcOverlays()
+	{
+		return false;
+	}
+
+	@ConfigItem(
 			name = "Instance Timer",
 			keyName = "nyloInstanceTimer",
 			description = "- Displays the tick cycle for Nylocas' instance",
-			position = 7,
+			position = 11,
 			section = NYLO_SECTION
 	)
 	default boolean nyloInstanceTimer()
@@ -550,7 +603,7 @@ public interface TheatreQOLConfig extends Config
 			keyName = "nyloLowDetail",
 			description = "- Removes the Graphics Objects that spawn when a Nylo dies<br>" +
 						"* Entity hider removes them from being displayed, but still allows them to spawn and linger",
-			position = 8,
+			position = 12,
 			section = NYLO_SECTION
 	)
 	default boolean nyloLowDetail()

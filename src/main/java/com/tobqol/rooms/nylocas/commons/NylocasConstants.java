@@ -144,10 +144,6 @@ public enum NylocasConstants
 	private static final Table<Instance.Mode, Integer, NylocasConstants> LOOKUP_TABLE;
 	private static final ImmutableMultimap<NylocasType, Integer> TYPE_IDS;
 
-	public static final Color MAGIC_COLOR = Color.CYAN;
-	public static final Color MELEE_COLOR = new Color(255, 188, 188);
-	public static final Color RANGE_COLOR = Color.GREEN;
-
 	public static final Set<Point> NYLOCAS_VALID_SPAWNS = ImmutableSet.of(
 			new Point(17, 24), new Point(17, 25), new Point(18, 24), new Point(18, 25),
 			new Point(31, 9), new Point(31, 10), new Point(32, 9), new Point(32, 10),

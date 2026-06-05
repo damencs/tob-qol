@@ -113,22 +113,22 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 		{
 			room.getWavesMap().forEach((npc, ticks) ->
 			{
-				if (npc.getName() != null && !npc.isDead())
+				if (npc.getName() != null && (!npc.isDead() || config.nyloDisplayDeadNpcOverlays()))
 				{
 					Color color = null;
 
 					// Determine whether the role even matches before matching nylocas name
 					if (room.isDisplayRoleMage() && npc.getName().equals("Nylocas Hagios"))
 					{
-						color = NylocasConstants.MAGIC_COLOR;
+						color = config.nyloMageHighlightColor();
 					}
 					else if (room.isDisplayRoleMelee() && npc.getName().equals("Nylocas Ischyros"))
 					{
-						color = NylocasConstants.MELEE_COLOR;
+						color = config.nyloMeleeHighlightColor();
 					}
 					else if (room.isDisplayRoleRange() && npc.getName().equals("Nylocas Toxobolos"))
 					{
-						color = NylocasConstants.RANGE_COLOR;
+						color = config.nyloRangeHighlightColor();
 					}
 
 					if (color != null)

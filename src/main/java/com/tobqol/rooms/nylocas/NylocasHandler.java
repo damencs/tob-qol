@@ -455,15 +455,18 @@ public class NylocasHandler extends RoomHandler
 
 			if (target.contains(MELEE_NAME) || id == NylocasConstants.DEMI_BOSS_MELEE.hm())
 			{
-				color = darker ? MELEE_COLOR.darker() : MELEE_COLOR;
+				Color meleeColor = config.nyloMeleeHighlightColor();
+				color = darker ? meleeColor.darker() : meleeColor;
 			}
 			else if (target.contains(RANGE_NAME) || id == NylocasConstants.DEMI_BOSS_RANGE.hm())
 			{
-				color = darker ? RANGE_COLOR.darker() : RANGE_COLOR;
+				Color rangeColor = config.nyloRangeHighlightColor();
+				color = darker ? rangeColor.darker() : rangeColor;
 			}
 			else if (target.contains(MAGIC_NAME) || id == NylocasConstants.DEMI_BOSS_MAGIC.hm())
 			{
-				color = darker ? MAGIC_COLOR.darker() : MAGIC_COLOR;
+				Color magicColor = config.nyloMageHighlightColor();
+				color = darker ? magicColor.darker() : magicColor;
 			}
 
 			if (color != null)
