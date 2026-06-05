@@ -389,6 +389,20 @@ public interface TheatreQOLConfig extends Config
 		return false;
 	}
 
+	@ConfigItem(
+			name = "Hide Floor",
+			keyName = "hideBloatFloor",
+			description = "- Hides the floor ground objects in the Bloat room<br>" +
+						"* Replaces the hidden floor with your 117 HD sky override when set, otherwise the Skybox plugin cave color when enabled and set, otherwise black<br>" +
+						"* Disabling this feature whilst in Bloat will cause a stutter to refresh the scene",
+			position = 3,
+			section = BLOAT_SECTION
+	)
+	default boolean hideBloatFloor()
+	{
+		return false;
+	}
+
 	/**
 	 * Nylocas Configs
 	 */
@@ -823,6 +837,18 @@ public interface TheatreQOLConfig extends Config
 	default int verzikSoundClipVolume()
 	{
 		return 65;
+	}
+
+	@ConfigItem(
+			name = "Preserve Entry Camera",
+			keyName = "preserveVerzikEntryCamera",
+			description = "- Keeps the same camera angle when entering the Verzik room",
+			position = 7,
+			section = VERZIK_SECTION
+	)
+	default boolean preserveVerzikEntryCamera()
+	{
+		return false;
 	}
 
 	/**
