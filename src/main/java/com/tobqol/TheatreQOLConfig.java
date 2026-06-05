@@ -574,9 +574,10 @@ public interface TheatreQOLConfig extends Config
 	}
 
 	@ConfigItem(
-			name = "Display Dead Nylo Overlays",
+			name = "Display Dead Big Nylo Overlays",
 			keyName = "nyloDisplayDeadNpcOverlays",
-			description = "- Display the tile markers for nylocas if they are considered dead<br>" +
+			description = "- Display the tile markers for big nylocas if they are considered dead<br>" +
+					      "- This is used to allow you to see where the big dies to understand where the small nylos can spawn" +
 						  "* Note: Entity Hider can hide a nylo as it's considered dead and the overlay would still appear if enabled",
 			position = 10,
 			section = NYLO_SECTION

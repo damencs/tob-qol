@@ -113,7 +113,9 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 		{
 			room.getWavesMap().forEach((npc, ticks) ->
 			{
-				if (npc.getName() != null && (!npc.isDead() || config.nyloDisplayDeadNpcOverlays()))
+				boolean isBig = room.getBigsMap().containsKey(npc);
+
+				if (npc.getName() != null && (!npc.isDead() || (isBig && config.nyloDisplayDeadNpcOverlays())))
 				{
 					Color color = null;
 
@@ -144,7 +146,7 @@ public class NylocasSceneOverlay extends RoomSceneOverlay<NylocasHandler>
 								OverlayUtil.renderPolygon(graphics, polygon, color);
 							}
 
-							if (room.getBigsMap().containsKey(npc) && displaySWTile)
+							if (isBig && displaySWTile)
 							{
 								polygon = Perspective.getCanvasTilePoly(client, new LocalPoint(localPoint.getX() - (Perspective.LOCAL_TILE_SIZE / 2), localPoint.getY() - (Perspective.LOCAL_TILE_SIZE / 2)));
 								OverlayUtil.renderPolygon(graphics, polygon, color);
