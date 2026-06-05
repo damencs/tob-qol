@@ -250,15 +250,10 @@ public class XarpusHandler extends RoomHandler
 			return;
 		}
 
-		if (exhumedTracker != null)
-		{
-			exhumedTracker.tick();
-
-			if (exhumedTracker.getExhumeds().isEmpty() && !phase.isInactiveOrP1())
-			{
-				exhumedTracker = null;
-			}
-		}
+        if (!phase.isInactiveOrP1())
+        {
+            exhumedTracker = null;
+        }
 
 		if (xarpusNpc.getOverheadText() != null && !phase.isP3())
 		{
@@ -279,6 +274,16 @@ public class XarpusHandler extends RoomHandler
 			instance.resetTickCycle();
 		}
 	}
+
+    @Subscribe
+    public void onGroundObjectDespawned(GroundObjectDespawned e)
+    {
+        if (!active() || exhumedTracker == null)
+        {
+            return;
+        }
+        exhumedTracker.untrack(e.getGroundObject());
+    }
 
 	@Subscribe
 	public void onAreaSoundEffectPlayed(AreaSoundEffectPlayed event)
@@ -338,6 +343,14 @@ public class XarpusHandler extends RoomHandler
 			}
 		}
 	}
+
+    public ExhumedTracker getExhumedTracker(){
+        if(exhumedTracker != null)
+        {
+            return exhumedTracker;
+        }
+        return null;
+    }
 
 	private void buildInfobox()
 	{

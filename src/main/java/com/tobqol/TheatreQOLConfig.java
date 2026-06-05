@@ -747,6 +747,31 @@ public interface TheatreQOLConfig extends Config
 		return 65;
 	}
 
+    @ConfigItem(
+            name = "Xarpus Exhumed Marker",
+            keyName = "xarpusExhumedMarker",
+            description = "- Marks the tile of a spawned exhumed",
+            position = 5,
+            section = XARPUS_SECTION
+    )
+    default boolean xarpusExhumedMarker()
+    {
+        return false;
+    }
+
+    @ConfigItem(
+            name = "Marked Exhumed Color",
+            keyName = "xarpusMarkedExhumedColor",
+            description = "- Set the color of the marked exhumed overlay",
+            position = 6,
+            section = XARPUS_SECTION
+    )
+    @Alpha
+    default Color xarpusMarkedExhumedColor()
+    {
+        return new Color(215, 122, 97);
+    }
+
 	/**
 	 * Verzik Configs
 	 */
