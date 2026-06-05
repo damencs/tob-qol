@@ -28,6 +28,7 @@ package com.tobqol.rooms.sotetseg;
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
+import com.tobqol.api.util.Audio.AudioService;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.sotetseg.commons.MutableMaze;
 import com.tobqol.rooms.sotetseg.commons.SotetsegNotification;
@@ -52,8 +53,6 @@ import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 import java.awt.*;
 
 import static com.tobqol.api.game.Region.SOTETSEG;
@@ -89,7 +88,6 @@ public class SotetsegHandler extends RoomHandler
 
 	private boolean considerTeleport = true;
 
-	private static Clip soundClip;
 	private boolean deathBallSpawned = false;
 	private int deathBallSafetyNet = 0;
 
@@ -105,6 +103,9 @@ public class SotetsegHandler extends RoomHandler
 	private PartyService party;
 
 	@Inject
+	private AudioService audioService;
+
+	@Inject
 	protected SotetsegHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
 	{
 		super(plugin, config);
@@ -117,7 +118,6 @@ public class SotetsegHandler extends RoomHandler
 	public void load()
 	{
 		overlayManager.add(sceneOverlay);
-		soundClip = generateSoundClip("weewoo-hoyaa.wav", config.sotetsegSoundClipVolume());
 
 		wsClient.registerMessage(SotetsegNotification.class);
 	}
@@ -126,7 +126,6 @@ public class SotetsegHandler extends RoomHandler
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
-		soundClip.close();
 		wsClient.unregisterMessage(SotetsegNotification.class);
 		reset();
 	}
@@ -159,33 +158,32 @@ public class SotetsegHandler extends RoomHandler
 	@Subscribe
 	private void onConfigChanged(ConfigChanged e)
 	{
-		if (!e.getGroup().equals(TheatreQOLConfig.GROUP_NAME) || !instance.getCurrentRegion().isSotetsegUnderworld())
+		if (!e.getGroup().equals(TheatreQOLConfig.GROUP_NAME))
 		{
 			return;
 		}
 
 		switch (e.getKey())
 		{
-			case "sotetsegHideUnderworldRocks":
+			case "sotetsegSoundClip":
+			case "sotetsegSoundClipVolume":
 			{
-				when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, sceneManager::refreshScene);
+				if (config.sotetsegSoundClip())
+				{
+					audioService.playSotetegBallAlarm();
+				}
 				break;
 			}
 
-			case "sotetsegSoundClipVolume":
+			case "sotetsegHideUnderworldRocks":
 			{
-				if (soundClip != null && config.sotetsegSoundClip())
+				if (!instance.getCurrentRegion().isSotetsegUnderworld())
 				{
-					FloatControl control = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
-
-					if (control != null)
-					{
-						control.setValue((float)(config.sotetsegSoundClipVolume() / 2 - 45));
-					}
-
-					soundClip.setFramePosition(0);
-					soundClip.start();
+					return;
 				}
+
+				when(config.sotetsegHideUnderworldRocks(), this::hideUnderworldRocks, sceneManager::refreshScene);
+				break;
 			}
 		}
 	}
@@ -385,8 +383,7 @@ public class SotetsegHandler extends RoomHandler
 		{
 			if (config.sotetsegSoundClip())
 			{
-				soundClip.setFramePosition(0);
-				soundClip.start();
+				audioService.playSotetegBallAlarm();
 			}
 
 			deathBallSpawned = true;
@@ -526,8 +523,7 @@ public class SotetsegHandler extends RoomHandler
 			{
 				if (config.sotetsegSoundClip())
 				{
-					soundClip.setFramePosition(0);
-					soundClip.start();
+					audioService.playSotetegBallAlarm();
 				}
 
 				deathBallSpawned = true;

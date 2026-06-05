@@ -28,6 +28,7 @@ package com.tobqol.rooms.verzik;
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
+import com.tobqol.api.util.Audio.AudioService;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.verzik.commons.Tornado;
 import com.tobqol.rooms.verzik.commons.VerzikMap;
@@ -50,8 +51,6 @@ import org.apache.commons.lang3.tuple.MutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.inject.Inject;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -90,9 +89,11 @@ public class VerzikHandler extends RoomHandler
 
 	@Getter
 	private byte ticksLeft = -1;
-	private static Clip soundClip;
 	private boolean deathBallSpawned = false;
 	private int deathBallSafetyNet = 0;
+
+	@Inject
+	private AudioService audioService;
 
 	@Inject
 	protected VerzikHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -107,14 +108,12 @@ public class VerzikHandler extends RoomHandler
 	public void load()
 	{
 		overlayManager.add(overlay);
-		soundClip = generateSoundClip("weewoo-hoyaa.wav", config.sotetsegSoundClipVolume());
 	}
 
 	@Override
 	public void unload()
 	{
 		overlayManager.remove(overlay);
-		soundClip.close();
 		reset();
 	}
 
@@ -144,28 +143,14 @@ public class VerzikHandler extends RoomHandler
 	@Subscribe
 	private void onConfigChanged(ConfigChanged e)
 	{
-		if (!e.getGroup().equals(TheatreQOLConfig.GROUP_NAME) || !instance.getCurrentRegion().isSotetsegUnderworld())
+		if (!e.getGroup().equals(TheatreQOLConfig.GROUP_NAME))
 		{
 			return;
 		}
 
-		switch (e.getKey())
+		if (e.getKey().equals("verzikSoundClipVolume") && config.verzikSoundClip())
 		{
-			case "verzikSoundClipVolume":
-			{
-				if (soundClip != null && config.verzikSoundClip())
-				{
-					FloatControl control = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
-
-					if (control != null)
-					{
-						control.setValue((float)(config.verzikSoundClipVolume() / 2 - 45));
-					}
-
-					soundClip.setFramePosition(0);
-					soundClip.start();
-				}
-			}
+			audioService.playVerzikBallAlarm();
 		}
 	}
 
@@ -256,7 +241,7 @@ public class VerzikHandler extends RoomHandler
 		verzikReds.remove(npc);
         tornadoes.remove(npc);
 
-		if(VerzikMap.queryTable(npc.getId()) == VERZIK_P1)
+		if (VerzikMap.queryTable(npc.getId()) == VERZIK_P1)
 		{
 			if (!dataHandler.Find("P1").isPresent())
 			{
@@ -435,8 +420,7 @@ public class VerzikHandler extends RoomHandler
 			{
 				if (config.verzikSoundClip())
 				{
-					soundClip.setFramePosition(0);
-					soundClip.start();
+					audioService.playVerzikBallAlarm();
 				}
 
 				deathBallSpawned = true;

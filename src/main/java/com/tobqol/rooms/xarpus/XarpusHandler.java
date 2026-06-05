@@ -29,6 +29,7 @@ package com.tobqol.rooms.xarpus;
 import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Region;
+import com.tobqol.api.util.Audio.AudioService;
 import com.tobqol.rooms.RoomHandler;
 import com.tobqol.rooms.xarpus.commons.ExhumedTracker;
 import com.tobqol.rooms.xarpus.commons.XarpusConstants;
@@ -49,8 +50,6 @@ import net.runelite.client.util.Text;
 
 import javax.annotation.CheckForNull;
 import javax.inject.Inject;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.FloatControl;
 import java.awt.*;
 
 import static com.tobqol.api.game.Region.XARPUS;
@@ -80,7 +79,8 @@ public class XarpusHandler extends RoomHandler
 	@CheckForNull
 	private ExhumedTracker exhumedTracker = null;
 
-	private static Clip soundClip;
+	@Inject
+	private AudioService audioService;
 
 	@Inject
 	protected XarpusHandler(TheatreQOLPlugin plugin, TheatreQOLConfig config)
@@ -95,14 +95,12 @@ public class XarpusHandler extends RoomHandler
 	public void load()
 	{
 		overlayManager.add(sceneOverlay);
-		soundClip = generateSoundClip("sheesh-hoyaa.wav", config.xarpusSoundClipVolume());
 	}
 
 	@Override
 	public void unload()
 	{
 		overlayManager.remove(sceneOverlay);
-		soundClip.close();
 		reset();
 	}
 
@@ -132,23 +130,14 @@ public class XarpusHandler extends RoomHandler
 	@Subscribe
 	public void onConfigChanged(ConfigChanged event)
 	{
-		if (event.getGroup().equals("tobqol"))
+		if (!event.getGroup().equals(TheatreQOLConfig.GROUP_NAME))
 		{
-			if (event.getKey().equals("xarpusSoundClipVolume") && config.xarpusSoundClip())
-			{
-				if (soundClip != null)
-				{
-					FloatControl control = (FloatControl) soundClip.getControl(FloatControl.Type.MASTER_GAIN);
+			return;
+		}
 
-					if (control != null)
-					{
-						control.setValue((float)(config.xarpusSoundClipVolume() / 2 - 45));
-					}
-
-					soundClip.setFramePosition(0);
-					soundClip.start();
-				}
-			}
+		if (event.getKey().equals("xarpusSoundClipVolume") && config.xarpusSoundClip())
+		{
+			audioService.playXarpusSheeshAlarm();
 		}
 	}
 
@@ -283,7 +272,7 @@ public class XarpusHandler extends RoomHandler
 	@Subscribe
 	public void onAreaSoundEffectPlayed(AreaSoundEffectPlayed event)
 	{
-		if(xarpusNpc != null && active())
+		if (xarpusNpc != null && active())
 		{
 			if (event.getSoundId() == 4005 && instance.isHardMode() && config.muteXarpusHMEntry())
 			{
@@ -304,8 +293,7 @@ public class XarpusHandler extends RoomHandler
 			if (xarpusNpc == event.getActor())
 			{
 				event.getActor().setOverheadText("Sheeeeeesh!");
-				soundClip.setFramePosition(0);
-				soundClip.start();
+				audioService.playXarpusSheeshAlarm();
 
 				dataHandler.getData().add(new RoomDataItem("Screech", dataHandler.getTime(), 2, false));
 			}
