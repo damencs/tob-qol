@@ -34,7 +34,8 @@ public enum SotetsegProjectileTheme
 {
 	DEFAULT("Default"),
 	INFERNO("Inferno"),
-	TOA("ToA");
+	TOA("ToA"),
+	COX("CoX");
 
 	private final String option;
 
@@ -51,6 +52,11 @@ public enum SotetsegProjectileTheme
 	public final boolean isToATheme()
 	{
 		return this == TOA;
+	}
+
+	public final boolean isCoXTheme()
+	{
+		return this == COX;
 	}
 
 	@Override

@@ -63,4 +63,6 @@ public interface SotetsegConstants
 	int TOA_RANGE = 2241;
 	int TOA_MAGE = 2224;
 	int TOA_DEATH_BALL = 2176;
+	int COX_MAGE = 1341;
+	int COX_RANGE = 1343;
 }

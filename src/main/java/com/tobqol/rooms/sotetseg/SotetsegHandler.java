@@ -406,6 +406,10 @@ public class SotetsegHandler extends RoomHandler
 						case TOA:
 							replacement = TOA_RANGE;
 							break;
+
+						case COX:
+							replacement = COX_RANGE;
+							break;
 					}
 					break;
 				}
@@ -420,6 +424,11 @@ public class SotetsegHandler extends RoomHandler
 						case TOA:
 							replacement = TOA_MAGE;
 							break;
+
+						case COX:
+							replacement = COX_MAGE;
+							break;
+
 					}
 					break;
 				}
