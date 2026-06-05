@@ -32,9 +32,6 @@ import net.runelite.client.audio.AudioPlayer;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.IOException;
 
 @Singleton
 @Slf4j
@@ -70,7 +67,7 @@ public class AudioService
 			log.debug("Playing clip: {} with gain: {}", clip.getFileName(), gain);
 			audioPlayer.play(TheatreQOLPlugin.class, clip.getFileName(), gain);
 		}
-		catch (IOException | UnsupportedAudioFileException | LineUnavailableException e)
+		catch (Exception e)
 		{
 			log.warn("Failed to play clip: {}", clip.getFileName(), e);
 		}
