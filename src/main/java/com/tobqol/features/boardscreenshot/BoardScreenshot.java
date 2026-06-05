@@ -394,7 +394,7 @@ public class BoardScreenshot
 			else
 			{
 				imageCapture.saveScreenshot(cropped, "tob-board", "tob-board", true, false);
-				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "TOB board screenshot saved.", null);
+				client.addChatMessage(ChatMessageType.GAMEMESSAGE, "", "TOB board screenshot saved", null);
 			}
 		});
 	}

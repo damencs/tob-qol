@@ -1036,7 +1036,7 @@ public interface TheatreQOLConfig extends Config
 	@ConfigItem(
 			keyName = "boardScreenshotAuto",
 			name = "Auto Screenshot",
-			description = "Automatically saves a screenshot when the TOB board is opened. Only triggers once per raid.",
+			description = "Automatically saves a screenshot when the TOB board is opened (Only triggers once per raid)",
 			section = SECTION_BOARD_SCREENSHOT,
 			position = 2
 	)
