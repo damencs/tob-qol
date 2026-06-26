@@ -40,6 +40,7 @@ import com.tobqol.api.game.RaidConstants;
 import com.tobqol.api.game.Region;
 import com.tobqol.api.util.CustomChatClient;
 import com.tobqol.config.SupplyChestPreference;
+import com.tobqol.features.boardscreenshot.BoardScreenshot;
 import com.tobqol.loottracking.LootItems;
 import com.tobqol.loottracking.LootTrackingHandler;
 import com.tobqol.loottracking.LootTrackingMemory;
@@ -144,6 +145,9 @@ public class TheatreQOLPlugin extends Plugin
 	private TheatreQOLConfig config;
 
 	@Inject
+	private BoardScreenshot boardScreenshot;
+
+	@Inject
 	public InfoBoxManager infoBoxManager;
 
 	@Inject
@@ -231,6 +235,7 @@ public class TheatreQOLPlugin extends Plugin
 
 		overlayManager.add(overlay);
 		eventManager.startUp();
+		boardScreenshot.startUp();
 
 		if (rooms == null)
 		{
@@ -261,6 +266,7 @@ public class TheatreQOLPlugin extends Plugin
 
 		overlayManager.remove(overlay);
 		eventManager.shutDown();
+		boardScreenshot.shutDown();
 
 		removableOverlays.forEach((k, v) -> overlayManager.removeIf(v.provideOverlay().getClass()::isInstance)); // Remove all of the active 'RoomHandler' Overlays
 		removableOverlays.clear(); // Explode the collection here as this collection gets rebuilt on this.startUp
@@ -286,6 +292,7 @@ public class TheatreQOLPlugin extends Plugin
 	void reset(boolean global)
 	{
 		dataHandler.getData().clear();
+		dataHandler.resetTotalTime();
 
 		if (rooms != null)
 		{
@@ -302,6 +309,8 @@ public class TheatreQOLPlugin extends Plugin
 			removeTotalTimeInfoBox();
 		}
 
+		boardScreenshot.reset();
+
 		if (global)
 		{
 			darknessHidden = false;
@@ -316,7 +325,6 @@ public class TheatreQOLPlugin extends Plugin
 			lootTrackingHandler.reset();
 			instanceService.reset();
 			eventManager.getInstance().reset();
-			dataHandler.resetTotalTime();
 			removeTotalTimeInfoBox();
 		}
 	}
