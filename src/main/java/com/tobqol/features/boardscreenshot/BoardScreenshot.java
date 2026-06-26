@@ -36,7 +36,6 @@ import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import javax.imageio.ImageIO;
 import javax.inject.Inject;
@@ -401,41 +400,8 @@ public class BoardScreenshot
 
 	private void copyImageToClipboard(BufferedImage image)
 	{
-		if (System.getProperty("os.name", "").toLowerCase().contains("mac"))
-		{
-			copyImageToClipboardMacOS(image);
-		}
-		else
-		{
-			Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-			cb.setContents(new TransferableImage(image), null);
-		}
-	}
-
-	private void copyImageToClipboardMacOS(BufferedImage image)
-	{
-		try
-		{
-			File tmp = File.createTempFile("tob_board_", ".png");
-			tmp.deleteOnExit();
-			ImageIO.write(image, "png", tmp);
-
-			String[] cmd = {
-				"osascript", "-e",
-				"set the clipboard to (read (POSIX file \""
-					+ tmp.getAbsolutePath()
-					+ "\") as «class PNGf»)"
-			};
-			
-			new ProcessBuilder(cmd).start().waitFor();
-			tmp.delete();
-		}
-		catch (Exception e)
-		{
-			log.warn("Failed to copy board screenshot to clipboard via osascript, falling back to AWT", e);
-			Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
-			cb.setContents(new TransferableImage(image), null);
-		}
+		Clipboard cb = Toolkit.getDefaultToolkit().getSystemClipboard();
+		cb.setContents(new TransferableImage(image), null);
 	}
 
 	private static class TransferableImage implements Transferable
