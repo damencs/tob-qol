@@ -65,6 +65,10 @@ public class CustomChatClient
         }
         else
         {
+            // Handle previous misspelling of Justiciar legs
+            if (memory.getLastPersonalItem().equalsIgnoreCase("Justiciar leguards"))
+                memory.setLastPersonalItem("Justiciar legguards");
+
             lastPersonalItem = Integer.toString(LootItems.getItemLookupByName().get(memory.getLastPersonalItem()));
         }
 
@@ -120,6 +124,10 @@ public class CustomChatClient
             else
             {
                 lastPersonalItem = LootItems.getItemLookup().get(duels.getWinningStreak());
+
+                // Handle legacy spelling of Justiciar legs
+                if (lastPersonalItem.equalsIgnoreCase("Justiciar legguards"))
+                    lastPersonalItem = "Justiciar leguards";
             }
 
             return new LootTrackingMemory(duels.getWins(), lastPersonalItem, duels.getLosses());
