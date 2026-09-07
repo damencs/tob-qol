@@ -29,9 +29,12 @@ import com.tobqol.TheatreQOLConfig;
 import com.tobqol.TheatreQOLPlugin;
 import com.tobqol.api.game.Instance;
 import com.tobqol.rooms.RoomSceneOverlay;
+import com.tobqol.rooms.xarpus.commons.ExhumedTracker;
 import com.tobqol.rooms.xarpus.commons.XarpusPhase;
 import net.runelite.api.Client;
+import net.runelite.api.GroundObject;
 import net.runelite.client.ui.overlay.OverlayLayer;
+import net.runelite.client.ui.overlay.OverlayUtil;
 
 import javax.inject.Inject;
 import java.awt.*;
@@ -68,6 +71,21 @@ public class XarpusSceneOverlay extends RoomSceneOverlay<XarpusHandler>
 			drawInstanceTimer(graphics, room.getXarpusNpc(), null);
 		}
 
-		return null;
+        if(config.xarpusExhumedMarker() && phase.isInactiveOrP1())
+        {
+            markExhumeds(graphics);
+        }
+
+        return null;
 	}
+
+    private void markExhumeds(Graphics2D graphics)
+    {
+        ExhumedTracker exhumedTracker = room.getExhumedTracker();
+        for(GroundObject e:exhumedTracker.getExhumeds())
+        {
+            Color color = config.xarpusMarkedExhumedColor();
+            OverlayUtil.renderPolygon(graphics, e.getCanvasTilePoly(), color);
+        }
+    }
 }
